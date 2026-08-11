@@ -1,6 +1,6 @@
 {
   "experiment": "exp07_designed_counterexamples",
-  "git_commit": "c80fcc8539684e11a3221f1157813305e19b03e2",
+  "git_commit": "23e5b2f84faeceac80914d6123eb71cd449b4d70",
   "git_branch": "claude/ai-science-project-plan-p0obrk",
   "git_dirty": true,
   "seed": 0,
@@ -47,25 +47,26 @@
     }
   },
   "timings_seconds": {
-    "reference_sampling": 11.190707206726074,
-    "basis_energies": 1.4631683826446533,
-    "null@1.0e-03": 23.368817567825317,
-    "aligned@1.0e-03": 23.772010326385498,
-    "random0@1.0e-03": 23.915669918060303,
-    "random1@1.0e-03": 24.17250347137451,
-    "random2@1.0e-03": 23.378244638442993,
-    "null@2.0e-03": 23.825852155685425,
-    "aligned@2.0e-03": 23.200822114944458,
-    "random0@2.0e-03": 24.02734351158142,
-    "random1@2.0e-03": 26.032150506973267,
-    "random2@2.0e-03": 26.304537534713745,
-    "null@4.0e-03": 27.991861820220947,
-    "aligned@4.0e-03": 26.494173288345337,
-    "random0@4.0e-03": 23.895695209503174,
-    "random1@4.0e-03": 24.524155855178833,
-    "random2@4.0e-03": 27.069689750671387
+    "reference_sampling": 11.604180097579956,
+    "basis_design": 0.15600061416625977,
+    "null_space_generalisation": 1.0344898700714111,
+    "null@1.0e-03": 28.51924729347229,
+    "aligned@1.0e-03": 34.0477569103241,
+    "random0@1.0e-03": 30.813379049301147,
+    "random1@1.0e-03": 31.29493522644043,
+    "random2@1.0e-03": 30.790142059326172,
+    "null@2.0e-03": 28.084648370742798,
+    "aligned@2.0e-03": 27.4253408908844,
+    "random0@2.0e-03": 25.49379873275757,
+    "random1@2.0e-03": 26.187057495117188,
+    "random2@2.0e-03": 30.21216368675232,
+    "null@4.0e-03": 29.432745933532715,
+    "aligned@4.0e-03": 27.959648370742798,
+    "random0@4.0e-03": 27.41181969642639,
+    "random1@4.0e-03": 27.19231867790222,
+    "random2@4.0e-03": 30.139601230621338
   },
-  "total_seconds": 388.9126114845276,
+  "total_seconds": 450.9671905040741,
   "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
   "cpu_count": 4,
   "libraries": {
@@ -76,66 +77,80 @@
     "numba": "0.66.0",
     "matplotlib": "3.11.1"
   },
-  "finished_at": "2026-08-11T19:58:32+0000",
+  "finished_at": "2026-08-11T20:09:36+0000",
   "results": {
     "levels": {
       "1.0e-03": {
         "force_rms_out_of_sample": {
-          "null": 0.0009976923795884357,
-          "aligned": 0.0009719606041969568
+          "null": 0.0010015155870412569,
+          "aligned": 0.0009794868106124677
         },
         "measured_max": {
-          "null": 13.216666666666669,
-          "null_error": 2.6355701771590447,
-          "aligned": 9.100000000000023,
-          "aligned_error": 3.6303996456728544,
-          "random_mean": 10.638888888888895
+          "null": 7.533333333333331,
+          "null_error": 4.3905020141787805,
+          "aligned": 15.650000000000006,
+          "aligned_error": 3.7638421774176365,
+          "random_mean": 8.038888888888891
         },
         "predicted_max": {
-          "null": 0.7548805907007342,
-          "aligned": 4.519062149750356
+          "null": 1.5858122859557477,
+          "aligned": 2.0173738337669334
         },
-        "aligned_over_null_measured": 0.6885245901639361,
-        "null_measured_within_error": false
+        "aligned_over_null_measured": 2.0774336283185852,
+        "null_measured_within_error": true
       },
       "2.0e-03": {
         "force_rms_out_of_sample": {
-          "null": 0.0019953847591768713,
-          "aligned": 0.0019439212083939136
+          "null": 0.0020030311740825138,
+          "aligned": 0.0019589736212249353
         },
         "measured_max": {
-          "null": 9.650000000000006,
-          "null_error": 2.338056444251921,
-          "aligned": 10.866666666666674,
-          "aligned_error": 3.6241309850535752,
-          "random_mean": 10.238888888888908
+          "null": 10.266666666666708,
+          "null_error": 3.964880550253409,
+          "aligned": 13.333333333333371,
+          "aligned_error": 4.132915685504854,
+          "random_mean": 11.927777777777777
         },
         "predicted_max": {
-          "null": 1.5097611814014684,
-          "aligned": 9.038124299500712
+          "null": 3.1716245719114955,
+          "aligned": 4.034747667533867
         },
-        "aligned_over_null_measured": 1.1260794473229707,
+        "aligned_over_null_measured": 1.2987012987012971,
         "null_measured_within_error": false
       },
       "4.0e-03": {
         "force_rms_out_of_sample": {
-          "null": 0.003990769518353743,
-          "aligned": 0.003887842416787827
+          "null": 0.0040060623481650275,
+          "aligned": 0.003917947242449871
         },
         "measured_max": {
-          "null": 9.349999999999994,
-          "null_error": 2.0440583658923743,
-          "aligned": 17.06666666666669,
-          "aligned_error": 3.6702363575980934,
-          "random_mean": 12.444444444444443
+          "null": 12.683333333333337,
+          "null_error": 4.126953601840712,
+          "aligned": 18.01666666666671,
+          "aligned_error": 4.224245025060221,
+          "random_mean": 9.127777777777775
         },
         "predicted_max": {
-          "null": 3.019522362802937,
-          "aligned": 18.076248599001424
+          "null": 6.343249143822991,
+          "aligned": 8.069495335067733
         },
-        "aligned_over_null_measured": 1.8253119429590055,
+        "aligned_over_null_measured": 1.4204993429697794,
         "null_measured_within_error": false
       }
-    }
+    },
+    "null_space_generalisation": [
+      {
+        "n_construct": 18,
+        "in_sample": 2.2293685944019433e-13,
+        "out_of_sample": 1.1683860089031373,
+        "out_of_sample_error": 0.4796151566681229
+      },
+      {
+        "n_construct": 30,
+        "in_sample": 1.405810462446935e-13,
+        "out_of_sample": 1.5858122859557477,
+        "out_of_sample_error": 0.6584360480822415
+      }
+    ]
   }
 }

@@ -72,10 +72,16 @@ DEFAULTS = {
         "r_min": 3.0,
         "r_max": 7.0,
         "n_bins": 8,
+        # The designed fields target a SCALAR: the pair count in one bin across
+        # the first peak. A scalar target makes the covariance a K-vector rather
+        # than a K x J matrix, which is estimable from far fewer frames, and it
+        # makes the claim sharper -- one number is left alone while another
+        # error field of identical force RMSE moves it.
+        "target_bin": [3.4, 3.9],
     },
     "sampling": {
-        "n_reference": 1200,
-        "n_direct": 1200,
+        "n_reference": 4000,
+        "n_direct": 3000,
         "n_leapfrog": 8,
         "step_size": 2e-3,
         "burn_in": 300,
@@ -84,8 +90,8 @@ DEFAULTS = {
         "basis_r_min": 3.0,
         "basis_r_max": 6.6,
         "n_basis": 14,
-        "force_rms_levels": [1.0e-3, 2.0e-3, 4.0e-3],   # eV/A
-        "n_random_seeds": 3,
+        "force_rms_levels": [1.0e-3, 4.0e-3],   # eV/A
+        "n_random_seeds": 2,
     },
 }
 
@@ -128,6 +134,8 @@ def run(ctx: ExperimentContext) -> dict:
         np.linspace(o["r_min"], o["r_max"], o["n_bins"] + 1),
         cutoff=ctx.config["potential"]["cutoff"],
     )
+    target = PairBinObservable(np.asarray(o["target_bin"], dtype=float),
+                               cutoff=ctx.config["potential"]["cutoff"])
 
     print(f"  system: {cfg.n_atoms} atoms, L = {cfg.cell[0, 0]:.2f} A, "
           f"rho = {cfg.density:.4f} /A^3, T = {temperature} K")
@@ -166,8 +174,8 @@ def run(ctx: ExperimentContext) -> dict:
     # and costs nothing -- no sampling of the perturbed potential is involved.
     with ctx.timed("null_space_generalisation"):
         generalisation = null_space_generalisation(
-            ctx, basis, construct_frames, observable, evaluate_frames, a_evaluate,
-            temperature, cutoff,
+            ctx, basis, construct_frames, target, evaluate_frames,
+            target.evaluate_trajectory(evaluate_frames), temperature, cutoff,
         )
     print("\n    null-space generalisation (predicted |shift|, pairs):")
     print(f"      {'n_construct':>12} {'in-sample':>10} {'out-of-sample':>14}")
@@ -179,20 +187,20 @@ def run(ctx: ExperimentContext) -> dict:
         common = dict(basis=basis, design=design, cutoff=cutoff,
                       target_force_rms=level, seed=ctx.seed)
         built = [
-            ("null", NullSpacePerturbation(construct_frames, observable, temperature, **common), {}),
-            ("aligned", AlignedPerturbation(construct_frames, observable, temperature, **common), {}),
+            ("null", NullSpacePerturbation(construct_frames, target, temperature, **common), {}),
+            ("aligned", AlignedPerturbation(construct_frames, target, temperature, **common), {}),
         ]
         for k in range(int(pcfg["n_random_seeds"])):
             kw = dict(common, seed=ctx.seed + 100 + k)
             built.append((f"random{k}",
-                          RandomShellPerturbation(construct_frames, observable,
+                          RandomShellPerturbation(construct_frames, target,
                                                   temperature, **kw), {}))
 
         for name, perturbation, diagnostics in built:
             label = f"{name}@{level:.1e}"
             with ctx.timed(label):
                 records.append(
-                    evaluate_one(ctx, cfg, potential, perturbation, observable,
+                    evaluate_one(ctx, cfg, potential, perturbation, observable, target,
                                  evaluate_frames, a_evaluate, temperature,
                                  name=name, level=level, diagnostics=diagnostics)
                 )
@@ -249,20 +257,10 @@ def null_space_generalisation(ctx, basis, construct_frames, observable,
     return out
 
 
-def force_rms(potential, configurations) -> float:
-    """Root-mean-square force component in eV/A, as a practitioner would report it."""
-    total, count = 0.0, 0
-    for cfg in configurations:
-        f = potential.forces(cfg)
-        total += float((f ** 2).sum())
-        count += f.size
-    return float(np.sqrt(total / count))
-
-
-def evaluate_one(ctx, cfg, potential, perturbation, observable, evaluate_frames,
+def evaluate_one(ctx, cfg, potential, perturbation, observable, target, evaluate_frames,
                  a_evaluate, temperature, *, name, level, diagnostics) -> dict:
     """Predict, then measure, the observable shift caused by one perturbation."""
-    f_rms_out = force_rms(perturbation, evaluate_frames)
+    f_rms_out = perturbation.force_rms(evaluate_frames)
     du = np.array([perturbation.energy(c) for c in evaluate_frames])
 
     prediction = predict_shift(a_evaluate, du, temperature, n_resamples=400, seed=ctx.seed)
@@ -273,6 +271,14 @@ def evaluate_one(ctx, cfg, potential, perturbation, observable, evaluate_frames,
         ctx, cfg, surrogate, int(ctx.scaled("sampling.n_direct")), seed=ctx.seed + 2
     )
     a_direct = observable.evaluate_trajectory(direct)
+
+    # The headline number is the SCALAR target the fields were designed against.
+    t_direct = target.evaluate_trajectory(direct).ravel()
+    t_reference = target.evaluate_trajectory(evaluate_frames).ravel()
+    du_target = predict_shift(t_reference, du, temperature, n_resamples=400, seed=ctx.seed)
+    target_measured = float(t_direct.mean() - t_reference.mean())
+    target_error = float(np.hypot(blocking_analysis(t_direct).error,
+                                  blocking_analysis(t_reference).error))
 
     measured = a_direct.mean(axis=0) - a_evaluate.mean(axis=0)
     # The two ensembles are sampled independently, so their errors add in
@@ -286,6 +292,11 @@ def evaluate_one(ctx, cfg, potential, perturbation, observable, evaluate_frames,
     return {
         "name": name,
         "force_rms_level": level,
+        "target_predicted": float(np.asarray(du_target.value)),
+        "target_predicted_error": float(np.asarray(du_target.error)),
+        "target_measured": target_measured,
+        "target_error": target_error,
+        "target_correlation": float(np.asarray(du_target.correlation)),
         "force_rms_out_of_sample": f_rms_out,
         "beta_sigma_dU": prediction.beta_sigma_dU,
         "second_order_ratio": np.asarray(prediction.second_order_ratio).tolist(),
@@ -323,6 +334,20 @@ def summarise(records) -> dict:
         n, a = null[0], aligned[0]
         random_mean = float(np.mean([r["measured_max"] for r in randoms])) if randoms else float("nan")
         out["levels"][level] = {
+            "target": {
+                "null_predicted": n["target_predicted"],
+                "null_measured": n["target_measured"],
+                "null_error": n["target_error"],
+                "aligned_predicted": a["target_predicted"],
+                "aligned_measured": a["target_measured"],
+                "aligned_error": a["target_error"],
+                "random_measured_mean": float(np.mean([r["target_measured"] for r in randoms]))
+                if randoms else float("nan"),
+                "null_consistent_with_zero":
+                    abs(n["target_measured"]) < 2.0 * n["target_error"],
+                "aligned_significant":
+                    abs(a["target_measured"]) > 2.0 * a["target_error"],
+            },
             "force_rms_out_of_sample": {
                 "null": n["force_rms_out_of_sample"],
                 "aligned": a["force_rms_out_of_sample"],
@@ -388,13 +413,19 @@ def report(summary):
     for level, s in summary["levels"].items():
         null_flag = "consistent with zero" if s["null_measured_within_error"] else "NOT zero"
         print(f"  at force RMSE {level} eV/A:")
-        print(f"    null-space field : {s['measured_max']['null']:+.3f} "
-              f"+/- {s['measured_max']['null_error']:.3f} pairs  ({null_flag})")
-        print(f"    aligned field    : {s['measured_max']['aligned']:+.3f} "
-              f"+/- {s['measured_max']['aligned_error']:.3f} pairs")
-        print(f"    random control   : {s['measured_max']['random_mean']:+.3f} pairs (mean)")
-        print(f"    aligned / null   : {s['aligned_over_null_measured']:.1f}x "
-              f"at identical reported force error")
+        t = s["target"]
+        print(f"    TARGET observable (the scalar the fields were designed against):")
+        print(f"      null-space  predicted {t['null_predicted']:+7.3f}  "
+              f"measured {t['null_measured']:+7.3f} +/- {t['null_error']:.3f}  "
+              f"{'consistent with zero' if t['null_consistent_with_zero'] else 'NOT zero'}")
+        print(f"      aligned     predicted {t['aligned_predicted']:+7.3f}  "
+              f"measured {t['aligned_measured']:+7.3f} +/- {t['aligned_error']:.3f}  "
+              f"{'significant' if t['aligned_significant'] else 'not significant'}")
+        print(f"      random      measured {t['random_measured_mean']:+7.3f} (mean)")
+        print(f"    full curve: null {s['measured_max']['null']:+.3f} "
+              f"+/- {s['measured_max']['null_error']:.3f}, aligned "
+              f"{s['measured_max']['aligned']:+.3f} +/- {s['measured_max']['aligned_error']:.3f} "
+              f"({null_flag})")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,14 @@
+[
+  {
+    "n_construct": 18,
+    "in_sample": 2.2293685944019433e-13,
+    "out_of_sample": 1.1683860089031373,
+    "out_of_sample_error": 0.4796151566681229
+  },
+  {
+    "n_construct": 30,
+    "in_sample": 1.405810462446935e-13,
+    "out_of_sample": 1.5858122859557477,
+    "out_of_sample_error": 0.6584360480822415
+  }
+]

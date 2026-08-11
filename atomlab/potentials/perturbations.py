@@ -99,7 +99,7 @@ from __future__ import annotations
 import copy
 import math
 from dataclasses import dataclass
-from typing import Callable, Sequence
+from typing import Callable
 
 import numpy as np
 
@@ -133,6 +133,11 @@ __all__ = [
 ]
 
 
+#: What the designed perturbations accept as a target observable: a callable on
+#: a configuration returning a scalar or a length-``L`` vector.  An
+#: already-evaluated ``(M, L)`` array is accepted everywhere a callable is (see
+#: :func:`observable_matrix`), which is how several constructions share one
+#: expensive observable.
 ObservableFn = Callable[[Configuration], "float | np.ndarray"]
 
 

@@ -14,12 +14,17 @@ do, the formula can be used to predict a model's downstream error from a
 reference trajectory alone, with no simulation of the model at all.  That is the
 practical payoff and it is worth establishing carefully.
 
-**Does the frequency argument hold?**  Section 4.1 of ``docs/theory.md``
-predicts that error fields of different width in ``r``, held at *identical*
-force RMSE, produce observable errors scaling as ``width^{3/2}``.  The second
-part of this experiment measures that exponent directly.  It is a
-no-free-parameter prediction up to a prefactor, so a measured exponent far from
-1.5 would falsify the mechanism even if the qualitative claim survived.
+**How much does the shape of the error matter, at fixed force error?**  Section
+4.1 of ``docs/theory.md`` gives a heuristic estimate that error fields of
+different width in ``r``, held at *identical* force RMSE, produce observable
+errors scaling as ``width^{3/2}``.  That estimate has a limited regime of
+validity and is not a prediction to be defended -- see the correction in that
+section.  What the second part of this experiment measures is the thing the
+estimate was reaching for: how far the observable error can vary while the
+reported force error does not vary at all.  The fitted exponent is reported for
+what it is worth, using the norm of the whole predicted difference curve rather
+than a single bin so that the saturation artefact discussed in the theory does
+not confound it.
 """
 
 from __future__ import annotations
@@ -35,11 +40,7 @@ from atomlab.analysis.response import predict_shift, reweight
 from atomlab.analysis.statistics import blocking_analysis
 from atomlab.build import fcc, scale_to_density
 from atomlab.potentials.lennard_jones import LennardJones
-from atomlab.potentials.perturbations import (
-    RadialShellPerturbation,
-    force_rms,
-    match_force_error,
-)
+from atomlab.potentials.perturbations import RadialShellPerturbation
 from atomlab.sampling import hybrid_monte_carlo
 from experiments.common import ExperimentContext, main
 from experiments.observables_lib import PairBinObservable
@@ -163,7 +164,7 @@ def amplitude_sweep(ctx, cfg, potential, observable, ref, frames,
         peak = int(np.argmax(np.abs(predicted)))
         records.append({
             "amplitude": amplitude,
-            "force_rms": force_rms(perturbation, frames),
+            "force_rms": perturbation.force_rms(frames),
             "beta_sigma_dU": prediction.beta_sigma_dU,
             "peak_bin": peak,
             "linear": float(predicted[peak]),
@@ -195,9 +196,10 @@ def width_sweep(ctx, cfg, potential, observable, frames,
     print(f"    {'width(A)':>9} {'amp(eV)':>10} {'F_rms':>10} {'linear':>9} {'direct':>16}")
 
     for width in spec["widths"]:
-        probe = RadialShellPerturbation(spec["r0"], width, 1.0,
-                                        ctx.config["potential"]["cutoff"])
-        perturbation = match_force_error(probe, frames, spec["force_rms"])
+        perturbation = RadialShellPerturbation.matched_force_error(
+            width, spec["force_rms"], frames,
+            r0=spec["r0"], cutoff=ctx.config["potential"]["cutoff"],
+        )
         du = np.array([perturbation.energy(c) for c in frames])
         prediction = predict_shift(a_ref, du, temperature, n_resamples=400, seed=ctx.seed)
 
@@ -212,7 +214,7 @@ def width_sweep(ctx, cfg, potential, observable, frames,
         records.append({
             "width": width,
             "amplitude": perturbation.amplitude,
-            "force_rms": force_rms(perturbation, frames),
+            "force_rms": perturbation.force_rms(frames),
             "linear_norm": float(np.linalg.norm(predicted)),
             "direct_norm": float(np.linalg.norm(measured)),
             "direct_norm_error": float(np.linalg.norm(measured_err)),

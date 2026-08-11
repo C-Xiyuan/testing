@@ -367,6 +367,7 @@ def _measured_g(configurations, cutoff, n_bins=90):
     return lambda r: np.interp(r, centers, g, left=0.0, right=g[-1])
 
 
+@pytest.mark.slow
 def test_width_scaling_exponent(gas_ensemble):
     """At matched force error, coupling to ``g(r)`` scales as ``w^{3/2}``.
 
@@ -522,6 +523,7 @@ def test_designed_perturbation_derivatives(all_cells, designed_setup):
             assert np.all(u == 0.0) and np.all(du == 0.0)
 
 
+@pytest.mark.slow
 def test_null_space_and_aligned_suppression(designed_setup):
     """Cov(A, delta_U) is numerically zero for the null-space construction.
 
