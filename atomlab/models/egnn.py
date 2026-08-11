@@ -407,7 +407,8 @@ def bessel_basis(r: Tensor, r_cut: float, n_basis: int) -> Tensor:
     that no static test-set metric would reveal.
     """
     n = torch.arange(1, int(n_basis) + 1, dtype=r.dtype, device=r.device)
-    return math.sqrt(2.0 / r_cut) * torch.sin(n[None, :] * math.pi * r[:, None] / r_cut) / r[:, None]
+    rr = r[:, None]
+    return math.sqrt(2.0 / r_cut) * torch.sin(n[None, :] * math.pi * rr / r_cut) / rr
 
 
 def polynomial_envelope(r: Tensor, r_cut: float, p: int = 6) -> Tensor:
@@ -558,7 +559,8 @@ class _InteractionLayer(nn.Module):
         # tensor product collapses to a scalar-times-vector, a vector copy and
         # a dot product.  The generic sparse kernel above materialises a
         # (P, C, K) intermediate, i.e. K/n_lm times the feature array, which at
-        # these sizes is memory-bandwidth bound.  ``use_fast_l1`` is checked against the
+        # these sizes is memory-bandwidth bound.  ``use_fast_l1`` is checked
+        # against the
         # generic kernel in the test suite -- a fast kernel that disagrees with
         # its reference is the most expensive kind of bug in this package.
         self.use_fast_l1 = self.l_max == 1 and self._l1_structure_is_diagonal()
@@ -978,11 +980,12 @@ class EGNN(MLModel):
         )
 
     def _validate(self, configuration: Configuration) -> None:
-        if configuration.species.size and int(configuration.species.max()) >= self._hparams["n_species"]:
+        n_species = self._hparams["n_species"]
+        if configuration.species.size and int(configuration.species.max()) >= n_species:
             raise ValueError(
                 f"configuration contains species index "
                 f"{int(configuration.species.max())} but the model was built for "
-                f"{self._hparams['n_species']} species"
+                f"{n_species} species"
             )
         if np.asarray(configuration.pbc).any():
             check_minimum_image(
@@ -1086,7 +1089,10 @@ class EGNN(MLModel):
         for start in range(0, n_cfg, batch_size):
             sel = list(range(start, min(start + batch_size, n_cfg)))
             pos, ei, ej, sc, sp, batch, _ = self._prepare_batch(
-                [graphs[k] for k in sel], [cells[k] for k in sel], [positions[k] for k in sel], dt
+                [graphs[k] for k in sel],
+                [cells[k] for k in sel],
+                [positions[k] for k in sel],
+                dt,
             )
             pos.requires_grad_(True)
             e_atom = self.net(pos, ei, ej, sc, sp, None)

@@ -90,6 +90,23 @@ def _sinhx_over_x(x: float) -> float:
     return math.sinh(x) / x
 
 
+def _chain_exp(x: float) -> float:
+    """``exp(x)`` that reports a diverged thermostat instead of overflowing.
+
+    A Nose-Hoover chain blows up when the timestep is too large for ``tau`` (or
+    when the physical dynamics has already exploded).  Left alone that surfaces
+    as an ``OverflowError`` from deep inside the propagator, or worse as silent
+    ``inf`` propagation; both hide the actual diagnosis from the caller.
+    """
+    if x > 700.0 or not math.isfinite(x):
+        raise RuntimeError(
+            "Nose-Hoover chain has diverged (thermostat velocity overflowed). "
+            "The timestep is too large for this tau, or the underlying dynamics "
+            "is already unstable; reduce dt, increase tau, or raise n_respa."
+        )
+    return math.exp(x)
+
+
 def suzuki_yoshida_weights(order: int) -> np.ndarray:
     """Symmetric Suzuki-Yoshida weights of the requested order.
 
@@ -196,11 +213,11 @@ def _nhc_propagate(
             # backward sweep: outermost chain element first
             v_xi[m - 1] += g[m - 1] * d4
             for k in range(m - 2, -1, -1):
-                e = math.exp(-v_xi[k + 1] * d8)
+                e = _chain_exp(-v_xi[k + 1] * d8)
                 v_xi[k] = (v_xi[k] * e + g[k] * d4) * e
 
             # scale the subsystem; two_ke follows so that G[0] stays consistent
-            s = math.exp(-v_xi[0] * d2)
+            s = _chain_exp(-v_xi[0] * d2)
             scale *= s
             two_ke *= s * s
 
@@ -209,7 +226,7 @@ def _nhc_propagate(
             # forward sweep with the updated G[0]
             g[0] = (two_ke - n_dof_target * kt) / q[0]
             for k in range(m - 1):
-                e = math.exp(-v_xi[k + 1] * d8)
+                e = _chain_exp(-v_xi[k + 1] * d8)
                 v_xi[k] = (v_xi[k] * e + g[k] * d4) * e
                 g[k + 1] = (q[k] * v_xi[k] ** 2 - kt) / q[k + 1]
             v_xi[m - 1] += g[m - 1] * d4

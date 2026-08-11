@@ -47,9 +47,9 @@ from atomlab.potentials.base import ZeroPotential
 from atomlab.potentials.harmonic import EinsteinCrystal, HarmonicPair
 from atomlab.potentials.lennard_jones import LennardJones
 from atomlab.types import Configuration
-from atomlab.units import EV_A3_TO_BAR, KB, MVV2E
+from atomlab.units import ATOMIC_MASSES, EV_A3_TO_BAR, KB, MVV2E
 
-ARGON_MASS = 39.948
+ARGON_MASS = ATOMIC_MASSES["Ar"]  # amu
 ARGON_A0 = 5.256  # A, fcc lattice constant used throughout the LJ-argon tests
 
 
@@ -221,15 +221,17 @@ def test_pressure_has_both_kinetic_and_virial_terms():
 
 
 def test_ideal_gas_pressure_is_exact_for_a_free_particle_system():
-    # With no interactions the virial vanishes and P V = n_dof k_B T / 3 * 3.
+    # With no interactions the virial vanishes and the pressure reduces to the
+    # ideal-gas law with the *sampled* degrees of freedom: P V = n_dof k_B T / 3
+    # per Cartesian direction, i.e. P = n_dof k_B T / (3 V).
     cfg, _ = _argon()
-    zero = ZeroPotential()
-    state = MDState.from_configuration(cfg, zero, 150.0, seed=6)
-    expected = state.n_dof * KB * state.temperature() / (3.0 * state.volume) * 3.0 / 3.0
+    state = MDState.from_configuration(cfg, ZeroPotential(), 150.0, seed=6)
+    assert np.abs(state.virial).max() == 0.0
+    expected = state.n_dof * KB * state.temperature() / (3.0 * state.volume)
+    assert state.pressure(unit="eV/A^3") == pytest.approx(expected)
     assert state.pressure(unit="eV/A^3") == pytest.approx(
         2.0 * state.kinetic_energy() / (3.0 * state.volume)
     )
-    assert state.pressure(unit="eV/A^3") == pytest.approx(expected)
 
 
 # --------------------------------------------------------------------------
@@ -716,6 +718,8 @@ def test_nhc_chain_is_rebuilt_when_the_settings_change():
     assert state.thermostat["Q"][1] == pytest.approx(q_first[1] * 16.0)
 
 
+@pytest.mark.slow
+@pytest.mark.physics
 def test_single_nose_hoover_is_not_ergodic_for_a_harmonic_system():
     """Why the chain exists: chain_length = 1 fails on the Einstein crystal.
 
@@ -809,18 +813,29 @@ def test_mtk_conserved_quantity_scales_as_dt_squared_and_hits_the_setpoint():
     assert final[2] == pytest.approx(80.0, rel=0.1)
 
 
+@pytest.mark.slow
 def test_mtk_moves_the_volume_in_the_right_direction():
-    """A compressive target pressure must shrink a cell that is under tension."""
+    """The cell must follow the pressure imbalance, and settle at the setpoint.
+
+    The starting lattice sits at about +2.5 kbar, so a 10 kbar setpoint has to
+    compress it and a 100 bar setpoint has to expand it.  Targets far below zero
+    are deliberately avoided: LJ argon has a tensile limit of a few hundred bar,
+    beyond which the crystal cavitates and no barostat can equilibrate.
+    """
     cfg, lj = _argon()
     v0 = cfg.volume
-    state = MDState.from_configuration(cfg, lj, 20.0, seed=1)
-    MTKBarostat(0.002, 20.0, 50_000.0, 0.1, 0.4).run(state, lj, 1500)
-    print(f"\n[MTK compression] V: {v0:.1f} -> {state.volume:.1f} A^3 at 50 kbar")
-    assert state.volume < v0
+    start = MDState.from_configuration(cfg, lj, 20.0, seed=1)
+    print(f"\n[MTK] starting P = {start.pressure():.1f} bar at V = {v0:.1f} A^3")
 
-    state = MDState.from_configuration(cfg, lj, 20.0, seed=1)
-    MTKBarostat(0.002, 20.0, -20_000.0, 0.1, 0.4).run(state, lj, 1500)
-    assert state.volume > v0
+    compressed = MDState.from_configuration(cfg, lj, 20.0, seed=1)
+    MTKBarostat(0.002, 20.0, 10_000.0, 0.1, 0.5).run(compressed, lj, 2000)
+    print(f"    10 kbar: V -> {compressed.volume:.1f} A^3, P = {compressed.pressure():.1f} bar")
+    assert compressed.volume < v0
+
+    expanded = MDState.from_configuration(cfg, lj, 20.0, seed=1)
+    MTKBarostat(0.002, 20.0, 100.0, 0.1, 0.5).run(expanded, lj, 2000)
+    print(f"    100 bar: V -> {expanded.volume:.1f} A^3, P = {expanded.pressure():.1f} bar")
+    assert expanded.volume > v0
 
 
 def test_mtk_requires_periodic_boundaries():

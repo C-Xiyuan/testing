@@ -44,13 +44,13 @@ from atomlab.analysis.statistics import blocking_analysis, block_bootstrap
 from atomlab.build import fcc, scale_to_density
 from atomlab.potentials.lennard_jones import LennardJones
 from atomlab.potentials.perturbations import (
-    aligned_perturbation,
-    basis_energy_matrix,
-    build_shell_basis,
-    force_rms,
-    null_space_perturbation,
-    random_perturbation,
+    AlignedPerturbation,
+    NullSpacePerturbation,
+    RandomShellPerturbation,
+    ShellBasis,
+    build_shell_design,
 )
+from atomlab.potentials.perturbations import observable_matrix
 from atomlab.sampling import hybrid_monte_carlo
 from experiments.common import ExperimentContext, main
 from experiments.observables_lib import PairBinObservable
@@ -150,35 +150,43 @@ def run(ctx: ExperimentContext) -> dict:
 
     # ---- build the designed fields on the construction half only ------------
     pcfg = ctx.config["perturbations"]
-    basis = build_shell_basis(
-        pcfg["basis_r_min"], pcfg["basis_r_max"], pcfg["n_basis"],
-        cutoff=ctx.config["potential"]["cutoff"],
-    )
-    with ctx.timed("basis_energies"):
-        energies_construct = basis_energy_matrix(basis, construct_frames)
+    cutoff = ctx.config["potential"]["cutoff"]
+    centres = np.linspace(pcfg["basis_r_min"], pcfg["basis_r_max"], pcfg["n_basis"])
+    widths = np.full(pcfg["n_basis"], float(centres[1] - centres[0]))
+    basis = ShellBasis(centres, widths, cutoff, r_on=cutoff - 1.0)
+    with ctx.timed("basis_design"):
+        design = build_shell_design(construct_frames, basis)
+
+    # ---- how many frames does the construction need to generalise? ---------
+    # A null-space field is orthogonal to the observable *on the frames it was
+    # built from* by construction. Whether it stays orthogonal on fresh frames
+    # depends entirely on how well the covariance was estimated, and with a
+    # (n_basis x n_bins) covariance from too few samples the null space found is
+    # the null space of the noise. This sweep measures where that turns around,
+    # and costs nothing -- no sampling of the perturbed potential is involved.
+    with ctx.timed("null_space_generalisation"):
+        generalisation = null_space_generalisation(
+            ctx, basis, construct_frames, observable, evaluate_frames, a_evaluate,
+            temperature, cutoff,
+        )
+    print("\n    null-space generalisation (predicted |shift|, pairs):")
+    print(f"      {'n_construct':>12} {'in-sample':>10} {'out-of-sample':>14}")
+    for g in generalisation:
+        print(f"      {g['n_construct']:12d} {g['in_sample']:10.4f} {g['out_of_sample']:14.4f}")
 
     records = []
     for level in pcfg["force_rms_levels"]:
-        built = []
-        null, null_diag = null_space_perturbation(
-            basis, a_construct, construct_frames,
-            target_force_rms=level, seed=ctx.seed, energies=energies_construct,
-        )
-        built.append(("null", null, null_diag))
-
-        aligned, aligned_diag = aligned_perturbation(
-            basis, a_construct, construct_frames,
-            target_force_rms=level, energies=energies_construct,
-        )
-        built.append(("aligned", aligned, aligned_diag))
-
+        common = dict(basis=basis, design=design, cutoff=cutoff,
+                      target_force_rms=level, seed=ctx.seed)
+        built = [
+            ("null", NullSpacePerturbation(construct_frames, observable, temperature, **common), {}),
+            ("aligned", AlignedPerturbation(construct_frames, observable, temperature, **common), {}),
+        ]
         for k in range(int(pcfg["n_random_seeds"])):
-            built.append((
-                f"random{k}",
-                random_perturbation(basis, construct_frames,
-                                    target_force_rms=level, seed=ctx.seed + 100 + k),
-                {},
-            ))
+            kw = dict(common, seed=ctx.seed + 100 + k)
+            built.append((f"random{k}",
+                          RandomShellPerturbation(construct_frames, observable,
+                                                  temperature, **kw), {}))
 
         for name, perturbation, diagnostics in built:
             label = f"{name}@{level:.1e}"
@@ -194,11 +202,61 @@ def run(ctx: ExperimentContext) -> dict:
                   f"measured = {r['measured_max']:7.3f} +/- {r['measured_max_error']:.3f}")
 
     summary = summarise(records)
+    summary["null_space_generalisation"] = generalisation
+    ctx.save_json("generalisation", generalisation)
     ctx.save_json("records", records)
     ctx.save_json("summary", summary)
     make_figure(ctx, records, observable)
     report(summary)
     return summary
+
+
+def null_space_generalisation(ctx, basis, construct_frames, observable,
+                              evaluate_frames, a_evaluate, temperature, cutoff) -> list:
+    """Predicted shift of a null-space field, in sample and out, versus sample count.
+
+    In-sample the answer is zero by construction and carries no information.
+    Out-of-sample it is the quantity that decides whether the counterexample is
+    real, and it can only fall to zero once the covariance matrix is estimated
+    from enough frames to be something other than noise.
+    """
+    counts, out = [], []
+    m = len(construct_frames)
+    for fraction in (0.125, 0.25, 0.5, 1.0):
+        n = max(basis.centers.size + 4, int(m * fraction))
+        if n > m or n in counts:
+            continue
+        counts.append(n)
+
+    a_construct_full = observable_matrix(observable, construct_frames)
+    for n in counts:
+        perturbation = NullSpacePerturbation(
+            construct_frames[:n], observable, temperature,
+            cutoff=cutoff, basis=basis, target_force_rms=1.0e-3, seed=ctx.seed,
+        )
+        du_in = np.array([perturbation.energy(c) for c in construct_frames[:n]])
+        du_out = np.array([perturbation.energy(c) for c in evaluate_frames])
+        in_sample = predict_shift(a_construct_full[:n], du_in, temperature,
+                                  n_resamples=100, seed=ctx.seed)
+        out_sample = predict_shift(a_evaluate, du_out, temperature, n_resamples=100,
+                                   seed=ctx.seed)
+        out.append({
+            "n_construct": n,
+            "in_sample": float(np.abs(np.asarray(in_sample.value)).max()),
+            "out_of_sample": float(np.abs(np.asarray(out_sample.value)).max()),
+            "out_of_sample_error": float(np.abs(np.asarray(out_sample.error)).max()),
+        })
+    return out
+
+
+def force_rms(potential, configurations) -> float:
+    """Root-mean-square force component in eV/A, as a practitioner would report it."""
+    total, count = 0.0, 0
+    for cfg in configurations:
+        f = potential.forces(cfg)
+        total += float((f ** 2).sum())
+        count += f.size
+    return float(np.sqrt(total / count))
 
 
 def evaluate_one(ctx, cfg, potential, perturbation, observable, evaluate_frames,
@@ -320,6 +378,12 @@ def make_figure(ctx, records, observable):
 
 
 def report(summary):
+    gen = summary.get("null_space_generalisation") or []
+    if gen:
+        print("\n  --- how many frames the null-space construction needs ---")
+        for g in gen:
+            print(f"    n_construct = {g['n_construct']:5d}: out-of-sample predicted "
+                  f"|shift| = {g['out_of_sample']:.4f} +/- {g['out_of_sample_error']:.4f} pairs")
     print("\n  --- P3: designed counterexamples ---")
     for level, s in summary["levels"].items():
         null_flag = "consistent with zero" if s["null_measured_within_error"] else "NOT zero"

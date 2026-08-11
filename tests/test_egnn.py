@@ -83,7 +83,9 @@ def _triclinic(n_atoms: int = 12, seed: int = 5, cutoff: float = 4.0) -> Configu
     return cfg
 
 
-def _model(l_max: int = 1, *, dtype: str = "float64", seed: int = 3, cutoff: float = 4.0) -> EGNN:
+def _model(
+    l_max: int = 1, *, dtype: str = "float64", seed: int = 3, cutoff: float = 4.0
+) -> EGNN:
     m = EGNN(
         cutoff=cutoff,
         l_max=l_max,
@@ -282,7 +284,8 @@ def test_envelope_is_c2_at_the_cutoff():
     assert abs(float(du.detach())) < 1e-8
     assert abs(float(d2u.detach())) < 1e-4
     assert float(polynomial_envelope(torch.tensor([rc + 0.1]), rc)) == 0.0
-    assert abs(float(polynomial_envelope(torch.tensor([1e-6], dtype=torch.float64), rc)) - 1.0) < 1e-12
+    near_zero = polynomial_envelope(torch.tensor([1e-6], dtype=torch.float64), rc)
+    assert abs(float(near_zero) - 1.0) < 1e-12
 
 
 def test_bessel_basis_vanishes_at_the_cutoff():

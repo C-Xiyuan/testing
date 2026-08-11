@@ -1,0 +1,141 @@
+{
+  "experiment": "exp07_designed_counterexamples",
+  "git_commit": "c80fcc8539684e11a3221f1157813305e19b03e2",
+  "git_branch": "claude/ai-science-project-plan-p0obrk",
+  "git_dirty": true,
+  "seed": 0,
+  "quick_mode": true,
+  "config": {
+    "system": {
+      "lattice_constant": 5.4,
+      "reps": [
+        3,
+        3,
+        3
+      ],
+      "density": 0.02,
+      "temperature": 120.0
+    },
+    "potential": {
+      "epsilon": 0.0103,
+      "sigma": 3.405,
+      "cutoff": 7.0,
+      "mode": "shifted_force"
+    },
+    "observable": {
+      "r_min": 3.0,
+      "r_max": 7.0,
+      "n_bins": 8
+    },
+    "sampling": {
+      "n_reference": 1200,
+      "n_direct": 1200,
+      "n_leapfrog": 8,
+      "step_size": 0.002,
+      "burn_in": 300
+    },
+    "perturbations": {
+      "basis_r_min": 3.0,
+      "basis_r_max": 6.6,
+      "n_basis": 14,
+      "force_rms_levels": [
+        0.001,
+        0.002,
+        0.004
+      ],
+      "n_random_seeds": 3
+    }
+  },
+  "timings_seconds": {
+    "reference_sampling": 11.190707206726074,
+    "basis_energies": 1.4631683826446533,
+    "null@1.0e-03": 23.368817567825317,
+    "aligned@1.0e-03": 23.772010326385498,
+    "random0@1.0e-03": 23.915669918060303,
+    "random1@1.0e-03": 24.17250347137451,
+    "random2@1.0e-03": 23.378244638442993,
+    "null@2.0e-03": 23.825852155685425,
+    "aligned@2.0e-03": 23.200822114944458,
+    "random0@2.0e-03": 24.02734351158142,
+    "random1@2.0e-03": 26.032150506973267,
+    "random2@2.0e-03": 26.304537534713745,
+    "null@4.0e-03": 27.991861820220947,
+    "aligned@4.0e-03": 26.494173288345337,
+    "random0@4.0e-03": 23.895695209503174,
+    "random1@4.0e-03": 24.524155855178833,
+    "random2@4.0e-03": 27.069689750671387
+  },
+  "total_seconds": 388.9126114845276,
+  "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
+  "cpu_count": 4,
+  "libraries": {
+    "python": "3.11.15",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "torch": "2.13.0+cpu",
+    "numba": "0.66.0",
+    "matplotlib": "3.11.1"
+  },
+  "finished_at": "2026-08-11T19:58:32+0000",
+  "results": {
+    "levels": {
+      "1.0e-03": {
+        "force_rms_out_of_sample": {
+          "null": 0.0009976923795884357,
+          "aligned": 0.0009719606041969568
+        },
+        "measured_max": {
+          "null": 13.216666666666669,
+          "null_error": 2.6355701771590447,
+          "aligned": 9.100000000000023,
+          "aligned_error": 3.6303996456728544,
+          "random_mean": 10.638888888888895
+        },
+        "predicted_max": {
+          "null": 0.7548805907007342,
+          "aligned": 4.519062149750356
+        },
+        "aligned_over_null_measured": 0.6885245901639361,
+        "null_measured_within_error": false
+      },
+      "2.0e-03": {
+        "force_rms_out_of_sample": {
+          "null": 0.0019953847591768713,
+          "aligned": 0.0019439212083939136
+        },
+        "measured_max": {
+          "null": 9.650000000000006,
+          "null_error": 2.338056444251921,
+          "aligned": 10.866666666666674,
+          "aligned_error": 3.6241309850535752,
+          "random_mean": 10.238888888888908
+        },
+        "predicted_max": {
+          "null": 1.5097611814014684,
+          "aligned": 9.038124299500712
+        },
+        "aligned_over_null_measured": 1.1260794473229707,
+        "null_measured_within_error": false
+      },
+      "4.0e-03": {
+        "force_rms_out_of_sample": {
+          "null": 0.003990769518353743,
+          "aligned": 0.003887842416787827
+        },
+        "measured_max": {
+          "null": 9.349999999999994,
+          "null_error": 2.0440583658923743,
+          "aligned": 17.06666666666669,
+          "aligned_error": 3.6702363575980934,
+          "random_mean": 12.444444444444443
+        },
+        "predicted_max": {
+          "null": 3.019522362802937,
+          "aligned": 18.076248599001424
+        },
+        "aligned_over_null_measured": 1.8253119429590055,
+        "null_measured_within_error": false
+      }
+    }
+  }
+}

@@ -224,7 +224,7 @@ This yields two failure modes, and they are not symmetric in their consequences:
   precisely the error structure that regularised fits and smooth kernels prefer
   to produce.
 
-### 4.1 A concrete, testable scaling
+### 4.1 A concrete scaling — and the limits of the estimate
 
 Make this sharp with a one-parameter family. Perturb a pair potential by a
 Gaussian shell bump of amplitude `a`, centre `r₀`, width `w`:
@@ -252,15 +252,40 @@ Therefore, **at fixed force error**, the observable error scales as
 |Δ⟨g⟩| / RMSE_F  ~  w^{3/2}                                            (4.5)
 ```
 
-which is unbounded in both directions. Two models can be constructed with
-*identical force RMSE* and observable errors differing by any factor one likes,
-simply by choosing the width of their error. This is not a pathology of a
-contrived example; it is the generic situation, because real models have error
-at many scales at once and the mix depends on the architecture and the
-regulariser.
+which is unbounded. Two error fields with *identical force RMSE* would then
+differ in observable error by any factor one likes, simply by differing in
+width.
 
-Equation (4.5) is a quantitative prediction with no free parameters up to
-prefactors, and `experiments/exp07` measures the exponent directly.
+**Treat (4.5) as a heuristic, not as a prediction.** Both of its inputs are
+crude, and each has an explicit regime of validity that a real measurement
+leaves quickly:
+
+- (4.3) counts pairs in the shell as `∝ w`, which holds only while `w` is small
+  compared with the scale over which `g(r)` varies. In liquid argon near the
+  first peak that scale is a few tenths of an angstrom, so the estimate is
+  already marginal at `w = 0.3 Å`.
+- (4.4) treats the observable as integrating the whole bump. Once `w` exceeds
+  the resolution of the observable — the bin width of a discretised `g(r)` — the
+  coupling saturates, and beyond that the bump pushes pairs into the bin from
+  one side while pushing them out on the other, so the two contributions partly
+  cancel.
+
+A preliminary 256-atom run bears this out: at fixed force RMSE the predicted
+shift in one `g(r)` bin rises from `w = 0.08 Å` to `w = 0.3 Å` and then *falls*
+again, and the amplitude required to hold force error fixed scales as `w^0.78`
+rather than the `w^0.5` of (4.3). The exponent in (4.5) is therefore not a
+no-free-parameter prediction, and this document should not have claimed it was.
+
+What survives, and what the experiments actually test, is the qualitative
+statement that (4.3) and (4.4) have *different* dependence on the shape of the
+error field, so the ratio in (4.5) is not a constant — force error and
+observable error cannot both be summaries of the same thing.
+`experiments/exp06` measures the width dependence over a decade, using the norm
+of the whole predicted `Δg(r)` curve rather than a single bin so that the
+saturation artefact above does not confound it, and reports the fitted exponent
+whatever it turns out to be. The *sharp* test of the mechanism is not this
+scaling at all but the designed null-space and aligned fields of §5, where the
+projection is controlled directly rather than through a proxy for it.
 
 ---
 

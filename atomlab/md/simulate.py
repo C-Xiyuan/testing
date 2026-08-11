@@ -55,8 +55,8 @@ from typing import Any, Callable as _CallableT, Iterator, Protocol, Sequence, ru
 import numpy as np
 from scipy.optimize import minimize as _scipy_minimize
 
-from ..cell import check_minimum_image, min_cell_width, minimum_image_shift
-from ..neighbors import NeighborList, VerletList, build_neighbor_list
+from ..cell import min_cell_width, minimum_image_shift
+from ..neighbors import NeighborList, VerletList
 from ..potentials.base import Potential
 from ..types import Configuration, Trajectory
 from ..units import BAR_TO_EV_A3, EV_A3_TO_BAR, KB
@@ -750,9 +750,12 @@ def run_md(
         raise ValueError("pass either `state` or `seed`, not both: reseeding a live state "
                          "would silently restart its random stream")
 
-    cache = None if neighbor_skin is None else NeighborCache(
-        cutoff=float(getattr(potential, "cutoff", 0.0)) or 1.0, skin=float(neighbor_skin)
-    )
+    cache = None
+    if neighbor_skin is not None:
+        top_cutoff = float(getattr(potential, "cutoff", 0.0))
+        if not np.isfinite(top_cutoff) or top_cutoff <= 0.0:
+            top_cutoff = 1.0  # only used by the (unused here) standalone list
+        cache = NeighborCache(cutoff=top_cutoff, skin=float(neighbor_skin))
     attached: list[Potential] = []
 
     try:
@@ -760,8 +763,12 @@ def run_md(
             attached = cache.attach(potential)
 
         integrator.initialize(state, potential)
+        if state.result is None:
+            state.refresh(potential, virial=bool(getattr(integrator, "virial", True)))
 
-        want_pressure = bool(getattr(integrator, "virial", True)) and state.result.virial is not None
+        want_pressure = (
+            bool(getattr(integrator, "virial", True)) and state.result.virial is not None
+        )
         try:
             integrator.conserved_quantity(state)
             want_conserved = True
@@ -885,7 +892,9 @@ def run_md(
             velocities=(
                 (np.asarray(vels) if vels else empty) if store_velocities else None
             ),
-            scalars={k: np.asarray(v, dtype=np.float64) for k, v in frame_scalars.items()},
+            scalars={
+                key: np.asarray(v, dtype=np.float64) for key, v in frame_scalars.items()
+            },
         )
         final_info = StepInfo(
             step=done_production,

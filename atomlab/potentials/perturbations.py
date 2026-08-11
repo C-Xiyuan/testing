@@ -1179,12 +1179,19 @@ def build_shell_design(configurations, basis: ShellBasis) -> ShellDesign:
             continue
         b, db = basis.evaluate(r)
         energies[m] = b.sum(axis=0)
-        # (P, K, 3) pair force contributions; the same +f on i, -f on j split as
+        # (P, K*3) pair force contributions; the same +f on i, -f on j split as
         # in PairPerturbation.compute, so the two agree to round-off.
-        fvec = (db / r[:, None])[:, :, None] * D[:, None, :]
-        forces_k = np.zeros((n, k, 3))
-        np.add.at(forces_k, nl.i, fvec)
-        np.add.at(forces_k, nl.j, -fvec)
+        fvec = ((db / r[:, None])[:, :, None] * D[:, None, :]).reshape(r.size, k * 3)
+        # Scatter-add with bincount rather than np.add.at: the latter is an
+        # unbuffered ufunc call and is ~50x slower here, and the design pass is
+        # run over hundreds of frames.
+        forces_k = np.empty((n, k * 3))
+        for col in range(k * 3):
+            wcol = fvec[:, col]
+            forces_k[:, col] = np.bincount(nl.i, weights=wcol, minlength=n) - np.bincount(
+                nl.j, weights=wcol, minlength=n
+            )
+        forces_k = forces_k.reshape(n, k, 3)
         gram += np.einsum("nka,nla->kl", forces_k, forces_k)
 
     gram /= n_dof
@@ -1234,13 +1241,18 @@ def whiten_gram(force_gram: np.ndarray, *, rcond: float = 1e-10) -> np.ndarray:
     return q[:, keep] / np.sqrt(lam[keep])[None, :]
 
 
-def observable_matrix(observable: ObservableFn, configurations) -> np.ndarray:
+def observable_matrix(observable, configurations) -> np.ndarray:
     """Evaluate a scalar or vector observable on reference frames.
 
     Parameters
     ----------
-    observable : callable
-        ``A(configuration) -> float`` or ``-> ndarray of shape (L,)``.
+    observable : callable or array_like
+        ``A(configuration) -> float`` or ``-> ndarray of shape (L,)``.  An
+        already-evaluated ``(M,)`` or ``(M, L)`` array is accepted as-is, which
+        matters when several constructions share one expensive observable: a
+        binned ``g(r)`` over a thousand frames costs more than the whole
+        covariance design, and recomputing it per construction is the easiest
+        way to make this module look slow.
     configurations : Configuration or sequence of Configuration
 
     Returns
@@ -1249,6 +1261,16 @@ def observable_matrix(observable: ObservableFn, configurations) -> np.ndarray:
         Always 2-D; a scalar observable gives ``L = 1``.
     """
     cfgs = _as_configurations(configurations)
+    if not callable(observable):
+        arr = np.atleast_2d(np.asarray(observable, dtype=np.float64))
+        if arr.shape[0] == 1 and len(cfgs) != 1:
+            arr = arr.T
+        if arr.shape[0] != len(cfgs):
+            raise ValueError(
+                f"precomputed observable has {arr.shape[0]} rows but {len(cfgs)} "
+                "configurations were given"
+            )
+        return arr
     rows = [np.atleast_1d(np.asarray(observable(cfg), dtype=np.float64)).reshape(-1) for cfg in cfgs]
     lengths = {row.size for row in rows}
     if len(lengths) != 1:
@@ -1285,7 +1307,7 @@ def observable_basis_covariance(a_samples: np.ndarray, basis_energies: np.ndarra
     return (ac.T @ bc) / (m - 1)
 
 
-def perturbation_covariance(potential: Potential, observable: ObservableFn, configurations) -> np.ndarray:
+def perturbation_covariance(potential: Potential, observable, configurations) -> np.ndarray:
     """``Cov_0(A, delta_U)`` measured directly, by evaluating both on frames.
 
     This is the honest arbiter for the null-space construction: the designed
@@ -1297,8 +1319,9 @@ def perturbation_covariance(potential: Potential, observable: ObservableFn, conf
     ----------
     potential : Potential
         The error field ``delta_U``.
-    observable : callable
-        ``A(configuration) -> float`` or ``(L,)``.
+    observable : callable or array_like
+        ``A(configuration) -> float`` or ``(L,)``, or a precomputed ``(M, L)``
+        array of observable values on the same frames.
     configurations : Configuration or sequence of Configuration
 
     Returns
@@ -1314,7 +1337,7 @@ def perturbation_covariance(potential: Potential, observable: ObservableFn, conf
 
 def predicted_shift(
     potential: Potential,
-    observable: ObservableFn,
+    observable,
     configurations,
     temperature: float,
 ) -> np.ndarray:
@@ -1409,7 +1432,7 @@ class _DesignedShellPerturbation(LinearShellPerturbation):
     def __init__(
         self,
         configurations,
-        observable: ObservableFn,
+        observable,
         temperature: float,
         *,
         cutoff: float,
@@ -1455,6 +1478,9 @@ class _DesignedShellPerturbation(LinearShellPerturbation):
         self.observable_dim = int(a_samples.shape[1])
         self.rank = rank
         self.null_dimension = n_null
+        #: Number of basis directions that survived the force-Gram rcond cut,
+        #: i.e. the dimension the construction actually had to work in.
+        self.n_well_conditioned = int(transform.shape[1])
         self.seed = seed
 
     # -- diagnostics -------------------------------------------------------
@@ -1478,7 +1504,7 @@ class _DesignedShellPerturbation(LinearShellPerturbation):
             "temperature": self.temperature,
             "n_frames": self.design.n_frames,
             "n_basis": self.basis.n_functions,
-            "n_well_conditioned": int(self.design.force_gram.shape[0]),
+            "n_well_conditioned": self.n_well_conditioned,
             "observable_dim": self.observable_dim,
             "covariance_rank": self.rank,
             "null_dimension": self.null_dimension,
@@ -1522,11 +1548,11 @@ class NullSpacePerturbation(_DesignedShellPerturbation):
     configurations : Configuration or sequence of Configuration
         Reference-ensemble frames.  More frames give better out-of-sample
         suppression.
-    observable : callable
-        ``A(configuration) -> float`` or ``-> ndarray (L,)``.  A vector
-        observable such as a binned ``g(r)`` is handled by taking the null
-        space of the whole ``(L, K)`` covariance matrix, which requires
-        ``K > L``.
+    observable : callable or array_like
+        ``A(configuration) -> float`` or ``-> ndarray (L,)``, or an
+        already-evaluated ``(M, L)`` array.  A vector observable such as a
+        binned ``g(r)`` is handled by taking the null space of the whole
+        ``(L, K)`` covariance matrix, which requires ``K > L``.
     temperature : float
         Temperature in kelvin.  Used for the reported first-order shift; it
         does not enter the construction, because ``Cov = 0`` kills the
