@@ -218,7 +218,31 @@ error bar, and enough metadata to plot it.
 | `atomlab/observables/vdos.py` | Vibrational density of states from the VACF power spectrum, with windowing. |
 | `atomlab/observables/phonons.py` | Finite-displacement force constants, dynamical matrix, phonon band structure and DOS at arbitrary q. |
 | `atomlab/observables/thermo.py` | Equation of state (Birch–Murnaghan fit), bulk modulus, thermal expansion, heat capacity, elastic constants `C11/C12/C44` by strain–stress fitting. |
-| `atomlab/observables/melting.py` | Lindemann index, two-phase coexistence helper, solid/liquid discrimination via `Q6`. |
+| `atomlab/observables/melting.py` | Lindemann index and solid/liquid discrimination via `Q6`. **Scoped down:** a two-phase coexistence melting-point determination needs multi-nanosecond runs on thousands of atoms, which four CPU cores cannot deliver at the number of models this study compares. Melting is therefore represented by the cheap order-parameter diagnostics only, and no melting temperature is reported. |
+
+### 5.3a Sampling: why static observables do not use molecular dynamics
+
+`atomlab/sampling.py` provides Hamiltonian Monte Carlo and single-particle
+Metropolis, and **every static observable in this study is measured from HMC
+samples, not from MD**. The reason is specific to what is being studied.
+
+The whole argument concerns small, systematic differences between ensembles.
+A thermostat that samples something slightly other than the canonical
+distribution — and most of them do, to some degree, at finite timestep — would
+introduce exactly the kind of small systematic difference the study is trying to
+attribute to model error. HMC removes that risk by construction: its Metropolis
+test makes the stationary distribution exactly `exp(-βU)` regardless of
+integration error, which appears only as a reduced acceptance rate. The
+reference ensemble is then unimpeachable, and the response theory of
+`docs/theory.md` — which is a statement about canonical averages and nothing
+else — applies without an asterisk.
+
+MD retains one irreplaceable role: **dynamical** observables. Diffusion
+coefficients, velocity autocorrelations and vibrational spectra from the VACF
+require real time evolution, which Monte Carlo cannot provide at any price.
+`Trajectory.info["dynamical"]` records which sampler produced a trajectory, and
+the dynamical estimators refuse a non-dynamical one rather than silently
+returning a meaningless number.
 
 Every estimator must return **error bars** computed by block averaging or
 bootstrap over correlated samples. A comparison between two models without

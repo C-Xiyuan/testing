@@ -529,8 +529,10 @@ class SOAP(Descriptor):
     resulting vector is still a complete set of invariants and any constant
     per-feature rescaling is absorbed by the model that consumes it.
 
-    Units: ``c_nlm`` carries ``A^(-3/2)`` from ``g_n``, so the unnormalised
-    power spectrum is in ``A^(-3)``.  After ``normalize=True`` the features are
+    Units: ``g_n`` is normalised against the measure ``r^2 dr`` and so carries
+    ``A^(-3/2)``; integrating it against the (dimensionless) density over
+    ``d^3 r`` leaves ``c_nlm`` in ``A^(3/2)`` and the unnormalised power
+    spectrum in ``A^3``.  After ``normalize=True`` the features are
     dimensionless.
     """
 
@@ -706,10 +708,10 @@ class SOAP(Descriptor):
         Returns
         -------
         contrib : ndarray, shape (P, n_max, (l_max+1)**2)
-            ``A_nl(r) * Y_lm(d_hat)`` in ``A^(-3/2)``, where
+            ``A_nl(r) * Y_lm(d_hat)`` in ``A^(3/2)``, where
             ``A_nl = R_nl * f_cut``.
         dcontrib : ndarray, shape (P, n_max, (l_max+1)**2, 3) or None
-            ``d/dd`` of the above, in ``A^(-5/2)``.
+            ``d/dd`` of the above, in ``A^(1/2)``.
 
         Notes
         -----
@@ -770,8 +772,8 @@ class SOAP(Descriptor):
         -------
         DescriptorOutput
             ``features`` is ``(N, n_features)``; with ``normalize=True`` it is
-            dimensionless, otherwise ``A^(-3)``.  ``derivatives`` is
-            ``(P + N, n_features, 3)`` in ``1/A`` (or ``A^(-4)`` unnormalised):
+            dimensionless, otherwise ``A^3``.  ``derivatives`` is
+            ``(P + N, n_features, 3)`` in ``1/A`` (or ``A^2`` unnormalised):
             one block per neighbour pair, giving ``dp_i / dr_j``, followed by
             one block per atom giving the self term ``dp_i / dr_i``.
 

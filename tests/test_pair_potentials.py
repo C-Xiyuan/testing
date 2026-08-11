@@ -323,8 +323,8 @@ def _dimer_force(pot, r):
     return float(np.abs(pot.forces(open_pair(r))[0, 0]))
 
 
-@pytest.mark.parametrize("mode,continuous", [("shifted_force", True), ("switched", True)])
-def test_smooth_modes_have_continuous_forces_at_the_cutoff(mode, continuous):
+@pytest.mark.parametrize("mode", ["shifted_force", "switched"])
+def test_smooth_modes_have_continuous_forces_at_the_cutoff(mode):
     """Force -> 0 as r -> rc from below, at the analytically expected rate."""
     rc = 7.0
     pot = LennardJones.argon(cutoff=rc, mode=mode)
