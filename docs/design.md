@@ -174,7 +174,15 @@ Validation targets that must be hit (these are physics, not style):
 - LJ fcc at `a₀ = 1.5496 σ` (cutoff-free limit) gives lattice energy
   `−8.610 ε/atom` from the Lennard-Jones lattice sums.
 - Stillinger–Weber silicon: diamond structure at `a₀ = 5.431 Å` has cohesive
-  energy exactly `−4.3363 eV/atom` (SW is fitted to make this exact).
+  energy exactly **`−2ε = −4.33660 eV/atom`** for `ε = 2.1683 eV`. This is exact,
+  not fitted-approximate: the diamond nearest-neighbour distance `a₀√3/4 =
+  2.3517 Å` coincides with `2^{1/6}σ`, where the two-body term attains its
+  minimum value of exactly `−ε`; every bond angle is exactly tetrahedral so the
+  three-body term vanishes identically; and the second-neighbour shell at
+  `3.8403 Å` lies outside the `aσ = 3.77118 Å` cutoff. *(An earlier draft of this
+  document said `−4.3363`, which corresponds to `ε = 2.16815 eV` — the 50
+  kcal/mol rounding of the same parameter. The value above is the one consistent
+  with the `ε` specified here.)*
 - Every potential passes `check_forces < 1e-6` and `check_virial < 1e-6`.
 - Cross-check against ASE's `LennardJones` and `StillingerWeber` calculators in
   the test suite (dev dependency only — never import `ase` from `atomlab/`).
