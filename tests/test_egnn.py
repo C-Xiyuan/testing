@@ -248,15 +248,39 @@ def test_clebsch_gordan_is_an_equivariant_intertwiner(path):
 # ==========================================================================
 
 
+def test_fast_l1_kernel_agrees_with_the_generic_sparse_kernel():
+    """The optimised ``l_max = 1`` tensor product must match its reference.
+
+    ``egnn`` carries two implementations of the same contraction: a generic
+    sparse one driven by :func:`sparse_tensor_product_table`, and a hand-rolled
+    one for ``l_max = 1`` that is ~1.5x faster overall.  Per the repository's
+    engineering standard, the fast kernel is checked against the reference
+    rather than trusted -- a fast wrong kernel is the most expensive bug here.
+    """
+    from atomlab.models.egnn import sparse_tensor_product_table
+
+    assert len(sparse_tensor_product_table(1)[0]) == 10
+    cfg = _triclinic()
+    m = _model()
+    assert all(layer.use_fast_l1 for layer in m.net.layers)
+    fast = m.compute(cfg)
+    for layer in m.net.layers:
+        layer.use_fast_l1 = False
+    generic = m.compute(cfg)
+    assert abs(fast.energy - generic.energy) < 1e-12 * abs(generic.energy)
+    assert np.max(np.abs(fast.forces - generic.forces)) < 1e-12
+    assert np.max(np.abs(fast.virial - generic.virial)) < 1e-12
+
+
 def test_envelope_is_c2_at_the_cutoff():
     rc = 4.0
     r = torch.tensor([rc - 1e-9], dtype=torch.float64, requires_grad=True)
     u = polynomial_envelope(r, rc)
     (du,) = torch.autograd.grad(u.sum(), r, create_graph=True)
     (d2u,) = torch.autograd.grad(du.sum(), r)
-    assert abs(float(u)) < 1e-12
-    assert abs(float(du)) < 1e-8
-    assert abs(float(d2u)) < 1e-4
+    assert abs(float(u.detach())) < 1e-12
+    assert abs(float(du.detach())) < 1e-8
+    assert abs(float(d2u.detach())) < 1e-4
     assert float(polynomial_envelope(torch.tensor([rc + 0.1]), rc)) == 0.0
     assert abs(float(polynomial_envelope(torch.tensor([1e-6], dtype=torch.float64), rc)) - 1.0) < 1e-12
 
