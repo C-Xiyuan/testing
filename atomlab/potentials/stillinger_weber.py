@@ -295,9 +295,9 @@ def _sw_numpy(first, pair_j, D, r, n_atoms, epsilon, sigma, a, lam, gamma, A, B,
 
         e2_total = 0.5 * float(phi.sum())
         np.add.at(energies, ii, 0.5 * phi)
-        c = 0.5 * dphi / rr
+        c = dphi / rr
         np.add.at(forces, ii, c[:, None] * dd)
-        virial -= np.einsum("p,pa,pb->ab", c, dd, dd)
+        virial -= 0.5 * np.einsum("p,pa,pb->ab", c, dd, dd)
 
     e3_total = 0.0
     for i in range(n_atoms):

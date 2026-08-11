@@ -528,9 +528,11 @@ def _acsf_reference(
             common * (fca * fcb)[:, None] * (dfcc[:, None] - 2.0 * eta * (c * fcc)[:, None]),
             0.0,
         )
-        # G4 triples with r_jk >= Rc contribute nothing at all
+        # A G4 triple with r_jk >= Rc contributes nothing.  The value branch
+        # already handles it (fprod carries fc(r_jk) = 0) and so does every
+        # gradient term (fc and fc' both vanish there), but masking explicitly
+        # keeps 0 * inf out of the picture if a parameter set is ever changed.
         alive = np.where(g4, (fcc > 0.0)[:, None], True)
-        val = np.where(alive, val, 0.0)
         dcos = np.where(alive, dcos, 0.0)
         dta = np.where(alive, dta, 0.0)
         dtb = np.where(alive, dtb, 0.0)
@@ -555,9 +557,6 @@ def _acsf_reference(
         np.add.at(derivs, (rows[uu][:, None], acols), kcontrib)
         np.add.at(derivs, (np.full_like(acols, srow), acols), -(jcontrib + kcontrib))
 
-    # `val` recomputation above already folded the alive mask in for the
-    # features of the *derivative* branch only; redo it for the value branch by
-    # construction instead (G4 with fcc == 0 has fprod == 0), so nothing to fix.
     return features, derivs
 
 

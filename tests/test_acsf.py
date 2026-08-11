@@ -90,8 +90,10 @@ def rattled_fcc() -> Configuration:
 
 
 def rattled_diamond() -> Configuration:
-    # 5.431 A cell with a 3.5 A cutoff: the cell width is between Rc and 2 Rc,
+    # 5.431 A cell with a 4.2 A cutoff: the cell width is between Rc and 2 Rc,
     # so atoms see the same neighbour through more than one periodic image.
+    # Rc also has to exceed the 3.84 A second-neighbour distance, otherwise
+    # every G4 triple is killed by fc(r_jk) and the angular test is vacuous.
     return rattle(diamond(5.431, "Si", (2, 1, 1)), 0.10, seed=12)
 
 
@@ -118,7 +120,7 @@ def two_species_config() -> Configuration:
 
 GEOMETRIES = {
     "rattled_fcc": (rattled_fcc, (0,), 4.0),
-    "rattled_diamond": (rattled_diamond, (0,), 3.5),
+    "rattled_diamond": (rattled_diamond, (0,), 4.2),
     "random_gas": (random_gas_config, (0,), 4.0),
     "triclinic": (triclinic_config, (0,), 4.0),
     "two_species": (two_species_config, (0, 1), 4.0),
@@ -140,11 +142,20 @@ def test_descriptor_derivatives_match_finite_differences(geometry, kind):
     out = desc.compute(cfg)
     analytic = dense_derivatives(out, cfg.n_atoms)
 
+    # Guard against a vacuous check: if the angular block were identically zero
+    # (which it is for G4 whenever Rc is below the second-neighbour distance)
+    # the test would pass while exercising nothing.
+    n_radial_cols = len(species) * desc.n_radial
+    assert np.abs(out.features[:, :n_radial_cols]).max() > 1e-2
+    assert np.abs(out.features[:, n_radial_cols:]).max() > 1e-2
+
     atoms = list(range(min(4, cfg.n_atoms)))
     numeric = numerical_derivatives(desc, cfg, atoms)
 
     err = np.max(np.abs(analytic[:, atoms] - numeric))
     assert err < 1e-6, f"{geometry}/{kind}: max |analytic - FD| = {err:.3e}"
+    err_ang = np.max(np.abs(analytic[:, atoms, n_radial_cols:] - numeric[:, :, n_radial_cols:]))
+    assert err_ang < 1e-6, f"{geometry}/{kind}: max angular |analytic - FD| = {err_ang:.3e}"
 
 
 def test_derivatives_with_mixed_g4_g5_and_tanh_cutoff():

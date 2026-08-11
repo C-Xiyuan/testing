@@ -108,6 +108,7 @@ __all__ = [
     "FCC_LATTICE_SUM_A6",
     "FCC_MIN_ENERGY_PER_EPSILON",
     "FCC_MIN_NN_OVER_SIGMA",
+    "FCC_MIN_A0_OVER_SIGMA",
 ]
 
 # --------------------------------------------------------------------------
@@ -123,16 +124,33 @@ ARGON_CUTOFF = 8.5
 
 #: fcc lattice sums ``A_n = sum'_i (d/r_i)^n`` over all neighbours of one site,
 #: with ``d`` the nearest-neighbour distance.  Standard values (Kittel; Ashcroft
-#: & Mermin).  Both series converge, ``A_6`` only as ``1/R^3``.
-FCC_LATTICE_SUM_A12 = 12.13188
-FCC_LATTICE_SUM_A6 = 14.45392
+#: & Mermin), reproduced here to 6 figures by direct enumeration out to 60 d.
+#: Both series converge, ``A_6`` only as ``1/R^3``, which is the same slow
+#: convergence that forces the cutoff extrapolation in the lattice-energy test.
+FCC_LATTICE_SUM_A12 = 12.131880
+FCC_LATTICE_SUM_A6 = 14.453921
 
 #: Minimum of the fcc Lennard-Jones lattice energy, in units of ``epsilon`` per
-#: atom, and the nearest-neighbour distance at which it occurs, in units of
-#: ``sigma``.  From ``E/N = 2 eps [A12 (sig/d)^12 - A6 (sig/d)^6]``, whose
-#: stationary point is ``(sig/d)^6 = A6 / (2 A12)``.
-FCC_MIN_ENERGY_PER_EPSILON = -8.6102
-FCC_MIN_NN_OVER_SIGMA = 1.09022
+#: atom.  ``E/N = 2 eps [A12 (sig/d)^12 - A6 (sig/d)^6]`` is stationary at
+#: ``(sig/d)^6 = A6 / (2 A12)``, where it takes the closed-form value
+#: ``-A6^2 / (2 A12) = -8.6102 eps``.
+FCC_MIN_ENERGY_PER_EPSILON = -8.610200
+
+#: Nearest-neighbour distance at that minimum, in units of ``sigma``:
+#: ``(2 A12 / A6)^{1/6}``.
+FCC_MIN_NN_OVER_SIGMA = 1.0901734
+
+#: The corresponding **conventional cubic** lattice constant, ``sqrt(2)`` times
+#: the nearest-neighbour distance, in units of ``sigma``.
+#:
+#: Note: ``docs/design.md`` quotes ``a0 = 1.5496 sigma`` for this quantity.
+#: That value is not consistent with the nearest-neighbour distance
+#: ``1.0902 sigma`` quoted in the same place (``1.0902 * sqrt(2) = 1.5418``),
+#: and evaluating the lattice sum at ``a0 = 1.5496 sigma`` gives
+#: ``-8.6024 eps/atom``, not ``-8.6102``.  The nearest-neighbour form is the
+#: correct one and is what the test suite checks; see
+#: ``tests/test_pair_potentials.py``.
+FCC_MIN_A0_OVER_SIGMA = 1.5417374
 
 #: The four supported cutoff treatments, in the order they are documented above.
 CUTOFF_MODES: tuple[str, ...] = ("truncated", "shifted", "shifted_force", "switched")
