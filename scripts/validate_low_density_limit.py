@@ -54,22 +54,58 @@ CUTOFF = 7.0
 EPSILON, SIGMA = 0.0103, 3.405
 
 
-def exact_bin_shift(edges, potential, perturbation, n_atoms, volume, temperature):
+def exact_bin_shift(edges, perturbation, n_atoms, volume, temperature, cutoff):
     """Closed-form first-order shift in each bin count, in the dilute limit.
 
-    ``A_k = (N/2) * rho * integral_k 4 pi r^2 g(r) dr`` with ``g = exp(-beta u)``,
-    so ``dA_k = -(N/2) rho beta integral_k 4 pi r^2 g(r) du(r) dr``.
+    The naive version of this calculation -- g(r) = exp(-beta u) so
+    dg = -beta g du, hence dA_k proportional to the shell integral of g du --
+    is **wrong**, and the error is instructive enough to spell out.
+
+    The total number of pairs is exactly N(N-1)/2 whatever the potential. A
+    perturbation that depletes one shell cannot simply remove those pairs; they
+    reappear elsewhere. The pair separation distribution in a finite closed
+    system is therefore *normalised*,
+
+        p(r) = exp(-beta u(r)) / Omega,   Omega = integral over the cell of exp(-beta u)
+
+    and perturbing it gives a difference of two terms,
+
+        dA_k = M I_k / Omega  -  A_k I_tot / Omega
+
+    with M = N(N-1)/2, ``I_k`` the shell integral of ``-beta du exp(-beta u)``
+    and ``I_tot`` the same integral over all separations. The second term is the
+    sum-rule compensation, and dropping it produces a prediction that is wrong
+    by a factor of ten in the outer bins and has the wrong sign in the tail.
+
+    The covariance estimator in :mod:`atomlab.analysis.response` gets this right
+    automatically: a covariance is a mean-subtracted quantity, and the
+    subtraction *is* the normalisation term. That the two agree only after the
+    hand calculation is corrected is a point in the estimator's favour.
     """
     beta = 1.0 / (KB * temperature)
-    density = n_atoms / volume
+    n_pairs = 0.5 * n_atoms * (n_atoms - 1)
+
+    def shell_integrals(lo, hi):
+        r = np.linspace(lo, hi, 800)
+        w = np.exp(-beta * pair_energy_lj(r))
+        du = np.asarray(perturbation.pair(r)[0])
+        weight = np.trapezoid(4.0 * np.pi * r**2 * w, r)
+        response = np.trapezoid(4.0 * np.pi * r**2 * w * (-beta * du), r)
+        return weight, response
+
+    # Omega: the cell volume corrected for the excluded/attracted volume the
+    # potential creates inside the cutoff. Beyond the cutoff w = 1 exactly.
+    r_all = np.linspace(1e-3, cutoff, 4000)
+    w_all = np.exp(-beta * pair_energy_lj(r_all))
+    omega = volume + np.trapezoid(4.0 * np.pi * r_all**2 * (w_all - 1.0), r_all)
+    du_all = np.asarray(perturbation.pair(r_all)[0])
+    i_tot = np.trapezoid(4.0 * np.pi * r_all**2 * w_all * (-beta * du_all), r_all)
+
     out = np.empty(len(edges) - 1)
     for k, (lo, hi) in enumerate(zip(edges[:-1], edges[1:])):
-        r = np.linspace(lo, hi, 400)
-        u = pair_energy_lj(r)
-        du = np.asarray(perturbation.pair(r)[0])
-        g = np.exp(-beta * u)
-        integrand = 4.0 * np.pi * r**2 * g * (-beta * du)
-        out[k] = 0.5 * n_atoms * density * np.trapezoid(integrand, r)
+        weight, response = shell_integrals(lo, hi)
+        a_k = n_pairs * weight / omega
+        out[k] = n_pairs * response / omega - a_k * i_tot / omega
     return out
 
 
@@ -116,7 +152,7 @@ def main():
 
     prediction = predict_shift(a_samples, du, TEMPERATURE, n_resamples=600, seed=0)
     rw = reweight(a_samples, du, TEMPERATURE, n_resamples=300, seed=0)
-    exact = exact_bin_shift(edges, None, perturbation, cfg.n_atoms, cfg.volume, TEMPERATURE)
+    exact = exact_bin_shift(edges, perturbation, cfg.n_atoms, cfg.volume, TEMPERATURE, CUTOFF)
 
     predicted = np.asarray(prediction.value, dtype=float)
     errors = np.asarray(prediction.error, dtype=float)
