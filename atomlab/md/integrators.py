@@ -374,16 +374,25 @@ class Langevin(Integrator):
     has a leading configurational error of order :math:`dt^2` whose coefficient
     vanishes in the high-friction limit, giving effective fourth-order accuracy
     there, whereas OBABO and ABOBA retain an :math:`O(dt^2)` bias with a
-    non-vanishing coefficient.  Concretely, for a harmonic oscillator of
-    frequency :math:`\omega`, BAOAB samples
+    non-vanishing coefficient.  The harmonic oscillator makes the point sharply:
+    BAOAB's stationary distribution there satisfies
 
-    .. math::  \langle x^2 \rangle = \frac{k_B T}{k}\,\frac{1}{1 - \omega^2 dt^2/4}
+    .. math::
+        \langle x^2 \rangle = \frac{k_B T}{k}
+        \qquad\text{(exactly, for any }dt\text{ and any }\gamma),
+        \qquad
+        \langle m v^2 \rangle = k_B T \left(1 - \frac{\omega^2 dt^2}{4}\right)
 
-    independent of the friction -- a 0.25% bias at :math:`\omega\,dt = 0.1` --
-    while the Euler-Maruyama scheme that a naive implementation produces is only
-    first order and biases the temperature itself.  Since the whole project
-    hinges on resolving small differences between potentials, an integrator bias
-    that is not small compared with those differences would be fatal.
+    -- the configurational average is *exact* while the kinetic one carries the
+    usual :math:`O(dt^2)` error.  (Both are verified against the code in
+    ``tests/test_integrators.py``.)  So a BAOAB run reports a temperature
+    slightly below its setpoint at large ``dt`` while nevertheless sampling
+    positions correctly; that is the right way round for this project, and it is
+    the opposite of what a naive Euler-Maruyama scheme does, which is only first
+    order and biases the positions.  Since the whole enterprise hinges on
+    resolving small differences between potentials, an integrator bias in
+    configurational averages that is not small compared with those differences
+    would be fatal.
 
     The ``O`` factor is the exact solution of the Ornstein-Uhlenbeck process,
     :math:`v \to c_1 v + c_2 \sigma \xi` with :math:`c_1 = e^{-\gamma dt}`,
@@ -589,7 +598,12 @@ class NoseHooverChain(Integrator):
     def initialize(self, state: MDState, potential) -> MDState:
         super().initialize(state, potential)
         thermo = state.thermostat
-        if thermo.get("kind") != self.name or thermo.get("n_dof") != state.n_dof:
+        # The chain masses depend on N_f, T and tau, so a state carrying a chain
+        # built for different settings must be rebuilt rather than reused --
+        # silently continuing with stale masses would break the conserved
+        # quantity in a way that looks like an integration error.
+        stamp = (self.name, state.n_dof, self.temperature, self.tau, self.chain_length)
+        if thermo.get("stamp") != stamp:
             m = self.chain_length
             q = np.full(m, self.kt * self.tau**2)
             # The first chain element carries all N_f degrees of freedom, so its
@@ -599,6 +613,7 @@ class NoseHooverChain(Integrator):
             thermo.clear()
             thermo.update(
                 kind=self.name,
+                stamp=stamp,
                 xi=np.zeros(m),
                 v_xi=np.zeros(m),
                 Q=q,
@@ -757,14 +772,23 @@ class MTKBarostat(Integrator):
         super().initialize(state, potential)
         if not np.asarray(state.pbc).all():
             raise ValueError("MTKBarostat requires a fully periodic cell")
+        stamp = (
+            self.name,
+            state.n_dof,
+            self.temperature,
+            self.tau_t,
+            self.tau_p,
+            self.chain_length,
+        )
         thermo = state.thermostat
-        if thermo.get("kind") != self.name or thermo.get("n_dof") != state.n_dof:
+        if thermo.get("stamp") != stamp:
             m = self.chain_length
             q = np.full(m, self.kt * self.tau_t**2)
             q[0] *= state.n_dof
             thermo.clear()
             thermo.update(
                 kind=self.name,
+                stamp=stamp,
                 xi=np.zeros(m),
                 v_xi=np.zeros(m),
                 Q=q,
@@ -772,11 +796,12 @@ class MTKBarostat(Integrator):
                 temperature=self.temperature,
             )
         baro = state.barostat
-        if baro.get("kind") != self.name or baro.get("n_dof") != state.n_dof:
+        if baro.get("stamp") != stamp:
             m = self.chain_length
             baro.clear()
             baro.update(
                 kind=self.name,
+                stamp=stamp,
                 v_eps=0.0,
                 # W = (N_f + d) kT tau_p^2 is the MTK barostat inertia; the
                 # (N_f + d) makes the volume-fluctuation timescale tau_p

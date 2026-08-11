@@ -941,6 +941,41 @@ class EGNN(MLModel):
             offs,
         )
 
+    def _cached_metrics(self, cached, batch_size: int = 8) -> dict:
+        """Energy/force RMSE on a pre-built graph cache.
+
+        :meth:`~atomlab.models.base.MLModel.evaluate` rebuilds a neighbour list
+        for every configuration on every call, which dominates the epoch time
+        when it is used for per-epoch validation.  This does the same arithmetic
+        against cached graphs and in batches.  It is used only inside
+        :meth:`fit`; ``evaluate`` remains the public, conventional path.
+        """
+        graphs, cells, positions, e_ref, f_ref = cached
+        dt = self.torch_dtype
+        de2, nf, df2, n_cfg = 0.0, 0, 0.0, len(graphs)
+        for start in range(0, n_cfg, batch_size):
+            sel = list(range(start, min(start + batch_size, n_cfg)))
+            pos, ei, ej, sc, sp, batch, _ = self._prepare_batch(
+                [graphs[k] for k in sel], [cells[k] for k in sel], [positions[k] for k in sel], dt
+            )
+            pos.requires_grad_(True)
+            e_atom = self.net(pos, ei, ej, sc, sp, None)
+            e_cfg = torch.zeros(len(sel), dtype=dt).index_add(0, batch, e_atom)
+            (gp,) = torch.autograd.grad(e_atom.sum(), pos, create_graph=False)
+            f_pred = (-gp).detach().to(torch.float64).numpy()
+            n_at = np.array([graphs[k].n_atoms for k in sel], dtype=float)
+            de = e_cfg.detach().to(torch.float64).numpy() / n_at - np.array(
+                [e_ref[k] / graphs[k].n_atoms for k in sel]
+            )
+            de2 += float(np.sum(de**2))
+            fr = np.concatenate([f_ref[k] for k in sel])
+            df2 += float(np.sum((f_pred - fr) ** 2))
+            nf += fr.size
+        return {
+            "energy_rmse": math.sqrt(de2 / max(n_cfg, 1)),
+            "force_rmse": math.sqrt(df2 / max(nf, 1)),
+        }
+
     def fit(
         self,
         train: Dataset,
@@ -1017,6 +1052,26 @@ class EGNN(MLModel):
             np.array([cfg.n_atoms for cfg in train], dtype=np.float64), dtype=dt
         )
         f_ref = [torch.as_tensor(cfg.forces, dtype=dt) for cfg in train]
+        train_cache = (
+            graphs,
+            cells,
+            positions,
+            [float(cfg.energy) for cfg in train],
+            [np.asarray(cfg.forces, dtype=np.float64) for cfg in train],
+        )
+        val_cache = None
+        if val is not None and len(val) > 0:
+            for cfg in val:
+                if not cfg.has_labels:
+                    raise ValueError("fit() requires labelled validation configurations")
+                self._validate(cfg)
+            val_cache = (
+                [self._graph(cfg) for cfg in val],
+                [np.asarray(cfg.cell, dtype=np.float64) for cfg in val],
+                [np.asarray(cfg.positions, dtype=np.float64) for cfg in val],
+                [float(cfg.energy) for cfg in val],
+                [np.asarray(cfg.forces, dtype=np.float64) for cfg in val],
+            )
 
         # --- data statistics: shift/scale and the message normalisation ----
         e_pa = np.array([cfg.energy / cfg.n_atoms for cfg in train])
@@ -1087,8 +1142,8 @@ class EGNN(MLModel):
             # The model must be usable for evaluation during training, so flip
             # the flag once the first epoch is done rather than at the very end.
             self.is_fitted = True
-            if val is not None and len(val) > 0:
-                m = self.evaluate(val)
+            if val_cache is not None:
+                m = self._cached_metrics(val_cache)
                 score = m["force_rmse"]
                 history["val_force_rmse"].append(m["force_rmse"])
                 history["val_energy_rmse"].append(m["energy_rmse"])
@@ -1122,8 +1177,8 @@ class EGNN(MLModel):
         if val is None or len(val) == 0:
             notes.append("no validation set: best epoch chosen on the training loss")
 
-        train_metrics = self.evaluate(train)
-        val_metrics = self.evaluate(val) if (val is not None and len(val) > 0) else None
+        train_metrics = self._cached_metrics(train_cache)
+        val_metrics = None if val_cache is None else self._cached_metrics(val_cache)
         return FitReport(
             converged=converged,
             n_epochs=n_epochs_run,
