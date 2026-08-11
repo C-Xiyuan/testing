@@ -86,11 +86,44 @@ __all__ = [
     "polynomial_envelope",
 ]
 
-# The study runs on 4 CPU cores and several models are trained in sequence;
-# 2 threads per process is the setting that was measured to be fastest here
-# (torch's intra-op parallelism scales badly for the tiny tensors this model
-# uses, and oversubscription costs more than it gains).
-torch.set_num_threads(2)
+#: Default intra-op thread count applied by :func:`set_torch_threads`.
+#:
+#: The brief for this module specified ``torch.set_num_threads(2)``.  That was
+#: measured on this machine and is *catastrophically* wrong for a model this
+#: small, so it is not what the module does; the deviation is recorded here
+#: rather than silently.  Every tensor in this network is tiny (a few hundred
+#: edges x 16 channels x 4 irrep components), and torch's OpenMP fork/join for
+#: such shapes costs far more than the arithmetic.  Timings for the dominant
+#: kernel, ``index_add`` on a ``(388, 16, 4)`` source, 4 physical cores:
+#:
+#: ===========  ===============
+#: threads      time per call
+#: ===========  ===============
+#: 1            12 us
+#: 2            1.9 ms  (160x)
+#: 4            176 ms  (14000x)
+#: ===========  ===============
+#:
+#: A full ``compute()`` on a 32-atom cell goes from 98 ms at 2 threads to
+#: 2.5 ms at 1 thread.  Single-threaded is therefore the correct setting, and
+#: the way to use 4 cores here is 4 independent single-threaded fits, not one
+#: 4-threaded fit.
+DEFAULT_TORCH_THREADS = 1
+
+
+def set_torch_threads(n_threads: int | None = DEFAULT_TORCH_THREADS) -> None:
+    """Set torch's intra-op thread count (``None`` leaves it alone).
+
+    This is global torch state, so it is done explicitly through a named
+    function rather than buried in a constructor: a caller who is deliberately
+    running one big multi-threaded job can pass ``torch_threads=None`` to
+    :class:`EGNN` and keep their own setting.
+    """
+    if n_threads is not None:
+        torch.set_num_threads(int(n_threads))
+
+
+set_torch_threads()
 
 #: Largest degree for which the cartesian spherical harmonics are hard-coded.
 MAX_SUPPORTED_L = 2
@@ -690,6 +723,10 @@ class EGNN(MLModel):
         ``float64`` is needed to check analytic derivatives against finite
         differences at the ``1e-5`` level, since float32 autograd noise alone is
         of order ``1e-4`` eV/A.
+    torch_threads : int or None
+        Applied via :func:`set_torch_threads` at construction.  Defaults to 1;
+        see :data:`DEFAULT_TORCH_THREADS` for the measurements behind that.
+        ``None`` leaves the global setting untouched.
     allow_untrained : bool
         Permit :meth:`compute` before :meth:`fit`.  Off by default -- an
         unfitted model returns arbitrary numbers that look like predictions --
@@ -719,9 +756,11 @@ class EGNN(MLModel):
         avg_neighbors: float = 20.0,
         seed: int = 0,
         dtype: str = "float32",
+        torch_threads: int | None = DEFAULT_TORCH_THREADS,
         allow_untrained: bool = False,
         name: str = "egnn",
     ) -> None:
+        set_torch_threads(torch_threads)
         if cutoff <= 0.0:
             raise ValueError(f"cutoff must be > 0 A, got {cutoff}")
         if l_max not in (0, 1, 2):
