@@ -653,7 +653,10 @@ class BPNN(MLModel):
         # Identical algebra to DescriptorOutput.forces_from_energy_gradient,
         # written in torch so the force loss can be differentiated w.r.t. the
         # weights.  `derivs` is constant data and carries no graph.
-        contrib = (dE_dG[pair_i].unsqueeze(-1) * derivs).sum(dim=1)
+        # einsum, not broadcast-multiply-then-sum: the latter materialises a
+        # (P, D, 3) intermediate and, worse, a second one in the double
+        # backward, which dominates the step cost for realistic P.
+        contrib = torch.einsum("pd,pda->pa", dE_dG[pair_i], derivs)
         f_pred = torch.zeros(
             (int(counts.sum()), 3), dtype=self.torch_dtype
         ).index_add(0, pair_j, -contrib)
