@@ -48,6 +48,7 @@ from atomlab.potentials.perturbations import (
     build_shell_design,
 )
 from atomlab.sampling import hybrid_monte_carlo
+from experiments.equilibrate import check_equilibrated, equilibrated_configuration
 from experiments.common import ExperimentContext, main
 from experiments.observables_lib import PairBinObservable
 
@@ -58,7 +59,8 @@ DEFAULTS = {
                   "mode": "shifted_force"},
     "observable": {"r_min": 3.0, "r_max": 7.0, "n_bins": 8},
     "sampling": {"n_reference": 2000, "n_direct": 1200, "n_leapfrog": 8,
-                 "step_size": 2e-3, "burn_in": 300},
+                 "step_size": 2e-3, "burn_in": 300,
+                 "n_melt": 400, "n_anneal": 1000},
     "zoo": {
         "shell_r0": [3.6, 4.2, 5.0],
         "shell_width": [0.12, 0.30, 0.70],
@@ -81,7 +83,13 @@ def build_system(ctx):
                              cutoff=p["cutoff"], mode=p["mode"])
 
 
-def sample(ctx, cfg, potential, n_samples, seed):
+def sample(ctx, cfg, potential, n_samples, seed, *, label="trajectory"):
+    """Sample the canonical ensemble, and verify the result is stationary.
+
+    ``cfg`` must already be an equilibrated liquid (see
+    :func:`experiments.equilibrate.equilibrated_configuration`); the drift check
+    afterwards is what catches the case where it is not.
+    """
     s = ctx.config["sampling"]
     traj, report = hybrid_monte_carlo(
         cfg, potential, ctx.config["system"]["temperature"],
@@ -89,6 +97,7 @@ def sample(ctx, cfg, potential, n_samples, seed):
         step_size=s["step_size"], burn_in=s["burn_in"], seed=seed)
     if report.acceptance < 0.2:
         raise RuntimeError(f"acceptance {report.acceptance:.2f} too low to trust")
+    check_equilibrated(traj, label=label, check_order=False)
     return traj, report
 
 
@@ -210,6 +219,16 @@ def run(ctx: ExperimentContext) -> dict:
         np.linspace(o["r_min"], o["r_max"], o["n_bins"] + 1),
         cutoff=ctx.config["potential"]["cutoff"])
     print(f"  system: {cfg.n_atoms} atoms, T = {temperature} K")
+
+    with ctx.timed("equilibration"):
+        s_cfg = ctx.config["sampling"]
+        cfg, eq_report = equilibrated_configuration(
+            cfg, potential, temperature,
+            n_melt=int(ctx.scaled("sampling.n_melt")),
+            n_anneal=int(ctx.scaled("sampling.n_anneal")),
+            n_leapfrog=s_cfg["n_leapfrog"], step_size=s_cfg["step_size"], seed=ctx.seed,
+        )
+    print(f"    {eq_report}")
 
     with ctx.timed("reference_sampling"):
         ref, ref_report = sample(ctx, cfg, potential,

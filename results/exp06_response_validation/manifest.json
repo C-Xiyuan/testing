@@ -1,0 +1,133 @@
+{
+  "experiment": "exp06_response_validation",
+  "git_commit": "81d5ed0d4afe324aadbbdbf07d1df25dc2020565",
+  "git_branch": "claude/ai-science-project-plan-p0obrk",
+  "git_dirty": true,
+  "seed": 0,
+  "quick_mode": true,
+  "config": {
+    "system": {
+      "lattice_constant": 5.4,
+      "reps": [
+        3,
+        3,
+        3
+      ],
+      "density": 0.02,
+      "temperature": 120.0
+    },
+    "potential": {
+      "epsilon": 0.0103,
+      "sigma": 3.405,
+      "cutoff": 7.0,
+      "mode": "shifted_force"
+    },
+    "observable": {
+      "r_min": 3.0,
+      "r_max": 7.0,
+      "n_bins": 8
+    },
+    "sampling": {
+      "n_reference": 2000,
+      "n_direct": 1500,
+      "n_leapfrog": 8,
+      "step_size": 0.002,
+      "burn_in": 300
+    },
+    "amplitude_sweep": {
+      "r0": 4.2,
+      "width": 0.35,
+      "amplitudes": [
+        0.0005,
+        0.001,
+        0.002,
+        0.004,
+        0.008,
+        0.016,
+        0.032
+      ]
+    },
+    "width_sweep": {
+      "r0": 4.2,
+      "widths": [
+        0.1,
+        0.15,
+        0.25,
+        0.4,
+        0.65,
+        1.0
+      ],
+      "force_rms": 0.002
+    }
+  },
+  "timings_seconds": {
+    "reference_sampling": 13.312229633331299,
+    "direct_amp_0.0005": 24.800225973129272,
+    "direct_amp_0.001": 23.535805225372314,
+    "direct_amp_0.002": 24.46179699897766,
+    "direct_amp_0.004": 24.811249017715454,
+    "direct_amp_0.008": 25.833343029022217,
+    "direct_amp_0.016": 26.9366455078125,
+    "direct_amp_0.032": 25.352911472320557,
+    "direct_width_0.1": 27.980292558670044,
+    "direct_width_0.15": 33.97155165672302,
+    "direct_width_0.25": 30.181607484817505,
+    "direct_width_0.4": 24.23852801322937,
+    "direct_width_0.65": 24.399665355682373,
+    "direct_width_1": 23.283493757247925
+  },
+  "total_seconds": 372.6010012626648,
+  "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
+  "cpu_count": 4,
+  "libraries": {
+    "python": "3.11.15",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "torch": "2.13.0+cpu",
+    "numba": "0.66.0",
+    "matplotlib": "3.11.1"
+  },
+  "finished_at": "2026-08-11T20:18:22+0000",
+  "results": {
+    "amplitude_sweep": {
+      "n_amplitudes": 7,
+      "linear_agrees_with_direct": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "reweighted_agrees_with_direct": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "self_flagged_trustworthy": [
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "flagged_cases_all_agree": false,
+      "n_flagged": 2,
+      "largest_agreeing_beta_sigma": NaN
+    },
+    "width_sweep": {
+      "predicted_exponent": 1.5,
+      "measured_exponent_direct": -0.10338695085084493,
+      "measured_exponent_linear": 0.6646064683533841,
+      "dynamic_range": 3.193839278590092,
+      "force_rms_spread": 2.1684043449710089e-16
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "amplitude_sweep": {
+    "n_amplitudes": 7,
+    "linear_agrees_with_direct": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "reweighted_agrees_with_direct": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "self_flagged_trustworthy": [
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "flagged_cases_all_agree": false,
+    "n_flagged": 2,
+    "largest_agreeing_beta_sigma": NaN
+  },
+  "width_sweep": {
+    "predicted_exponent": 1.5,
+    "measured_exponent_direct": -0.10338695085084493,
+    "measured_exponent_linear": 0.6646064683533841,
+    "dynamic_range": 3.193839278590092,
+    "force_rms_spread": 2.1684043449710089e-16
+  }
+}

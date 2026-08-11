@@ -42,6 +42,7 @@ from atomlab.build import fcc, scale_to_density
 from atomlab.potentials.lennard_jones import LennardJones
 from atomlab.potentials.perturbations import RadialShellPerturbation
 from atomlab.sampling import hybrid_monte_carlo
+from experiments.equilibrate import check_equilibrated, equilibrated_configuration
 from experiments.common import ExperimentContext, main
 from experiments.observables_lib import PairBinObservable
 
@@ -65,6 +66,8 @@ DEFAULTS = {
         "n_leapfrog": 8,
         "step_size": 2e-3,
         "burn_in": 300,
+        "n_melt": 400,
+        "n_anneal": 1000,
     },
     "amplitude_sweep": {
         "r0": 4.2,
@@ -107,6 +110,16 @@ def run(ctx: ExperimentContext) -> dict:
         cutoff=ctx.config["potential"]["cutoff"],
     )
     print(f"  system: {cfg.n_atoms} atoms, L = {cfg.cell[0, 0]:.2f} A, T = {temperature} K")
+
+    with ctx.timed("equilibration"):
+        s_cfg = ctx.config["sampling"]
+        cfg, eq_report = equilibrated_configuration(
+            cfg, potential, temperature,
+            n_melt=int(ctx.scaled("sampling.n_melt")),
+            n_anneal=int(ctx.scaled("sampling.n_anneal")),
+            n_leapfrog=s_cfg["n_leapfrog"], step_size=s_cfg["step_size"], seed=ctx.seed,
+        )
+    print(f"    {eq_report}")
 
     with ctx.timed("reference_sampling"):
         ref, ref_report = sample(ctx, cfg, potential,

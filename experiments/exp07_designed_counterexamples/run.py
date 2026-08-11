@@ -52,6 +52,7 @@ from atomlab.potentials.perturbations import (
 )
 from atomlab.potentials.perturbations import observable_matrix
 from atomlab.sampling import hybrid_monte_carlo
+from experiments.equilibrate import check_equilibrated, equilibrated_configuration
 from experiments.common import ExperimentContext, main
 from experiments.observables_lib import PairBinObservable
 
@@ -85,6 +86,8 @@ DEFAULTS = {
         "n_leapfrog": 8,
         "step_size": 2e-3,
         "burn_in": 300,
+        "n_melt": 400,
+        "n_anneal": 1000,
     },
     "perturbations": {
         "basis_r_min": 3.0,
@@ -106,23 +109,25 @@ def build_system(ctx: ExperimentContext):
     return cfg, potential
 
 
-def sample(ctx, cfg, potential, n_samples, seed):
+def sample(ctx, cfg, potential, n_samples, seed, *, label="trajectory"):
+    """Sample the canonical ensemble, and verify the result is stationary.
+
+    ``cfg`` must already be an equilibrated liquid (see
+    :func:`experiments.equilibrate.equilibrated_configuration`); the drift check
+    afterwards is what catches the case where it is not.
+    """
     s = ctx.config["sampling"]
     traj, report = hybrid_monte_carlo(
-        cfg,
-        potential,
-        ctx.config["system"]["temperature"],
-        n_samples=int(n_samples),
-        n_leapfrog=s["n_leapfrog"],
-        step_size=s["step_size"],
-        burn_in=s["burn_in"],
-        seed=seed,
+        cfg, potential, ctx.config["system"]["temperature"],
+        n_samples=int(n_samples), n_leapfrog=s["n_leapfrog"],
+        step_size=s["step_size"], burn_in=s["burn_in"], seed=seed,
     )
     if report.acceptance < 0.2:
         raise RuntimeError(
             f"sampler acceptance {report.acceptance:.2f} is too low to trust "
             f"({report.notes})"
         )
+    check_equilibrated(traj, label=label, check_order=False)
     return traj, report
 
 
@@ -141,6 +146,16 @@ def run(ctx: ExperimentContext) -> dict:
           f"rho = {cfg.density:.4f} /A^3, T = {temperature} K")
 
     # ---- reference ensemble, split into construction and evaluation halves --
+    with ctx.timed("equilibration"):
+        s_cfg = ctx.config["sampling"]
+        cfg, eq_report = equilibrated_configuration(
+            cfg, potential, temperature,
+            n_melt=int(ctx.scaled("sampling.n_melt")),
+            n_anneal=int(ctx.scaled("sampling.n_anneal")),
+            n_leapfrog=s_cfg["n_leapfrog"], step_size=s_cfg["step_size"], seed=ctx.seed,
+        )
+    print(f"    {eq_report}")
+
     with ctx.timed("reference_sampling"):
         n_ref = int(ctx.scaled("sampling.n_reference"))
         ref, ref_report = sample(ctx, cfg, potential, n_ref, seed=ctx.seed + 1)
@@ -294,6 +309,13 @@ def evaluate_one(ctx, cfg, potential, perturbation, observable, target, evaluate
         "force_rms_level": level,
         "target_predicted": float(np.asarray(du_target.value)),
         "target_predicted_error": float(np.asarray(du_target.error)),
+        # For a null-space field the first-order term vanishes by construction,
+        # so whatever residual effect survives must be second order. The theory
+        # predicts that residual too, and reporting it turns "the null field did
+        # not do exactly nothing" from an embarrassment into a second, sharper
+        # test of the same expansion.
+        "target_second_order": float(np.asarray(du_target.second_order.value)),
+        "target_second_order_error": float(np.asarray(du_target.second_order.error)),
         "target_measured": target_measured,
         "target_error": target_error,
         "target_correlation": float(np.asarray(du_target.correlation)),
@@ -343,8 +365,14 @@ def summarise(records) -> dict:
                 "aligned_error": a["target_error"],
                 "random_measured_mean": float(np.mean([r["target_measured"] for r in randoms]))
                 if randoms else float("nan"),
+                "null_second_order": n["target_second_order"],
+                "null_measured_minus_second_order":
+                    n["target_measured"] - n["target_predicted"] - n["target_second_order"],
                 "null_consistent_with_zero":
                     abs(n["target_measured"]) < 2.0 * n["target_error"],
+                "null_consistent_with_second_order":
+                    abs(n["target_measured"] - n["target_predicted"] - n["target_second_order"])
+                    < 2.0 * n["target_error"],
                 "aligned_significant":
                     abs(a["target_measured"]) > 2.0 * a["target_error"],
             },
@@ -422,6 +450,9 @@ def report(summary):
               f"measured {t['aligned_measured']:+7.3f} +/- {t['aligned_error']:.3f}  "
               f"{'significant' if t['aligned_significant'] else 'not significant'}")
         print(f"      random      measured {t['random_measured_mean']:+7.3f} (mean)")
+        print(f"      null-space residual vs second-order prediction: "
+              f"{t['null_measured_minus_second_order']:+7.3f} "
+              f"({'consistent' if t['null_consistent_with_second_order'] else 'NOT consistent'})")
         print(f"    full curve: null {s['measured_max']['null']:+.3f} "
               f"+/- {s['measured_max']['null_error']:.3f}, aligned "
               f"{s['measured_max']['aligned']:+.3f} +/- {s['measured_max']['aligned_error']:.3f} "

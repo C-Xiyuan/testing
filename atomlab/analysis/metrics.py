@@ -150,9 +150,10 @@ METRIC_INFO: dict[str, tuple[str, str, str]] = {
         LOWER_IS_BETTER,
     ),
     "force_vector_rmse": (
-        "RMS of the per-atom force error vector magnitude |dF_i|; equals "
-        "sqrt(3) x force_rmse when the error is isotropic, so its ratio to "
-        "force_rmse is an anisotropy diagnostic.",
+        "RMS of the per-atom force error vector magnitude |dF_i|. Identically "
+        "sqrt(3) x force_rmse -- it is the same number in the other of the two "
+        "conventions the literature uses without saying which, and it is here so "
+        "that a published force RMSE can be compared with the right one.",
         "eV/A",
         LOWER_IS_BETTER,
     ),
@@ -519,9 +520,15 @@ def standard_metrics(evaluation: PairEvaluation) -> dict:
     being mismeasured.
 
     Force errors are per Cartesian component, matching universal practice.
-    ``force_vector_rmse`` is the same quantity organised per atom; for isotropic
-    errors it is exactly ``sqrt(3)`` times larger, and both are provided because
-    published "force RMSE" values silently use one convention or the other.
+    ``force_vector_rmse`` is the same quantity organised per atom and is
+    *identically* ``sqrt(3)`` times larger -- summing the squared components and
+    then averaging over atoms is the same sum in a different order.  Both are
+    reported because published "force RMSE" values silently use one convention
+    or the other, and a factor of 1.73 between two papers is otherwise
+    indistinguishable from a real difference in model quality.  The genuinely
+    independent third number is ``force_magnitude_rmse``, which ignores
+    direction entirely: a model whose forces have the right magnitudes but the
+    wrong directions scores well on it and badly on the other two.
     """
     n = evaluation.n_atoms
     de = evaluation.delta_u / n
@@ -1130,7 +1137,14 @@ def uncertainty_metrics(
 
     members = ensemble
     if members is None:
-        members = getattr(model, "models", None) or getattr(model, "members", None)
+        # Duck-typed committee discovery.  Checked for list/tuple explicitly
+        # rather than with truthiness, because a model attribute called
+        # ``models`` could be an array, whose truth value is an exception.
+        for attribute in ("models", "members"):
+            candidate = getattr(model, attribute, None)
+            if isinstance(candidate, (list, tuple)) and len(candidate) >= 2:
+                members = candidate
+                break
     if members is not None and len(list(members)) >= 2:
         out.update(ensemble_disagreement(list(members), configurations))
 
