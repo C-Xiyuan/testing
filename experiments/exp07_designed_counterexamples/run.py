@@ -150,8 +150,12 @@ def run(ctx: ExperimentContext) -> dict:
         s_cfg = ctx.config["sampling"]
         cfg, eq_report = equilibrated_configuration(
             cfg, potential, temperature,
-            n_melt=int(ctx.scaled("sampling.n_melt")),
-            n_anneal=int(ctx.scaled("sampling.n_anneal")),
+            # Deliberately NOT scaled by --quick. Everything else may be
+            # shrunk for a smoke test, but an unequilibrated reference ensemble
+            # does not test the pipeline faster -- it produces numbers from the
+            # wrong distribution, which is the failure this guard exists for.
+            n_melt=int(ctx.get("sampling.n_melt")),
+            n_anneal=int(ctx.get("sampling.n_anneal")),
             n_leapfrog=s_cfg["n_leapfrog"], step_size=s_cfg["step_size"], seed=ctx.seed,
         )
     print(f"    {eq_report}")

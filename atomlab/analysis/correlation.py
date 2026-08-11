@@ -56,7 +56,7 @@ All randomness takes an explicit ``seed`` and uses a dedicated
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Mapping, Sequence
+from typing import Mapping
 
 import numpy as np
 from scipy.stats import kendalltau as _scipy_kendalltau

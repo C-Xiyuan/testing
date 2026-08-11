@@ -35,6 +35,7 @@ from atomlab.analysis.correlation import (
     benjamini_hochberg,
     kendall_tau,
     proxy_quality_matrix,
+    rank_correlation_pvalue,
     rank_correlation_with_ci,
     spearman,
     top_k_agreement,
@@ -227,6 +228,42 @@ class TestPerfectAndNullRelations:
         assert isinstance(est, RankCorrelation)
         assert est.ci_low < est.value < est.ci_high
         assert est.ci_width > 0.0
+
+
+class TestPValues:
+    def test_asymptotic_matches_scipy(self):
+        rng = np.random.default_rng(2)
+        x = rng.normal(size=25)
+        y = 0.8 * x + rng.normal(size=25)
+        assert rank_correlation_pvalue(x, y) == pytest.approx(scipy_spearmanr(x, y).pvalue)
+        assert rank_correlation_pvalue(x, y, method="kendall") == pytest.approx(
+            scipy_kendalltau(x, y, variant="b").pvalue
+        )
+
+    def test_permutation_pvalue_is_small_for_a_strong_relation_and_never_zero(self):
+        rng = np.random.default_rng(3)
+        x = np.arange(20.0)
+        y = x + rng.normal(size=20)
+        p = rank_correlation_pvalue(x, y, p_method="permutation", n_permutations=500, seed=0)
+        assert 0.0 < p <= 1.0 / 501.0 * 2
+
+    def test_permutation_pvalue_is_uniform_ish_under_the_null(self):
+        rng = np.random.default_rng(4)
+        x, y = rng.normal(size=25), rng.normal(size=25)
+        p = rank_correlation_pvalue(x, y, p_method="permutation", n_permutations=400, seed=1)
+        assert 0.0 < p <= 1.0
+
+    def test_estimate_interface_is_preserved(self):
+        """A RankCorrelation must still behave as a statistics.Estimate."""
+        from atomlab.analysis.statistics import Estimate
+
+        rng = np.random.default_rng(5)
+        x = rng.normal(size=25)
+        est = rank_correlation_with_ci(x, 0.9 * x + 0.2 * rng.normal(size=25), n_bootstrap=300)
+        assert isinstance(est, Estimate)
+        assert est.significantly_differs_from(0.0, n_sigma=2.0)
+        assert np.isfinite(est.relative_error)
+        assert set(est.to_dict()) >= {"value", "ci_low", "ci_high", "p_value", "brackets_zero"}
 
 
 class TestBootstrapCoverage:

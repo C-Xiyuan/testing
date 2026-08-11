@@ -66,7 +66,7 @@ computes it.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, Mapping, Sequence
+from typing import Callable, Sequence
 
 import numpy as np
 

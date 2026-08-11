@@ -270,11 +270,17 @@ leaves quickly:
   one side while pushing them out on the other, so the two contributions partly
   cancel.
 
-A preliminary 256-atom run bears this out: at fixed force RMSE the predicted
-shift in one `g(r)` bin rises from `w = 0.08 Å` to `w = 0.3 Å` and then *falls*
-again, and the amplitude required to hold force error fixed scales as `w^0.78`
-rather than the `w^0.5` of (4.3). The exponent in (4.5) is therefore not a
-no-free-parameter prediction, and this document should not have claimed it was.
+Both objections are analytic and stand on their own; neither needs a
+measurement to establish. The exponent in (4.5) is therefore not a
+no-free-parameter prediction, and an earlier draft of this document should not
+have claimed it was.
+
+*(A preliminary run appeared to confirm the breakdown quantitatively, and those
+numbers were briefly quoted here. They have been removed: that run sampled a
+reference ensemble which had not equilibrated — see
+`experiments/equilibrate.py` — so its numbers were not measurements of the
+liquid at all. The measured width dependence is whatever `experiments/exp06`
+reports on a verified-stationary ensemble, and nothing else.)*
 
 What survives, and what the experiments actually test, is the qualitative
 statement that (4.3) and (4.4) have *different* dependence on the shape of the
