@@ -1,10 +1,10 @@
 {
   "experiment": "exp06_response_validation",
-  "git_commit": "81d5ed0d4afe324aadbbdbf07d1df25dc2020565",
+  "git_commit": "590a1a1c1b37db8a9e3870210d1266dad47b7335",
   "git_branch": "claude/ai-science-project-plan-p0obrk",
   "git_dirty": true,
   "seed": 0,
-  "quick_mode": true,
+  "quick_mode": false,
   "config": {
     "system": {
       "lattice_constant": 5.4,
@@ -32,7 +32,9 @@
       "n_direct": 1500,
       "n_leapfrog": 8,
       "step_size": 0.002,
-      "burn_in": 300
+      "burn_in": 300,
+      "n_melt": 400,
+      "n_anneal": 1000
     },
     "amplitude_sweep": {
       "r0": 4.2,
@@ -61,22 +63,23 @@
     }
   },
   "timings_seconds": {
-    "reference_sampling": 13.312229633331299,
-    "direct_amp_0.0005": 24.800225973129272,
-    "direct_amp_0.001": 23.535805225372314,
-    "direct_amp_0.002": 24.46179699897766,
-    "direct_amp_0.004": 24.811249017715454,
-    "direct_amp_0.008": 25.833343029022217,
-    "direct_amp_0.016": 26.9366455078125,
-    "direct_amp_0.032": 25.352911472320557,
-    "direct_width_0.1": 27.980292558670044,
-    "direct_width_0.15": 33.97155165672302,
-    "direct_width_0.25": 30.181607484817505,
-    "direct_width_0.4": 24.23852801322937,
-    "direct_width_0.65": 24.399665355682373,
-    "direct_width_1": 23.283493757247925
+    "equilibration": 68.86965727806091,
+    "reference_sampling": 77.81874108314514,
+    "direct_amp_0.0005": 138.19659614562988,
+    "direct_amp_0.001": 126.82717800140381,
+    "direct_amp_0.002": 124.8065185546875,
+    "direct_amp_0.004": 121.34025192260742,
+    "direct_amp_0.008": 128.8051528930664,
+    "direct_amp_0.016": 129.7242670059204,
+    "direct_amp_0.032": 130.21341109275818,
+    "direct_width_0.1": 120.69321846961975,
+    "direct_width_0.15": 121.03316950798035,
+    "direct_width_0.25": 118.99558687210083,
+    "direct_width_0.4": 120.99399900436401,
+    "direct_width_0.65": 119.7681953907013,
+    "direct_width_1": 122.93337893486023
   },
-  "total_seconds": 372.6010012626648,
+  "total_seconds": 2104.957427740097,
   "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
   "cpu_count": 4,
   "libraries": {
@@ -87,13 +90,13 @@
     "numba": "0.66.0",
     "matplotlib": "3.11.1"
   },
-  "finished_at": "2026-08-11T20:18:22+0000",
+  "finished_at": "2026-08-11T21:03:05+0000",
   "results": {
     "amplitude_sweep": {
       "n_amplitudes": 7,
       "linear_agrees_with_direct": [
         false,
-        false,
+        true,
         false,
         false,
         false,
@@ -102,8 +105,8 @@
       ],
       "reweighted_agrees_with_direct": [
         false,
-        false,
         true,
+        false,
         false,
         false,
         false,
@@ -120,14 +123,14 @@
       ],
       "flagged_cases_all_agree": false,
       "n_flagged": 2,
-      "largest_agreeing_beta_sigma": NaN
+      "largest_agreeing_beta_sigma": 0.8542229142127898
     },
     "width_sweep": {
       "predicted_exponent": 1.5,
-      "measured_exponent_direct": -0.10338695085084493,
-      "measured_exponent_linear": 0.6646064683533841,
-      "dynamic_range": 3.193839278590092,
-      "force_rms_spread": 2.1684043449710089e-16
+      "measured_exponent_direct": 0.5592618823864405,
+      "measured_exponent_linear": 0.45200183271582295,
+      "dynamic_range": 4.663863476007082,
+      "force_rms_spread": 3.2526065174565153e-15
     }
   }
 }

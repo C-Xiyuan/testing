@@ -36,9 +36,9 @@ wins both:
 window         main lobe FWHM     first sidelobe
 =============  =================  ==============
 rectangular    1.21 bins          -13 dB
-hamming        1.81 bins          -43 dB
+hamming        1.82 bins          -43 dB
 hann           2.00 bins          -31 dB
-blackman       2.35 bins          -58 dB
+blackman       2.30 bins          -58 dB
 =============  =================  ==============
 
 (One "bin" is ``1 / (M dt)`` with ``M = 2L+1`` the length of the symmetric
@@ -173,7 +173,16 @@ def window_bandwidth(name: str, n_samples: int, dt: float, *, zero_padding: int 
     n_fft = 1 << int(zero_padding * (2 * lag_max + 1) - 1).bit_length()
     spec = _cosine_transform(w, n_fft)
     freq = np.fft.rfftfreq(n_fft, d=dt)
-    return _fwhm(freq, spec)
+    # The window's own peak sits at zero frequency, so the one-sided spectrum
+    # holds only its right half; the full width is twice the half width.  (A
+    # peak at a finite frequency, which is what a real mode gives, is handled by
+    # _fwhm directly.)
+    half = 0.5 * spec[0]
+    k = int(np.argmax(spec < half))
+    if k == 0:
+        return float("nan")
+    crossing = freq[k - 1] + (half - spec[k - 1]) * (freq[k] - freq[k - 1]) / (spec[k] - spec[k - 1])
+    return 2.0 * float(crossing)
 
 
 def _fwhm(x: np.ndarray, y: np.ndarray) -> float:

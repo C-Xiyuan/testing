@@ -179,6 +179,42 @@ def test_derivatives_for_a_two_species_model():
     assert check_virial(model, cfg) < DERIV_TOL
 
 
+def test_descriptor_derivatives_match_central_differences():
+    """Check the descriptor's own dG/dr before trusting anything built on it.
+
+    The BPNN chain rule is only as good as the array it contracts against, and
+    a failure here versus a failure in the force test above mean completely
+    different things -- descriptor bug versus assembly bug.  ``tests/test_acsf``
+    owns the descriptor, but the model has to interpret its ``(P, D, 3)``
+    layout, so the layout is re-derived here from first principles rather than
+    assumed: summing the rows with ``pair_j == j`` and ``pair_i == i`` must give
+    ``dG[i]/dr[j]``.
+    """
+    desc = _descriptor()
+    cfg = _argon(sigma=0.1, seed=12)
+    out = desc.compute(cfg, derivatives=True)
+    pair_i = np.asarray(out.pair_i)
+    pair_j = np.asarray(out.pair_j)
+
+    delta = 1e-5
+    worst = 0.0
+    rng = np.random.default_rng(0)
+    for j in rng.choice(cfg.n_atoms, size=3, replace=False):
+        for k in range(3):
+            plus, minus = cfg.copy(), cfg.copy()
+            plus.positions[j, k] += delta
+            minus.positions[j, k] -= delta
+            fd = (
+                desc.compute(plus, derivatives=False).features
+                - desc.compute(minus, derivatives=False).features
+            ) / (2.0 * delta)                                   # (N, D)
+            analytic = np.zeros_like(fd)
+            rows = np.flatnonzero(pair_j == j)
+            np.add.at(analytic, pair_i[rows], out.derivatives[rows, :, k])
+            worst = max(worst, float(np.abs(analytic - fd).max()))
+    assert worst < 1e-6, f"descriptor derivatives differ from finite differences by {worst:.3e}"
+
+
 def test_forces_sum_to_zero_and_virial_is_symmetric():
     """Newton's third law and the absence of a net torque, respectively."""
     model = _untrained(seed=8)
@@ -365,6 +401,38 @@ def test_fit_overfits_twenty_configurations():
         f"could not overfit 20 configurations: train force RMSE "
         f"{report.train_force_rmse:.4f} eV/A"
     )
+
+
+def test_energy_only_fit_runs_but_is_not_the_default():
+    """``weight_force = 0`` skips the derivative machinery entirely.
+
+    It is supported because the response experiments want an energy-only arm,
+    and it is not the default because a model with no constraint on its
+    gradient has no constraint on the quantity molecular dynamics integrates --
+    which shows up here as a force error comparable to the labels themselves.
+    """
+    data = _argon_dataset(20, seed=55)
+    model = BPNN(_descriptor(), seed=2)
+    report = model.fit(
+        data, epochs=30, batch_size=5, weight_energy=1.0, weight_force=0.0, patience=10**6
+    )
+    assert np.isnan(report.train_force_rmse)
+    metrics = model.evaluate(data)
+    reference = float(np.sqrt((data.forces() ** 2).mean()))
+    print(
+        f"\n[energy-only fit] train energy RMSE "
+        f"{report.train_energy_rmse * 1e3:.4f} meV/atom, force RMSE "
+        f"{metrics['force_rmse']:.4f} eV/A (label RMS {reference:.4f} eV/A)"
+    )
+    assert report.train_energy_rmse < 1e-3
+
+
+def test_model_rejects_species_it_was_not_built_for():
+    model = _untrained()
+    cfg = _argon()
+    cfg.species = np.ones(cfg.n_atoms, dtype=np.int32)
+    with pytest.raises(ValueError, match="species"):
+        model.energy(cfg)
 
 
 def test_fit_report_records_the_training_curve():

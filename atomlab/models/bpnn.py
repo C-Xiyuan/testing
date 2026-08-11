@@ -140,8 +140,10 @@ __all__ = ["BPNN", "DEFAULT_TORCH_THREADS", "set_torch_threads"]
 #: leaves half the machine to the other models being fitted alongside.
 #:
 #: **Single-point evaluation wants one thread, not two.**  A ``compute()`` call
-#: on a 32-atom cell takes 5.1 ms at 1 thread, 16.9 ms at 2 and 58.9 ms at 4
-#: (of which the ACSF descriptor itself is ~3.2 ms and is unaffected).  Anything
+#: on a 32-atom cell takes ~5-6 ms at 1 thread, ~10-17 ms at 2 and ~60-90 ms at
+#: 4 across repeated runs on this (shared) box; the spread is machine load, the
+#: ordering is not.  The ACSF descriptor accounts for ~4 ms of that and is
+#: unaffected by the thread count, so the variation is all torch.  Anything
 #: driving molecular dynamics with a fitted ``BPNN`` should therefore call
 #: ``set_torch_threads(1)`` and get its parallelism from running independent
 #: trajectories, not from inside torch.  The asymmetry is why this module never
