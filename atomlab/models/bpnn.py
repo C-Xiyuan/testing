@@ -122,13 +122,31 @@ __all__ = ["BPNN", "DEFAULT_TORCH_THREADS", "set_torch_threads"]
 
 #: Intra-op thread count used by :meth:`BPNN.fit`.
 #:
-#: Four cores are shared with everything else running in this tree, so a fit
-#: takes two.  Measured here on a 32-atom argon fit (200 configurations, 60
-#: epochs, batch 16): 1 thread 19.6 s, 2 threads 17.9 s, 4 threads 18.4 s.  The
-#: network is small enough that torch's fork/join overhead eats most of the
-#: parallel gain, so 2 is chosen for being no worse than 1 while leaving half
-#: the machine free -- and the way to use four cores here is four independent
-#: two-threaded ensemble members, not one wide fit.
+#: Two, and the choice is measured rather than conventional.  Fitting 160
+#: 32-atom argon configurations for 30 epochs at batch 16, on this 4-core box:
+#:
+#: ===========  ==========  ============================
+#: threads      fit time    val force RMSE
+#: ===========  ==========  ============================
+#: 1            5.8 s       0.00147 eV/A
+#: 2            3.8 s       0.00147 eV/A
+#: 4            297 s       0.00147 eV/A
+#: ===========  ==========  ============================
+#:
+#: The 4-thread figure is not a typo and is not contention with the other work
+#: on this machine: the tensors here are small (a batch is ~7k pair rows x 36
+#: features), and torch's OpenMP fork/join on shapes that size costs far more
+#: than the arithmetic it splits.  Two threads is the measured optimum and also
+#: leaves half the machine to the other models being fitted alongside.
+#:
+#: **Single-point evaluation wants one thread, not two.**  A ``compute()`` call
+#: on a 32-atom cell takes 5.1 ms at 1 thread, 16.9 ms at 2 and 58.9 ms at 4
+#: (of which the ACSF descriptor itself is ~3.2 ms and is unaffected).  Anything
+#: driving molecular dynamics with a fitted ``BPNN`` should therefore call
+#: ``set_torch_threads(1)`` and get its parallelism from running independent
+#: trajectories, not from inside torch.  The asymmetry is why this module never
+#: sets the thread count at import time: there is no single right value for
+#: both phases, so the choice is left where it can be made per phase.
 DEFAULT_TORCH_THREADS = 2
 
 

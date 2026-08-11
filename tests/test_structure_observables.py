@@ -492,8 +492,8 @@ def test_steinhardt_of_diamond():
     cfg = diamond(5.431, "Si", (2, 2, 2))
     q4 = steinhardt(cfg, 4, 3.0).scalar()[0]
     q6 = steinhardt(cfg, 6, 3.0).scalar()[0]
-    assert q4 == pytest.approx(0.509329, abs=5e-4), f"diamond Q4 = {q4:.6f}"
-    assert q6 == pytest.approx(0.628539, abs=5e-4), f"diamond Q6 = {q6:.6f}"
+    assert q4 == pytest.approx(0.5093, abs=5e-4), f"diamond Q4 = {q4:.6f}"
+    assert q6 == pytest.approx(0.6285, abs=5e-4), f"diamond Q6 = {q6:.6f}"
 
 
 def test_steinhardt_is_rotationally_invariant(fcc_crystal):

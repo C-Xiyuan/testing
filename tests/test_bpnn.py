@@ -462,17 +462,43 @@ def test_small_fit_on_lennard_jones_argon_reports_honest_numbers():
 
 
 def test_compute_timing_is_usable_for_molecular_dynamics():
-    """Record the single-point cost; MD needs thousands of these."""
+    """Record the single-point cost; MD needs thousands of these.
+
+    Measured at several thread counts because the answer is not monotone: the
+    tensors in a single-point evaluation are tiny, and torch's OpenMP fork/join
+    costs more than the arithmetic it parallelises.  The number that matters
+    for MD is the single-threaded one, and the way to use four cores is four
+    independent trajectories.
+    """
     model, _ = _quick_fit(n=8, epochs=2, seed=0)
     cfg = _argon()
     model.compute(cfg)  # warm the numba kernel
-    t0 = time.perf_counter()
-    n_calls = 20
-    for _ in range(n_calls):
-        model.compute(cfg, forces=True, virial=True)
-    per_call = (time.perf_counter() - t0) / n_calls
-    print(f"\n[timing] compute() on {cfg.n_atoms} atoms: {per_call * 1e3:.2f} ms")
-    assert per_call < 0.5
+
+    entry = torch.get_num_threads()
+    timings = {}
+    try:
+        for n_threads in (1, 2, 4):
+            torch.set_num_threads(n_threads)
+            model.compute(cfg)
+            t0 = time.perf_counter()
+            n_calls = 20
+            for _ in range(n_calls):
+                model.compute(cfg, forces=True, virial=True)
+            timings[n_threads] = (time.perf_counter() - t0) / n_calls
+        torch.set_num_threads(1)
+        t0 = time.perf_counter()
+        for _ in range(20):
+            model.descriptor.compute(cfg, derivatives=True)
+        acsf = (time.perf_counter() - t0) / 20
+    finally:
+        torch.set_num_threads(entry)
+
+    print(
+        f"\n[timing] compute() on {cfg.n_atoms} atoms, forces+virial: "
+        + ", ".join(f"{k} thread(s) {v * 1e3:.2f} ms" for k, v in timings.items())
+        + f"; of which ACSF alone {acsf * 1e3:.2f} ms"
+    )
+    assert timings[1] < 0.05, "single-point evaluation is too slow to drive MD"
 
 
 # --------------------------------------------------------------------------

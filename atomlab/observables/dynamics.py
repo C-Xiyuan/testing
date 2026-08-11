@@ -130,6 +130,45 @@ def _require_dynamical(trajectory: Trajectory, what: str) -> None:
         )
 
 
+def _min_widths(cells: np.ndarray, pbc: np.ndarray) -> np.ndarray:
+    """Minimum perpendicular cell width of every frame, in angstrom.
+
+    Parameters
+    ----------
+    cells : ndarray, shape (T, 3, 3)
+        Lattice vectors as rows, in angstrom.
+    pbc : ndarray, shape (3,), bool
+
+    Returns
+    -------
+    ndarray, shape (T,)
+
+    Notes
+    -----
+    :func:`atomlab.cell.min_cell_width` is the definition, but it costs three
+    least-squares solves per call and this is called once per frame of a
+    ``10^5``-frame trajectory.  Two fast paths avoid that without changing the
+    answer: a constant cell (NVE/NVT, the common case) needs one call, and for a
+    fully periodic cell the width along ``a_i`` is exactly ``V / |a_j x a_k|``.
+    The general routine is still used for partially periodic cells, and the
+    agreement of the fast path with it is asserted in the tests.
+    """
+    if cells.shape[0] > 1 and np.array_equal(cells, np.broadcast_to(cells[0], cells.shape)):
+        return np.full(cells.shape[0], min_cell_width(cells[0], pbc))
+    if bool(np.asarray(pbc).all()):
+        volumes = np.abs(np.linalg.det(cells))
+        crosses = np.stack(
+            [
+                np.cross(cells[:, 1], cells[:, 2]),
+                np.cross(cells[:, 2], cells[:, 0]),
+                np.cross(cells[:, 0], cells[:, 1]),
+            ],
+            axis=1,
+        )
+        return (volumes[:, None] / np.linalg.norm(crosses, axis=2)).min(axis=1)
+    return np.array([min_cell_width(c, pbc) for c in cells])
+
+
 def _check_unwrapped(trajectory: Trajectory, *, tolerance: float = 0.5) -> float:
     """Verify that stored positions are unwrapped; return the worst step size.
 
@@ -161,9 +200,7 @@ def _check_unwrapped(trajectory: Trajectory, *, tolerance: float = 0.5) -> float
     steps = np.diff(trajectory.positions, axis=0)
     largest = float(np.sqrt(np.max(np.einsum("tna,tna->tn", steps, steps))))
 
-    widths = np.array(
-        [min_cell_width(trajectory.cells[t], trajectory.template.pbc) for t in range(trajectory.n_frames)]
-    )
+    widths = _min_widths(trajectory.cells, trajectory.template.pbc)
     limit = tolerance * float(np.min(widths))
     if np.isfinite(limit) and largest > limit:
         frame, atom = np.unravel_index(

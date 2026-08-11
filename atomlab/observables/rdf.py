@@ -87,6 +87,7 @@ from .base import (
     FrameSample,
     ObservableResult,
     _require_periodic,
+    accumulate_frames,
     estimate_from_samples,
     frame_estimator,
     iter_frames,
@@ -665,8 +666,6 @@ def structure_factor_direct(
             bins=q_centres[occupied],
             metadata={"n_atoms": n_atoms},
         )
-
-    from .base import accumulate_frames  # local import: keeps the public API flat
 
     result = accumulate_frames(
         frames,

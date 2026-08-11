@@ -33,7 +33,7 @@ from scipy.special import sph_harm_y
 
 from ..neighbors import build_neighbor_list, pair_vectors
 from ..types import Configuration, Trajectory
-from .base import FrameSample, ObservableResult, frame_estimator
+from .base import FrameSample, ObservableResult, estimate_from_samples, frame_estimator
 
 __all__ = [
     "bond_angle_distribution",
@@ -547,10 +547,12 @@ def steinhardt(
     if kind not in ("local", "global"):
         raise ValueError(f"kind must be 'local' or 'global', got {kind!r}")
     l = int(l)
+    # The kernel always returns both variants, so the samples are needed here
+    # even when the caller does not want them kept in the returned result.
     both = _steinhardt_kernel(
         trajectory,
         stride=stride,
-        keep_samples=keep_samples,
+        keep_samples=True,
         name=name or f"Q{l} ({kind})",
         l=l,
         r_cut=float(r_cut),
@@ -558,8 +560,6 @@ def steinhardt(
     )
     column = 0 if kind == "local" else 1
     samples = both.require_samples()
-    from .base import estimate_from_samples  # local import keeps the public API flat
-
     result = estimate_from_samples(
         samples[:, [column]],
         name=both.name,
