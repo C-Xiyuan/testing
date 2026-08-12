@@ -376,6 +376,41 @@ one half of the reference trajectory and evaluating on the other:</p>
 </table>
 </div>
 
+<h2>The same thing happens to models that were actually fitted</h2>
+<p class="lede">Ten fitted models, and one pair that differs only by a random seed.</p>
+
+<p>Everything above uses <em>designed</em> error fields, which is the better test of the
+mechanism but says nothing about whether real models occupy that regime. So ten were fitted to
+400 configurations of the same liquid: a pair spline, a linear ACE-style basis,
+Behler-Parrinello networks, E(3)-equivariant networks, with training and test data drawn from
+separate Markov chains.</p>
+
+<p><strong>The formula works on them too — 1.06 σ rms</strong> between predicted and measured,
+matching the 1.01 σ obtained on designed fields.</p>
+
+<p>Most of the zoo is uninformative for an unexpected reason: on this reference potential at
+this data budget, nearly every architecture is good enough that its observable error sits at
+the noise floor. Rank correlations from this arm are therefore <em>not</em> reported — with ten
+models and errors that small, every interval spans zero. But one pair is worth the arm:</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Two runs of the same architecture on the same data, differing only in
+  initialisation seed. Anyone choosing between them on force RMSE would see a 36 % difference
+  and reasonably call them equivalent.</caption>
+  <thead><tr><th>model</th><th>difference</th><th>force RMSE<br>(eV/Å)</th><th>predicted</th><th>measured (pairs)</th></tr></thead>
+  <tbody>
+    <tr><td class="name">egnn_c8_s0</td><td class="name quiet">—</td><td class="num quiet">0.0045</td><td class="num">−0.98</td><td class="num">−0.15 <span class="pm">± 0.57</span> <span class="pm">(0.3σ)</span></td></tr>
+    <tr><td class="name">egnn_c8_s1</td><td class="name quiet">seed only</td><td class="num quiet">0.0061</td><td class="num">−3.03</td><td class="num strong">−4.10 <span class="pm">± 0.69</span> <span class="pm">(6.0σ)</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Their force errors differ by 36 %. Their observable errors differ by a factor of 27 — one
+indistinguishable from zero, the other significant at six standard errors. The formula
+predicted both from the reference trajectory alone. This is the band effect appearing between
+two runs of the <em>same</em> model, which is as narrow a band as can be constructed.</p>
+
 <h2>Orthogonality belongs to one observable</h2>
 <p class="lede">There is no error field that is harmless in general.</p>
 

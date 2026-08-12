@@ -149,6 +149,44 @@ comparable. Top-k overlap statistics were also computed and are *not* reported
 as evidence: with 34 members they moved between 0.33 and 0.67 depending on that
 correction, which means they are too noisy to carry a claim.
 
+## 3b. The same thing happens to models that were actually fitted
+
+Ten models — a pair spline, a linear ACE-style basis, Behler-Parrinello networks
+and E(3)-equivariant networks — fitted to 400 configurations of Lennard-Jones
+argon, with training and test data drawn from separate Markov chains.
+
+**The response formula works on fitted models too: 1.06 σ rms** between predicted
+and measured observable shift across the ten, matching the 1.01 σ obtained on
+designed error fields. That is the external-validity check for §2, and it passes.
+
+Most of the zoo is uninformative for a different reason than expected: on this
+reference potential, at this data budget, nearly every architecture is good
+enough that its observable error is indistinguishable from zero. Force RMSE
+spans 0.0004–0.0061 eV/Å and buys almost no measurable difference. **The rank
+correlations from this arm are therefore not reportable** — with ten models whose
+observable errors are mostly at the noise floor, every confidence interval spans
+zero (force RMSE: ρ = 0.43 [−0.35, 0.96]). Nothing about ranking can be
+concluded from it, and nothing is.
+
+But one pair in the zoo is worth the whole arm:
+
+| model | difference | force RMSE | predicted | measured |
+|---|---|---|---|---|
+| `egnn_c8_s0` | — | 0.0045 | −0.98 | −0.15 ± 0.57 (0.3 σ) |
+| `egnn_c8_s1` | **initialisation seed only** | 0.0061 | −3.03 | **−4.10 ± 0.69 (6.0 σ)** |
+
+Same architecture, same training data, same hyperparameters. Their force errors
+differ by 36 %; their observable errors differ by a factor of 27, one
+indistinguishable from zero and the other significant at six standard errors.
+Anyone selecting between these two on force RMSE would see a 36 % difference and
+reasonably call them equivalent.
+
+The response formula predicted both, from the reference trajectory alone.
+
+This is the band effect of §3a appearing in fitted models rather than designed
+ones — and it appears between two runs of the *same* model, which is as narrow a
+band as it is possible to construct.
+
 ## 4. At fixed force error, the damage still varies fivefold
 
 Holding force RMSE constant to 0.0 % and varying only the **width** of the error

@@ -1,10 +1,10 @@
 {
   "experiment": "exp03_model_zoo",
-  "git_commit": "2dd024ab83fc387fe1077521142a544269bb6adc",
+  "git_commit": "8a2802c33f3c73746556c37892e566e084b2630f",
   "git_branch": "claude/ai-science-project-plan-p0obrk",
   "git_dirty": true,
   "seed": 0,
-  "quick_mode": true,
+  "quick_mode": false,
   "config": {
     "system": {
       "lattice_constant": 5.4,
@@ -36,7 +36,7 @@
       "n_direct": 1500,
       "n_leapfrog": 8,
       "step_size": 0.002,
-      "burn_in": 300,
+      "burn_in": 1000,
       "n_melt": 400,
       "n_anneal": 1000
     },
@@ -45,43 +45,55 @@
       "n_test": 120,
       "model_cutoff": 6.0,
       "budgets": [
-        40,
         400
       ]
     },
     "zoo": {
       "pair_spline_knots": [
-        12
+        8,
+        24
       ],
       "linear_l_max": [
-        3
+        2,
+        4
       ],
       "bpnn_hidden": [
         [
           16,
           16
+        ],
+        [
+          64,
+          64
         ]
       ],
-      "bpnn_epochs": 40,
+      "bpnn_epochs": 250,
       "egnn_channels": [
         8
       ],
-      "egnn_epochs": 10,
+      "egnn_epochs": 60,
       "seeds": [
-        0
+        0,
+        1
       ]
     }
   },
   "timings_seconds": {
-    "equilibration": 55.950756549835205,
-    "reference_sampling": 12.099453210830688,
-    "training_data": 16.48348331451416,
-    "spline_k12@n20": 10.664594173431396,
-    "linear_l3@n20": 98.67481064796448,
-    "bpnn_16x2_s0@n20": 51.701557636260986,
-    "egnn_c8_s0@n20": 39.9532151222229
+    "equilibration": 55.42096495628357,
+    "reference_sampling": 109.38984632492065,
+    "training_data": 69.80397534370422,
+    "spline_k8@n400": 90.09579062461853,
+    "spline_k24@n400": 90.02674317359924,
+    "linear_l2@n400": 654.8347239494324,
+    "linear_l4@n400": 774.1281425952911,
+    "bpnn_16x2_s0@n400": 401.52766251564026,
+    "bpnn_16x2_s1@n400": 390.6390452384949,
+    "bpnn_64x2_s0@n400": 420.9902153015137,
+    "bpnn_64x2_s1@n400": 416.1278553009033,
+    "egnn_c8_s0@n400": 648.8194251060486,
+    "egnn_c8_s1@n400": 648.9807889461517
   },
-  "total_seconds": 291.5730285644531,
+  "total_seconds": 4796.104023694992,
   "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
   "cpu_count": 4,
   "libraries": {
@@ -92,59 +104,62 @@
     "numba": "0.66.0",
     "matplotlib": "3.11.1"
   },
-  "finished_at": "2026-08-12T00:10:46+0000",
+  "finished_at": "2026-08-12T01:45:59+0000",
   "results": {
-    "n_models": 4,
+    "n_models": 10,
     "force_rmse": {
-      "rho": 0.7999999999999999,
+      "rho": 0.43030303030303024,
       "ci": [
-        0.3333333333333334,
-        1.0
+        -0.34569716775599124,
+        0.9620312873178888
       ]
     },
     "force_mae": {
-      "rho": 0.7999999999999999,
+      "rho": 0.34545454545454546,
       "ci": [
-        0.3333333333333334,
-        1.0
+        -0.4875795807453416,
+        0.9215686274509802
       ]
     },
     "energy_rmse": {
-      "rho": 0.7999999999999999,
+      "rho": 0.05454545454545454,
       "ci": [
-        0.3333333333333334,
-        1.0
+        -0.773620283018868,
+        0.7647240377632532
       ]
     },
     "smoothness_ratio": {
-      "rho": 0.19999999999999998,
+      "rho": -0.5272727272727272,
       "ci": [
-        -1.0,
-        0.7777777777777779
+        -0.8571428571428571,
+        0.05660377358490567
       ]
     },
     "du_std_per_atom": {
-      "rho": 0.7999999999999999,
+      "rho": -0.006060606060606061,
       "ci": [
-        0.3333333333333334,
-        1.0
+        -0.8599166766814887,
+        0.7233259341472436
       ]
     },
     "target_predicted": {
-      "rho": 1.0,
+      "rho": 0.17575757575757575,
       "ci": [
-        1.0,
-        1.0
+        -0.7037037037037037,
+        0.8311960620025134
       ]
     },
-    "prediction_residual_sigma": 30.447871044836575,
+    "prediction_residual_sigma": 1.0649522640270348,
     "force_rmse_range": [
-      0.0005081653142118401,
-      0.04343102281199371
+      0.00040164895828943197,
+      0.006089493077152907
     ],
     "observable_error_range": [
-      5.173333333333346,
-      126.16
-    ]
+      0.049000000000006594,
+      4.100999999999999
+    ],
+    "n_dropped_not_equilibrated": 0,
+    "dropped": [],
+    "n_linear_trustworthy": 8
   }
 }
