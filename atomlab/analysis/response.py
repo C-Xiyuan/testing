@@ -407,8 +407,32 @@ def reweight(
         w = np.exp(s - s.max())
         return (w[:, None] * aa).sum(axis=0) / w.sum()
 
+    def shift_stat(block: np.ndarray) -> np.ndarray:
+        """The shift, resampled as one quantity rather than two.
+
+        An earlier version gave ``shift`` the bootstrap error of the reweighted
+        mean.  That is wrong in both directions and it fails hardest exactly
+        where the estimator matters.  When ``beta*dU`` is large the weights
+        approach a hard 0/1 exclusion, the reweighted mean of a depleted bin is
+        the same number in every resample, and its bootstrap error collapses to
+        zero -- while the shift, which subtracts the reference mean, still
+        carries all of that mean's uncertainty.  The exact two-particle
+        benchmark shows the quoted error falling four orders of magnitude while
+        the actual error holds constant, with the Kish effective sample size
+        never dropping below 0.76 and so never warning.
+
+        Resampling the difference directly fixes both problems at once: the
+        reference term's error is included, and the correlation between the two
+        terms is handled by construction because they are computed on the same
+        resample.
+        """
+        return reweighted_stat(block) - block[:, :k].mean(axis=0)
+
     boot = block_bootstrap(
         joint, reweighted_stat, n_resamples=n_resamples, block_length=block_length, seed=seed
+    )
+    boot_shift = block_bootstrap(
+        joint, shift_stat, n_resamples=n_resamples, block_length=block_length, seed=seed
     )
 
     # Zwanzig: dF = -ln<exp(-beta dU)>/beta, computed in the shifted frame so the
@@ -422,7 +446,8 @@ def reweight(
 
     return ReweightResult(
         mean=Estimate(_unwrap(mean), _unwrap(boot.error), stats["ess"], boot.method),
-        shift=Estimate(_unwrap(shift), _unwrap(boot.error), stats["ess"], boot.method),
+        shift=Estimate(_unwrap(shift), _unwrap(boot_shift.error), stats["ess"],
+                       boot_shift.method),
         ess=stats["ess"],
         ess_fraction=stats["ess_fraction"],
         max_weight_fraction=stats["max_weight_fraction"],

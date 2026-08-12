@@ -41,6 +41,7 @@ from atomlab.analysis.statistics import (
     weighted_statistics,
 )
 from atomlab.units import KB
+from atomlab.units import beta as inverse_temperature
 
 TEMPERATURE = 300.0
 BETA = 1.0 / (KB * TEMPERATURE)
@@ -307,3 +308,45 @@ class TestStatisticsModule:
         lo, hi = confidence_interval(samples, level=0.95)
         assert lo < 5.0 < hi
         assert hi - lo == pytest.approx(2 * 1.96, rel=0.1)
+
+
+def test_reweight_shift_error_does_not_collapse_as_weights_harden():
+    """The reweighted shift's error must not vanish when the weights become 0/1.
+
+    Found by the exact two-particle benchmark, where the quoted error on the
+    reweighted shift fell four orders of magnitude across an amplitude sweep
+    while the actual error held constant, and the Kish effective sample size
+    never dropped below 0.76 -- so neither the error bar nor the standard
+    diagnostic gave any warning.
+
+    The mechanism is specific and reproducible.  As ``beta*dU`` grows on the
+    frames that carry the observable, the reweighted mean of the depleted
+    component becomes the same number in every bootstrap resample and its own
+    error genuinely does go to zero.  The *shift* subtracts the reference mean,
+    so it still carries all of that mean's uncertainty -- and an earlier version
+    of :func:`reweight` handed the shift the reweighted mean's error instead of
+    its own.
+
+    The limiting behaviour is what makes this checkable without a tolerance
+    pulled from the air: with the weights excluding a component entirely, the
+    shift is ``0 - <A>_0``, so its error must converge to the error on ``<A>_0``.
+    """
+    rng = np.random.default_rng(0)
+    n = 4000
+    hit = rng.random(n) < 0.25
+    a = np.stack([hit.astype(float), (~hit).astype(float)], axis=1)
+    beta = inverse_temperature(TEMPERATURE)
+
+    errors = []
+    for reduced in (0.05, 0.5, 2.0, 8.0):
+        du = np.where(hit, reduced / beta, 0.0)
+        result = reweight(a, du, TEMPERATURE, n_resamples=200, seed=1)
+        errors.append(float(np.asarray(result.shift.error)[0]))
+        # The diagnostics stay healthy throughout, which is the point: they
+        # cannot be relied on to catch this.
+        assert result.ess_fraction > 0.7
+
+    assert errors == sorted(errors), errors
+    plain = block_bootstrap(a, lambda x: x.mean(axis=0), n_resamples=200, seed=1)
+    plain_error = float(np.asarray(plain.error)[0])
+    assert abs(errors[-1] - plain_error) < 0.25 * plain_error, (errors[-1], plain_error)
