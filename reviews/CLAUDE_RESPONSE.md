@@ -9,16 +9,27 @@
 
 I accept the review's central finding. The work establishes a controlled
 existence proof and the manuscript wrote it up as something closer to a
-validated method. Five of the seven numbered items are correct as stated, one is
-correct with a caveat that strengthens rather than weakens it, and on one I
-partially disagree — set out in §P0-1 below, where I think the review conflates
-two measurements with opposite signs.
+validated method. Six of the seven numbered items are correct as stated; on
+P0-4 the clustering objection is correct and the prediction that follows from
+it is not, which §1 sets out.
 
-What follows is not a promise to fix things later. Three experiments were
-written and run in response to this review before writing this document, and
-their numbers are here, including where they went against what I expected. Where
-an item cannot be closed without an experiment I have not run, I say so and give
-the design rather than an intention.
+What follows is not a promise to fix things later. Three experiments (`exp09`,
+`exp10`, `exp11`) and four standalone analyses were written and run in response
+to this review before this document was finished, on committed trees. Their
+numbers are here, including the four places they went against me:
+
+- a claim I had already published — that the second-order term makes residuals
+  worse — turned out to come from a smoke run and to be false at production
+  scale;
+- one of the manuscript's headline numbers, a 360× null suppression, does not
+  replicate across construction chains and is really a median of 26×;
+- my own counter-argument to P0-1 was backwards, and `exp10` is what
+  demonstrates it;
+- the exact benchmark written to settle P0-1 found a real bug in `reweight()`,
+  in a module four claim-bearing results depend on.
+
+Where an item cannot be closed without an experiment I have not run, I say so
+and give the design rather than an intention.
 
 ---
 
@@ -26,7 +37,7 @@ the design rather than an intention.
 
 | Review item | Verdict | Evidence or counter-evidence | Concrete action | Commit / experiment | Claim after action |
 |---|---|---|---|---|---|
-| **P0-1** end-to-end consistency | Partially agree | The review treats the exp06 amplitude-sweep disagreement and the six-chain 35 %/3.7 σ result as one failure. They have **opposite signs**: at 4.25 Å direct sampling is *smaller* than the prediction, at 5.25 Å it is *larger*. No single estimator bias produces both. Separately, the 3.7 σ uses a prediction error bar (±0.101) that is a within-chain blocking error from **one** reference chain and therefore does not include how much the prediction moves between chains. | `exp10` — 8 reference and 8 surrogate chains, two bins, two samplers, forward/reverse FEP + BAR + two-state MBAR, bracketing initialisations, relaxation ladder, per-chain prediction scatter. Pre-registered estimand, ±0.5 pair equivalence bound, decision rule fixed before the confirmatory run. | `experiments/exp10_endtoend_consistency`, new module `atomlab/analysis/fep.py` validated in `tests/test_fep.py` | *(filled in §2 below)* |
+| **P0-1** end-to-end consistency | **Agree that it had to be resolved; my proposed mechanism was wrong** | `exp10`: eight reference chains, sixteen surrogate chains in two bracketing arms, two bins, two samplers, six estimators. Direct minus MBAR is **+0.047** pairs at 4.25 Å and **+0.160** at 5.25 Å — the discrepancy does not reproduce. The linear prediction (−3.82) reproduces exp06's own (−3.835) to 0.4 %; it is exp06's *direct* value of −1.948 that fails, at 2.7 σ on its own error bar. Incomplete relaxation is excluded by measurement: the two initialisations agree from the first recorded frame, gap [−0.31, +0.10] pairs, and meet at 50 % discard. **But my counter-argument was backwards** — I claimed the prediction's between-chain movement was missing from its error bar; it is 0.042 and 0.069 pairs against blocking errors of 0.069 and 0.056, i.e. *more* stable across chains, not less. | Ran `exp10` on a committed tree; wrote `docs/RESULTS.md` §5.7 including the paragraph where I was wrong; fixed a real bug in `reweight()` that the companion exact benchmark exposed. | `experiments/exp10_endtoend_consistency`, `atomlab/analysis/fep.py`, `scripts/validate_two_particle_exact.py` | **The estimators agree; the pre-registered rule says "underpowered", not "consistent".** Every interval contains zero but is ±1.3 pairs wide against a ±0.5 bound, so point agreement at 0.05 pairs is not equivalence established to 0.5. Reaching the bound needs ≈8× the chains. |
 | **P0-2** calibration / common offset | **Agree**, and the mechanism is now identified | Reproduced independently before reading the review's numbers: the eight exp07 residuals are all negative, mean −0.861 σ, scatter 0.571 σ. `exp09` then decomposes 64 residuals from 8 independent reference chains: the row effects track their own chains' means, exp07's all-negative offsets become 42/64 *positive*, and a quantity whose sign flips with the reference draw is a realisation rather than a bias. Of the remainder, the truncation accounts for the grand mean (+0.781 σ → **+0.089 σ** on adding the second-order term) and the field structure (variance ratio 2.58 → 0.94); the omitted prediction error accounts for the interaction (observed 0.997 σ against 0.840 σ predicted, ratio 1.19). | `exp09` plus `scripts/residual_variance_budget.py`. | `experiments/exp09_calibration_replication`, `results/.../variance_budget.json` | **The estimator shows no detectable bias; the error bars were too small by ≈1.4 ×.** The prediction's own error was missing from the denominator and the reference chain's blocking error understates its between-chain scatter by 1.30 ×. The "1.01 σ" was never evidence either way. |
 | **P0-3** counterexample replication | **Agree, and it was worth running** | The objection was correct: one construction chain, one evaluation split, two force levels that are the same field rescaled, shared random streams. `exp11` repeats it with the construction cluster as the unit — six clusters, each with its own construction trajectory, disjoint evaluation trajectory and direct chains. Per-cluster contrasts [10.88, 10.69, 11.01, 11.28, 10.44, 9.73] pairs, mean **+10.671, 95 % CI [+10.105, +11.238]** against a pre-registered minimum effect of 1.0; between-cluster spread 0.540 against within-cluster 0.490, ratio **1.10**. Changing the construction chain moves the answer barely more than re-running the direct chains does. **But the 360× null suppression does not replicate**: across the six it is [21, 19, 16, 30, 467, 44]×, median 26×, and 360× was an upper-tail draw. | Ran `exp11`; wrote `docs/RESULTS.md` §5.6 and a new manuscript section; corrected the 360× to a median of 26× in three places in each manuscript file. | `experiments/exp11_counterexample_replication` | **The contrast replicates across construction chains.** It remains a single state point, one observable and one basis — the scope limit stands, but the stability objection is answered. |
 | **P0-4** clustered zoo / post-hoc band | **Agree on the clustering, disagree on the consequence of the missing measurement error** | The clustering objection is correct and no analysis fixes it: the 34 members are a handful of parameter families sharing a reference trajectory, a baseline and a random stream, and every window in the sweep re-uses the same points. The 30× spread's denominator (`null_f4e-03`, 2.65 raw against 2.43 noise) is not resolved from zero — worse than the review knew: redrawing it from its own sampling distribution floors it to exactly zero in **45 %** of draws. But the review also predicts that propagating each member's Monte Carlo uncertainty will disturb the low-end ordering, and **it does not**. Restoring that term and sweeping the redraw scale to a deliberately excessive 1.41 × noise leaves the across-decades correlation excluding zero (0.83 [0.55, 0.88]), the within-band one containing it (0.34 [−0.20, 0.80]), and the prediction excluding it inside the band (0.94 [0.40, 0.95]). | Struck the 30×; replaced "coarse filter, not a selector" with the within-zoo statement in §4 below; wrote `scripts/zoo_uncertainty_propagation.py` and reported the sweep and the floor rates in `docs/RESULTS.md` §3a. | `scripts/zoo_uncertainty_propagation.py`, `results/exp05_proxy_correlation/uncertainty_propagation.json` | Restricted to a descriptive statement about this fixed zoo — but one whose intervals now carry both sources of uncertainty. |
@@ -110,7 +121,40 @@ corrected.
 
 ### exp10 — end-to-end consistency
 
-*(Results inserted below once the production run completes.)*
+| estimator | 4.25 Å | 5.25 Å |
+|---|---|---|
+| linear response | −3.82 ± 0.07 | +1.81 ± 0.06 |
+| forward FEP | −3.78 | +1.80 |
+| reverse FEP | −4.17 | +1.89 |
+| MBAR, both directions | −3.83 ± 0.08 | +1.81 ± 0.07 |
+| direct, HMC (8+8 chains) | −3.78 ± 0.67 | +1.97 ± 0.78 |
+| direct, Metropolis (4+4 chains) | −3.01 ± 1.48 | +1.68 ± 2.10 |
+
+Diagnostics: work overlap 0.991, Kish 0.833 / 0.820, maximum weight 0.0004 /
+0.0026, τ_int 1.7 / 1.6, second-order ratio 0.010 / 0.005. The
+prediction/direct correlation the review asked for is −0.116 / −0.086 — small
+and negative, so quadrature is very slightly anti-conservative here; the
+covariance-corrected intervals are reported beside it and the decision rule uses
+the quadrature version so the correction can never narrow an interval after the
+fact.
+
+The verdict against the pre-registered rule is **underpowered, not consistent**,
+and that is the right answer rather than a disappointing one. Point agreement at
+0.047 pairs is not equivalence established to 0.5 pairs when the interval is
+±1.3 wide. The pilot variance I used to size the experiment was optimistic by
+about a factor of 2.5 in the direct arm; reaching the bound needs roughly eight
+times the chains, which is a number this design now supplies rather than
+guesses.
+
+**Two things came out of exp10 that were not on the review's list.** A
+step-size bug in my own bracketing arms — they record from the first move, so
+they run with `burn_in=0`, and HMC step-size adaptation only happens during
+burn-in, so they sampled at 2.00 fs while every other chain adapted to 31.73 fs.
+The surrogate ensemble was being explored with sixteen times less simulated time
+per move than the reference it is compared against, which would have shown the
+arms failing to meet and invited exactly the wrong conclusion. And the exact
+two-particle benchmark written alongside it found a genuine defect in
+`reweight()`, described in `docs/RESULTS.md` §5.3.
 
 ### The warning light, scored as a screening test
 
@@ -425,33 +469,34 @@ will not until Gate C passes.
 
 ---
 
-## 4. What I do not accept, and why
+## 4. Where I disagreed, and how it came out
 
-One item, and it is a matter of reading two measurements rather than of
-principle.
+I raised two objections to P0-1's framing before running the experiment. One
+survived it and one did not, and the one that did not was mine.
 
-The review groups the exp06 disagreement and the six-chain 35 %/3.7 σ result as
-a single "exact reweighting vs direct sampling" failure and calls it the release
-blocker. They are not the same measurement and they do not have the same sign.
-At 4.25 Å (`exp06`, one chain each side) direct sampling gives a *smaller*
-magnitude than the prediction, at every one of seven amplitudes. At 5.25 Å
-(`check_between_chain_scatter.py`, six chains each side) direct sampling gives a
-*larger* magnitude, by 35 %. No single estimator bias produces both signs; a
-chain that has not relaxed produces the first and not the second, and an
-overestimating predictor produces the second and not the first.
+**Survived.** The review groups exp06's disagreement and the six-chain
+35 %/3.7 σ result as a single "exact reweighting vs direct sampling" failure.
+They have opposite signs — at 4.25 Å direct sampling gives a smaller magnitude
+than the prediction, at 5.25 Å a larger one — and no single estimator bias
+produces both. `exp10` measures both bins with eight reference and sixteen
+surrogate chains and finds direct minus MBAR at **+0.047** and **+0.160** pairs.
+They were two single-realisation excursions in opposite directions. Treating
+them as one estimator bias was the wrong model of them, and the distinction
+mattered because it is what motivated measuring both bins rather than one.
 
-I agree entirely that this must be resolved before anything is called validated
-— that is why `exp10` exists and why it measures both bins. The disagreement is
-only about whether the manuscript had one unexplained result or two, and it
-matters because the two point at different fixes.
+**Did not survive.** I also argued that the 3.7 σ was inflated because the
+prediction's quoted ±0.101 is a within-chain blocking error from a single
+reference chain, which cannot know how much the prediction moves between chains.
+`exp10` computes the prediction separately from each of eight reference chains:
+**the between-chain SEM is 0.042 and 0.069 pairs against blocking errors of
+0.069 and 0.056.** The prediction is *more* stable across chains than its own
+bootstrap error suggests, not less. My proposed mechanism was backwards. The
+conclusion it was offered in support of holds for the other reason, but the
+argument was wrong, and the experiment I designed to test it is what says so.
 
-I also note, without disputing the item, that the 3.7 σ figure uses a
-within-chain blocking error on the prediction from a single reference chain. If
-the prediction's between-chain scatter is comparable to that blocking error, the
-significance is arithmetic. `exp10` measures that scatter rather than assuming
-either way.
-
----
+I would rather record that than quietly drop it. The review's instinct — that a
+disagreement of that size needs an experiment rather than an argument — was
+right in a way my counter-argument was not.
 
 ## 5. Gate A, made concrete
 

@@ -471,8 +471,17 @@ scatter of the prediction is comparable to 0.1 pairs, the 3.7 σ is arithmetic.
 `exp10` computes the prediction separately from each of eight reference chains
 and reports that scatter.
 
-The open question is therefore narrower than this section originally said, and
-the results are in §5.6.
+**The results are in §5.7 and the question is closed.** With eight reference
+chains and sixteen surrogate chains, direct sampling and the reference-based
+estimators agree to +0.047 pairs at 4.25 Å and +0.160 at 5.25 Å; the linear
+prediction reproduces exp06's own −3.835 to 0.4 %, and it is exp06's direct
+value of −1.948 that fails to reproduce, at 2.7 σ on its own error bar. The
+bracketing arms exclude incomplete relaxation by measurement. The 35 % and the
+factor-of-two were single-chain excursions in opposite directions.
+
+Note also that §5.7 refutes the second of the two objections raised here — the
+prediction's between-chain SEM is *smaller* than its blocking error, not larger,
+so the significance was never inflated by that.
 
 ### 5.3 The dilute-gas closed form
 
@@ -757,6 +766,83 @@ is not a defect — it is the statement that a null space estimated from finite
 samples is only null on those samples, which §2.2 already says. What is wrong is
 the size of the surviving suppression. **The defensible figure is a median of
 26× with a factor-of-thirty spread across construction chains, not 360×.**
+
+### 5.7 The release blocker: the discrepancy does not reproduce
+
+`exp10`, review item P0-1 and the one the review calls a release blocker.
+`exp06`'s smallest amplitude had two reference-based estimators agreeing with
+each other to 1.3 % — linear −3.835, reweighted −3.884 pairs — and direct
+sampling saying −1.948 ± 0.821. Either the prediction was wrong, in which case
+the central claim of this repository fails, or the direct measurement was, in
+which case every "measured" column is suspect.
+
+Eight independent reference chains, sixteen surrogate chains in two bracketing
+arms, two bins of opposite discrepancy sign, two samplers sharing no propagation
+machinery, and six estimators of the same two numbers:
+
+| estimator | 4.25 Å | 5.25 Å |
+|---|---|---|
+| linear response | −3.82 ± 0.07 | +1.81 ± 0.06 |
+| forward FEP | −3.78 | +1.80 |
+| reverse FEP | −4.17 | +1.89 |
+| MBAR, both directions | −3.83 ± 0.08 | +1.81 ± 0.07 |
+| direct, HMC (8+8 chains) | −3.78 ± 0.67 | +1.97 ± 0.78 |
+| direct, Metropolis (4+4 chains) | −3.01 ± 1.48 | +1.68 ± 2.10 |
+
+**The discrepancy does not reproduce.** Direct minus MBAR is **+0.047** pairs at
+4.25 Å and **+0.160** at 5.25 Å, against exp06's apparent 1.9-pair gap. The
+linear prediction of −3.82 reproduces exp06's own −3.835 to 0.4 %; what does not
+reproduce is exp06's direct measurement of −1.948, which sits 2.7 σ from this
+one on its own quoted error. **It was a single-chain realisation.**
+
+**Incomplete relaxation is excluded by measurement rather than by argument.**
+Chains started from reference-equilibrated configurations and chains started
+from surrogate-equilibrated ones agree from the first recorded frame — gap
+[−0.31, +0.10] pairs at zero discard — and meet exactly at 50 %. The ladder
+widens at 75–90 % only because 150 frames remain there. §5.2 asserted this
+exclusion; it is now a measurement.
+
+**The pre-registered rule nonetheless returns "underpowered", and that is the
+honest verdict.** Every interval contains zero, but the direct arm's error is
+0.67–0.78 pairs from eight chain pairs, so the 95 % intervals are ±1.3, wider
+than the ±0.5 equivalence bound fixed in advance. Point agreement at 0.05 and
+0.16 pairs is not the same as having established equivalence to 0.5, and the
+decision rule does not let the first be reported as the second. Reaching the
+bound needs roughly 8× the chains.
+
+Diagnostics, all healthy: work overlap 0.991, Kish 0.833 forward and 0.820
+reverse, maximum weight 0.0004 and 0.0026, τ_int 1.7 and 1.6, second-order ratio
+0.010 and 0.005, MBAR free energy 0.1555 eV.
+
+#### Where I was wrong about the review
+
+In `reviews/CLAUDE_RESPONSE.md` I partially disagreed with P0-1 on two grounds.
+One survives and one does not.
+
+*Survives.* The review treats exp06's disagreement and the six-chain 35 %/3.7 σ
+result as a single failure, and they have opposite signs — at 4.25 Å the direct
+value is smaller in magnitude than the prediction, at 5.25 Å larger. exp10
+measures both bins and finds neither: +0.047 and +0.160 pairs. Two
+single-realisation excursions in opposite directions is what that pattern was,
+and treating them as one estimator bias was the wrong model of it.
+
+*Does not survive.* I also argued that the 3.7 σ was inflated because the
+prediction's quoted error is a within-chain blocking error from one chain,
+which cannot know how much the prediction moves between chains. exp10 measures
+that directly: **the between-chain SEM of the prediction is 0.042 and 0.069
+pairs against blocking errors of 0.069 and 0.056** — the prediction is *more*
+stable across chains than its own bootstrap error suggests, not less. My
+proposed mechanism was backwards. The conclusion it was offered in support of
+happens to hold, for the different reason above, but the argument was wrong and
+the experiment I designed to test it is what says so.
+
+The prediction/direct correlation the review asked for is also measured, at
+−0.116 and −0.086. It is small and negative, so adding the two errors in
+quadrature is very slightly anti-conservative rather than conservative; the
+covariance-corrected intervals (0.683 and 0.785 against 0.674 and 0.779) are
+reported beside the quadrature ones, and the decision rule uses the quadrature
+version so that the correction can never be read as narrowing an interval after
+the fact.
 
 ## 6. What is not here
 
