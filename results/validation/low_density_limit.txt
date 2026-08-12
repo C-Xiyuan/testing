@@ -1,0 +1,20 @@
+system: 64 atoms, L = 31.75 A, rho* = 0.079, T* = 2.510
+    hmc: 2000/6000 frames, acceptance 0.84, dt 49.50 fs
+    hmc: 4000/6000 frames, acceptance 0.84, dt 49.50 fs
+    hmc: 6000/6000 frames, acceptance 0.84, dt 49.50 fs
+sampling: SamplerReport(acceptance=0.84, dt=49.50 fs, |dH|=1.68e-02 eV)
+
+perturbation force RMSE = 5.038e-04 eV/A, beta*sd(dU) = 0.1016
+   r (A)       <A>   exact dA       estimated dA  reweighted  sigma off
+    3.40     3.383    -0.0175    -0.0013 +/-0.0027     -0.0014       6.04
+    3.80     6.304    -0.1174    -0.0927 +/-0.0048     -0.0921       5.17
+    4.20     7.226    -0.2121    -0.1981 +/-0.0060     -0.1951       2.33
+    4.60     7.828    -0.1441    -0.1144 +/-0.0045     -0.1139       6.53
+    5.00     8.486    -0.0377    -0.0182 +/-0.0044     -0.0184       4.47
+    5.40     9.367    -0.0018     0.0204 +/-0.0048      0.0205       4.58
+    5.80    10.677     0.0027     0.0085 +/-0.0052      0.0088       1.11
+
+max |deviation| = 6.53 sigma over 7 bins
+rms deviation   = 4.68 sigma (expect ~1 if the estimator and its error bars are both right)
+second-order ratio (median) = 0.0086
+reweighting ESS fraction    = 0.990

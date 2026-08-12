@@ -155,9 +155,26 @@ Ten models — a pair spline, a linear ACE-style basis, Behler-Parrinello networ
 and E(3)-equivariant networks — fitted to 400 configurations of Lennard-Jones
 argon, with training and test data drawn from separate Markov chains.
 
-**The response formula works on fitted models too: 1.06 σ rms** between predicted
-and measured observable shift across the ten, matching the 1.01 σ obtained on
-designed error fields. That is the external-validity check for §2, and it passes.
+**The response formula works on fitted models too.** Predicted against measured
+observable shift, in rms units of the measurement's own uncertainty:
+
+| setting | models | residual |
+|---|---|---|
+| designed error fields (exp07) | 8 | 1.01 σ |
+| fitted models, 400 configurations | 10 | 1.06 σ |
+| fitted models, 40 configurations | 8 | 1.00 σ |
+
+Three independent settings, all landing at one standard error. That is the
+external-validity check for §2, and it passes.
+
+The low-budget arm also produced the guard's best moment. Two E(3)-equivariant
+networks fitted to 40 configurations gave apparent observable shifts of **−95.5
+and −112.8 pairs** — twenty times any real effect in this study — and the
+stationarity check identified both chains as unequilibrated and excluded them.
+Without it, the largest numbers in this paper would have been transients on the
+way to the models' own equilibria rather than differences between ensembles.
+That is the second time the same check has caught a result that would have been
+reported (§4 of `docs/methods.md` is the first).
 
 Most of the zoo is uninformative for a different reason than expected: on this
 reference potential, at this data budget, nearly every architecture is good

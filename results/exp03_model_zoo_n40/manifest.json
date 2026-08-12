@@ -1,0 +1,168 @@
+{
+  "experiment": "exp03_model_zoo",
+  "git_commit": "400b2cb5a5e17fef65b6210f9a7a40f0c438034d",
+  "git_branch": "claude/ai-science-project-plan-p0obrk",
+  "git_dirty": true,
+  "seed": 0,
+  "quick_mode": false,
+  "config": {
+    "system": {
+      "lattice_constant": 5.4,
+      "reps": [
+        3,
+        3,
+        3
+      ],
+      "density": 0.02,
+      "temperature": 120.0
+    },
+    "potential": {
+      "epsilon": 0.0103,
+      "sigma": 3.405,
+      "cutoff": 7.0,
+      "mode": "shifted_force"
+    },
+    "observable": {
+      "r_min": 3.0,
+      "r_max": 7.0,
+      "n_bins": 8,
+      "target_bin": [
+        3.4,
+        3.9
+      ]
+    },
+    "sampling": {
+      "n_reference": 3000,
+      "n_direct": 1500,
+      "n_leapfrog": 8,
+      "step_size": 0.002,
+      "burn_in": 1000,
+      "n_melt": 400,
+      "n_anneal": 1000
+    },
+    "data": {
+      "n_train_pool": 400,
+      "n_test": 120,
+      "model_cutoff": 6.0,
+      "budgets": [
+        40
+      ]
+    },
+    "zoo": {
+      "pair_spline_knots": [
+        8,
+        24
+      ],
+      "linear_l_max": [
+        2,
+        4
+      ],
+      "bpnn_hidden": [
+        [
+          16,
+          16
+        ],
+        [
+          64,
+          64
+        ]
+      ],
+      "bpnn_epochs": 250,
+      "egnn_channels": [
+        8
+      ],
+      "egnn_epochs": 60,
+      "seeds": [
+        0,
+        1
+      ]
+    }
+  },
+  "timings_seconds": {
+    "equilibration": 56.26598620414734,
+    "reference_sampling": 114.75096487998962,
+    "training_data": 77.98758125305176,
+    "spline_k8@n40": 85.755690574646,
+    "spline_k24@n40": 88.23675203323364,
+    "linear_l2@n40": 641.3415834903717,
+    "linear_l4@n40": 754.1389808654785,
+    "bpnn_16x2_s0@n40": 312.2768294811249,
+    "bpnn_16x2_s1@n40": 307.72633719444275,
+    "bpnn_64x2_s0@n40": 318.24720883369446,
+    "bpnn_64x2_s1@n40": 317.7572536468506,
+    "egnn_c8_s0@n40": 310.8561873435974,
+    "egnn_c8_s1@n40": 310.94530272483826
+  },
+  "total_seconds": 3722.1837759017944,
+  "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
+  "cpu_count": 4,
+  "libraries": {
+    "python": "3.11.15",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "torch": "2.13.0+cpu",
+    "numba": "0.66.0",
+    "matplotlib": "3.11.1"
+  },
+  "finished_at": "2026-08-12T02:46:32+0000",
+  "results": {
+    "n_models": 8,
+    "force_rmse": {
+      "rho": 0.4761904761904762,
+      "ci": [
+        -0.3658536585365854,
+        0.9601901034386362
+      ]
+    },
+    "force_mae": {
+      "rho": 0.38095238095238104,
+      "ci": [
+        -0.5555555555555556,
+        0.9240506329113927
+      ]
+    },
+    "energy_rmse": {
+      "rho": 0.523809523809524,
+      "ci": [
+        -0.3659462797159618,
+        1.0
+      ]
+    },
+    "smoothness_ratio": {
+      "rho": -0.38095238095238104,
+      "ci": [
+        -0.9746835443037977,
+        0.605263157894737
+      ]
+    },
+    "du_std_per_atom": {
+      "rho": 0.4761904761904762,
+      "ci": [
+        -0.3658536585365854,
+        0.9601901034386362
+      ]
+    },
+    "target_predicted": {
+      "rho": 0.5000000000000001,
+      "ci": [
+        -0.4177215189873419,
+        1.0
+      ]
+    },
+    "prediction_residual_sigma": 1.0028845631521208,
+    "force_rmse_range": [
+      0.000650533438989154,
+      0.0047181711865704355
+    ],
+    "observable_error_range": [
+      0.0556666666666672,
+      0.731000000000023
+    ],
+    "n_dropped_not_equilibrated": 2,
+    "dropped": [
+      "egnn_c8_s0",
+      "egnn_c8_s1"
+    ],
+    "n_linear_trustworthy": 7
+  }
+}

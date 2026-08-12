@@ -1,0 +1,23 @@
+equilibration: EquilibrationReport(Q6 0.575 -> 0.074, U/atom -0.03146 eV, acceptance 0.96/0.85)
+
+sampling 6 independent chains of each potential (1500 frames each)
+  seed 0: reference bin4 =  126.599 +/- 0.622   perturbed =  129.152 +/- 0.572   (acceptance 0.92)
+  seed 1: reference bin4 =  126.943 +/- 0.454   perturbed =  129.716 +/- 0.558   (acceptance 0.92)
+  seed 2: reference bin4 =  127.356 +/- 0.484   perturbed =  129.705 +/- 0.462   (acceptance 0.92)
+  seed 3: reference bin4 =  127.313 +/- 0.604   perturbed =  129.924 +/- 0.512   (acceptance 0.88)
+  seed 4: reference bin4 =  127.411 +/- 0.518   perturbed =  129.199 +/- 0.685   (acceptance 0.91)
+  seed 5: reference bin4 =  127.203 +/- 0.850   perturbed =  129.391 +/- 0.763   (acceptance 0.94)
+
+--- bin 4 (5.25 A) ---
+within-chain blocking error (mean over chains) : 0.589 pairs
+between-chain scatter, reference               : 0.312 pairs
+between-chain scatter, perturbed               : 0.313 pairs
+ratio between/within                           : 0.53
+
+measured shift per seed pair: [2.553 2.773 2.349 2.611 1.788 2.188]
+mean 2.377, standard error of the mean 0.144, spread of a single pair 0.354
+exp06 quoted +/- 0.832 for one such pair
+
+same-sample estimators on a fresh 3000-frame chain:
+  first order     1.725 +/- 0.101
+  reweighted      1.757 (ESS fraction 0.83)

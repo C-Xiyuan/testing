@@ -1,0 +1,557 @@
+% Bibliography for "Error fields, not error norms".
+%
+% Every entry below is on the permitted list in SPEC.md Sec. 9. No entry has
+% been added that is not on that list. Four permitted entries are omitted
+% (Perez 2025; Maxson 2024; Soares 2023; and no forbidden item appears),
+% because their titles could not be verified with confidence and a reference
+% with an invented title is worse than a missing reference.
+
+%---------------------------------------------------------------------
+% Evaluation-gap literature
+%---------------------------------------------------------------------
+
+@article{Fu2023,
+  author  = {Fu, Xiang and Wu, Zhenghao and Wang, Wujie and Xie, Tian and
+             Keten, Sinan and G{\'o}mez-Bombarelli, Rafael and Jaakkola, Tommi},
+  title   = {Forces are not Enough: Benchmark and Critical Evaluation for
+             Machine Learning Force Fields with Molecular Simulations},
+  journal = {Transactions on Machine Learning Research},
+  year    = {2023},
+  note    = {arXiv:2210.07237},
+}
+
+@article{Stocker2022,
+  author  = {Stocker, Sina and Gasteiger, Johannes and Becker, Florian and
+             G{\"u}nnemann, Stephan and Margraf, Johannes T.},
+  title   = {How robust are modern graph neural network potentials in long and
+             hot molecular dynamics simulations?},
+  journal = {Mach. Learn.: Sci. Technol.},
+  volume  = {3},
+  pages   = {045010},
+  year    = {2022},
+  doi     = {10.1088/2632-2153/ac9955},
+}
+
+@article{Morrow2023,
+  author  = {Morrow, Joe D. and Gardner, John L. A. and Deringer, Volker L.},
+  title   = {How to validate machine-learned interatomic potentials},
+  journal = {J. Chem. Phys.},
+  volume  = {158},
+  pages   = {121501},
+  year    = {2023},
+  doi     = {10.1063/5.0139611},
+}
+
+@article{Kovacs2021,
+  author  = {Kov{\'a}cs, D{\'a}vid P{\'e}ter and van der Oord, Cas and
+             Kucera, Jiri and Allen, Alice E. A. and Cole, Daniel J. and
+             Ortner, Christoph and Cs{\'a}nyi, G{\'a}bor},
+  title   = {Linear Atomic Cluster Expansion Force Fields for Organic
+             Molecules: Beyond RMSE},
+  journal = {J. Chem. Theory Comput.},
+  volume  = {17},
+  pages   = {7696},
+  year    = {2021},
+  doi     = {10.1021/acs.jctc.1c00647},
+}
+
+@article{Wu2024,
+  author  = {Wu, Xiguang and Zhou, Yuwen and Dong, Haikuan and Ying, Penghua
+             and Wang, Yanzhou and Song, Bai and Fan, Zheyong and Xiong, Shiyun},
+  title   = {Correcting force error-induced underestimation of lattice thermal
+             conductivity in machine learning molecular dynamics},
+  journal = {J. Chem. Phys.},
+  volume  = {161},
+  pages   = {014103},
+  year    = {2024},
+  doi     = {10.1063/5.0213811},
+}
+
+@article{Pota2024,
+  author  = {P{\'o}ta, Bal{\'a}zs and Ahlawat, Paramvir and Cs{\'a}nyi, G{\'a}bor
+             and Simoncelli, Michele},
+  title   = {Thermal Conductivity Predictions with Foundation Atomistic Models},
+  journal = {arXiv:2408.00755},
+  year    = {2024},
+  doi     = {10.48550/arXiv.2408.00755},
+}
+
+@article{Deng2025,
+  author  = {Deng, Bowen and Choi, Yunyeong and Zhong, Peichen and
+             Riebesell, Janosh and Anand, Shashwat and Li, Zhuohan and
+             Jun, KyuJung and Persson, Kristin A. and Ceder, Gerbrand},
+  title   = {Systematic softening in universal machine learning interatomic
+             potentials},
+  journal = {npj Comput. Mater.},
+  volume  = {11},
+  year    = {2025},
+  doi     = {10.1038/s41524-024-01500-6},
+}
+
+%---------------------------------------------------------------------
+% Uncertainty propagation to observables
+%---------------------------------------------------------------------
+
+@article{Imbalzano2021,
+  author  = {Imbalzano, Giulio and Zhuang, Yongbin and Kapil, Venkat and
+             Rossi, Kevin and Engel, Edgar A. and Grasselli, Federico and
+             Ceriotti, Michele},
+  title   = {Uncertainty estimation for molecular dynamics and sampling},
+  journal = {J. Chem. Phys.},
+  volume  = {154},
+  pages   = {074102},
+  year    = {2021},
+  doi     = {10.1063/5.0036522},
+}
+
+@article{Thaler2021,
+  author  = {Thaler, Stephan and Zavadlav, Julija},
+  title   = {Learning neural network potentials from experimental data via
+             Differentiable Trajectory Reweighting},
+  journal = {Nat. Commun.},
+  volume  = {12},
+  pages   = {6884},
+  year    = {2021},
+  doi     = {10.1038/s41467-021-27241-4},
+}
+
+@article{Frederiksen2004,
+  author  = {Frederiksen, S{\o}ren L. and Jacobsen, Karsten W. and
+             Brown, Kevin S. and Sethna, James P.},
+  title   = {Bayesian Ensemble Approach to Error Estimation of Interatomic
+             Potentials},
+  journal = {Phys. Rev. Lett.},
+  volume  = {93},
+  pages   = {165501},
+  year    = {2004},
+  doi     = {10.1103/PhysRevLett.93.165501},
+}
+
+%---------------------------------------------------------------------
+% Architectures and descriptors (background only; not evaluated here)
+%---------------------------------------------------------------------
+
+@article{Behler2007,
+  author  = {Behler, J{\"o}rg and Parrinello, Michele},
+  title   = {Generalized Neural-Network Representation of High-Dimensional
+             Potential-Energy Surfaces},
+  journal = {Phys. Rev. Lett.},
+  volume  = {98},
+  pages   = {146401},
+  year    = {2007},
+  doi     = {10.1103/PhysRevLett.98.146401},
+}
+
+@article{Behler2011,
+  author  = {Behler, J{\"o}rg},
+  title   = {Atom-centered symmetry functions for constructing
+             high-dimensional neural network potentials},
+  journal = {J. Chem. Phys.},
+  volume  = {134},
+  pages   = {074106},
+  year    = {2011},
+  doi     = {10.1063/1.3553717},
+}
+
+@article{Bartok2010,
+  author  = {Bart{\'o}k, Albert P. and Payne, Mike C. and Kondor, Risi and
+             Cs{\'a}nyi, G{\'a}bor},
+  title   = {Gaussian Approximation Potentials: The Accuracy of Quantum
+             Mechanics, without the Electrons},
+  journal = {Phys. Rev. Lett.},
+  volume  = {104},
+  pages   = {136403},
+  year    = {2010},
+  doi     = {10.1103/PhysRevLett.104.136403},
+}
+
+@article{Bartok2013,
+  author  = {Bart{\'o}k, Albert P. and Kondor, Risi and Cs{\'a}nyi, G{\'a}bor},
+  title   = {On representing chemical environments},
+  journal = {Phys. Rev. B},
+  volume  = {87},
+  pages   = {184115},
+  year    = {2013},
+  doi     = {10.1103/PhysRevB.87.184115},
+}
+
+@article{Drautz2019,
+  author  = {Drautz, Ralf},
+  title   = {Atomic cluster expansion for accurate and transferable
+             interatomic potentials},
+  journal = {Phys. Rev. B},
+  volume  = {99},
+  pages   = {014104},
+  year    = {2019},
+  doi     = {10.1103/PhysRevB.99.014104},
+}
+
+@article{Thompson2015,
+  author  = {Thompson, A. P. and Swiler, L. P. and Trott, C. R. and
+             Foiles, S. M. and Tucker, G. J.},
+  title   = {Spectral neighbor analysis method for automated generation of
+             quantum-accurate interatomic potentials},
+  journal = {J. Comput. Phys.},
+  volume  = {285},
+  pages   = {316},
+  year    = {2015},
+  doi     = {10.1016/j.jcp.2014.12.018},
+}
+
+@article{Batzner2022,
+  author  = {Batzner, Simon and Musaelian, Albert and Sun, Lixin and
+             Geiger, Mario and Mailoa, Jonathan P. and Kornbluth, Mordechai and
+             Molinari, Nicola and Smidt, Tess E. and Kozinsky, Boris},
+  title   = {E(3)-equivariant graph neural networks for data-efficient and
+             accurate interatomic potentials},
+  journal = {Nat. Commun.},
+  volume  = {13},
+  pages   = {2453},
+  year    = {2022},
+  doi     = {10.1038/s41467-022-29939-5},
+}
+
+@inproceedings{Batatia2022,
+  author    = {Batatia, Ilyes and Kov{\'a}cs, D{\'a}vid P{\'e}ter and
+               Simm, Gregor N. C. and Ortner, Christoph and Cs{\'a}nyi, G{\'a}bor},
+  title     = {{MACE}: Higher Order Equivariant Message Passing Neural Networks
+               for Fast and Accurate Force Fields},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {35},
+  year      = {2022},
+}
+
+@article{Schutt2018,
+  author  = {Sch{\"u}tt, K. T. and Sauceda, H. E. and Kindermans, P.-J. and
+             Tkatchenko, A. and M{\"u}ller, K.-R.},
+  title   = {{SchNet} -- A deep learning architecture for molecules and
+             materials},
+  journal = {J. Chem. Phys.},
+  volume  = {148},
+  pages   = {241722},
+  year    = {2018},
+  doi     = {10.1063/1.5019779},
+}
+
+@inproceedings{Gilmer2017,
+  author    = {Gilmer, Justin and Schoenholz, Samuel S. and Riley, Patrick F.
+               and Vinyals, Oriol and Dahl, George E.},
+  title     = {Neural Message Passing for Quantum Chemistry},
+  booktitle = {Proceedings of the 34th International Conference on Machine
+               Learning},
+  year      = {2017},
+}
+
+%---------------------------------------------------------------------
+% Reference potentials
+%---------------------------------------------------------------------
+
+@article{Jones1924,
+  author  = {Jones, J. E.},
+  title   = {On the Determination of Molecular Fields. II. From the Equation
+             of State of a Gas},
+  journal = {Proc. R. Soc. Lond. A},
+  volume  = {106},
+  pages   = {463},
+  year    = {1924},
+  doi     = {10.1098/rspa.1924.0082},
+}
+
+@article{Verlet1967,
+  author  = {Verlet, Loup},
+  title   = {Computer ``Experiments'' on Classical Fluids. I. Thermodynamical
+             Properties of Lennard-Jones Molecules},
+  journal = {Phys. Rev.},
+  volume  = {159},
+  pages   = {98},
+  year    = {1967},
+  doi     = {10.1103/PhysRev.159.98},
+}
+
+@article{Rahman1964,
+  author  = {Rahman, A.},
+  title   = {Correlations in the Motion of Atoms in Liquid Argon},
+  journal = {Phys. Rev.},
+  volume  = {136},
+  pages   = {A405},
+  year    = {1964},
+  doi     = {10.1103/PhysRev.136.A405},
+}
+
+@article{StillingerWeber1985,
+  author  = {Stillinger, Frank H. and Weber, Thomas A.},
+  title   = {Computer simulation of local order in condensed phases of silicon},
+  journal = {Phys. Rev. B},
+  volume  = {31},
+  pages   = {5262},
+  year    = {1985},
+  doi     = {10.1103/PhysRevB.31.5262},
+}
+
+@article{DawBaskes1984,
+  author  = {Daw, Murray S. and Baskes, M. I.},
+  title   = {Embedded-atom method: Derivation and application to impurities,
+             surfaces, and other defects in metals},
+  journal = {Phys. Rev. B},
+  volume  = {29},
+  pages   = {6443},
+  year    = {1984},
+  doi     = {10.1103/PhysRevB.29.6443},
+}
+
+@article{FinnisSinclair1984,
+  author  = {Finnis, M. W. and Sinclair, J. E.},
+  title   = {A simple empirical {N}-body potential for transition metals},
+  journal = {Philos. Mag. A},
+  volume  = {50},
+  pages   = {45},
+  year    = {1984},
+  doi     = {10.1080/01418618408244210},
+}
+
+@article{CleriRosato1993,
+  author  = {Cleri, Fabrizio and Rosato, Vittorio},
+  title   = {Tight-binding potentials for transition metals and alloys},
+  journal = {Phys. Rev. B},
+  volume  = {48},
+  pages   = {22},
+  year    = {1993},
+  doi     = {10.1103/PhysRevB.48.22},
+}
+
+%---------------------------------------------------------------------
+% Statistical machinery
+%---------------------------------------------------------------------
+
+@article{Zwanzig1954,
+  author  = {Zwanzig, Robert W.},
+  title   = {High-Temperature Equation of State by a Perturbation Method. I.
+             Nonpolar Gases},
+  journal = {J. Chem. Phys.},
+  volume  = {22},
+  pages   = {1420},
+  year    = {1954},
+  doi     = {10.1063/1.1740409},
+}
+
+@article{Bennett1976,
+  author  = {Bennett, Charles H.},
+  title   = {Efficient estimation of free energy differences from Monte Carlo
+             data},
+  journal = {J. Comput. Phys.},
+  volume  = {22},
+  pages   = {245},
+  year    = {1976},
+  doi     = {10.1016/0021-9991(76)90078-4},
+}
+
+@article{ShirtsChodera2008,
+  author  = {Shirts, Michael R. and Chodera, John D.},
+  title   = {Statistically optimal analysis of samples from multiple
+             equilibrium states},
+  journal = {J. Chem. Phys.},
+  volume  = {129},
+  pages   = {124105},
+  year    = {2008},
+  doi     = {10.1063/1.2978177},
+}
+
+@article{Duane1987,
+  author  = {Duane, Simon and Kennedy, A. D. and Pendleton, Brian J. and
+             Roweth, Duncan},
+  title   = {Hybrid Monte Carlo},
+  journal = {Phys. Lett. B},
+  volume  = {195},
+  pages   = {216},
+  year    = {1987},
+  doi     = {10.1016/0370-2693(87)91197-X},
+}
+
+@incollection{Neal2011,
+  author    = {Neal, Radford M.},
+  title     = {{MCMC} using Hamiltonian dynamics},
+  booktitle = {Handbook of Markov Chain Monte Carlo},
+  publisher = {Chapman and Hall/CRC},
+  year      = {2011},
+}
+
+@article{Metropolis1953,
+  author  = {Metropolis, Nicholas and Rosenbluth, Arianna W. and
+             Rosenbluth, Marshall N. and Teller, Augusta H. and Teller, Edward},
+  title   = {Equation of State Calculations by Fast Computing Machines},
+  journal = {J. Chem. Phys.},
+  volume  = {21},
+  pages   = {1087},
+  year    = {1953},
+  doi     = {10.1063/1.1699114},
+}
+
+@article{Flyvbjerg1989,
+  author  = {Flyvbjerg, H. and Petersen, H. G.},
+  title   = {Error estimates on averages of correlated data},
+  journal = {J. Chem. Phys.},
+  volume  = {91},
+  pages   = {461},
+  year    = {1989},
+  doi     = {10.1063/1.457480},
+}
+
+@article{Kunsch1989,
+  author  = {K{\"u}nsch, Hans R.},
+  title   = {The Jackknife and the Bootstrap for General Stationary
+             Observations},
+  journal = {Ann. Stat.},
+  volume  = {17},
+  pages   = {1217},
+  year    = {1989},
+  doi     = {10.1214/aos/1176347265},
+}
+
+@article{PolitisRomano1994,
+  author  = {Politis, Dimitris N. and Romano, Joseph P.},
+  title   = {The Stationary Bootstrap},
+  journal = {J. Am. Stat. Assoc.},
+  volume  = {89},
+  pages   = {1303},
+  year    = {1994},
+  doi     = {10.1080/01621459.1994.10476870},
+}
+
+@book{Kish1965,
+  author    = {Kish, Leslie},
+  title     = {Survey Sampling},
+  publisher = {Wiley},
+  address   = {New York},
+  year      = {1965},
+}
+
+@article{Steinhardt1983,
+  author  = {Steinhardt, Paul J. and Nelson, David R. and Ronchetti, Marco},
+  title   = {Bond-orientational order in liquids and glasses},
+  journal = {Phys. Rev. B},
+  volume  = {28},
+  pages   = {784},
+  year    = {1983},
+  doi     = {10.1103/PhysRevB.28.784},
+}
+
+@article{LechnerDellago2008,
+  author  = {Lechner, Wolfgang and Dellago, Christoph},
+  title   = {Accurate determination of crystal structures based on averaged
+             local bond order parameters},
+  journal = {J. Chem. Phys.},
+  volume  = {129},
+  pages   = {114707},
+  year    = {2008},
+  doi     = {10.1063/1.2977970},
+}
+
+@article{Swope1982,
+  author  = {Swope, William C. and Andersen, Hans C. and Berens, Peter H. and
+             Wilson, Kent R.},
+  title   = {A computer simulation method for the calculation of equilibrium
+             constants for the formation of physical clusters of molecules:
+             Application to small water clusters},
+  journal = {J. Chem. Phys.},
+  volume  = {76},
+  pages   = {637},
+  year    = {1982},
+  doi     = {10.1063/1.442716},
+}
+
+@article{LebowitzPercusVerlet1967,
+  author  = {Lebowitz, J. L. and Percus, J. K. and Verlet, L.},
+  title   = {Ensemble Dependence of Fluctuations with Application to Machine
+             Computations},
+  journal = {Phys. Rev.},
+  volume  = {153},
+  pages   = {250},
+  year    = {1967},
+  doi     = {10.1103/PhysRev.153.250},
+}
+
+@book{FrenkelSmit2002,
+  author    = {Frenkel, Daan and Smit, Berend},
+  title     = {Understanding Molecular Simulation: From Algorithms to
+               Applications},
+  edition   = {2nd},
+  publisher = {Academic Press},
+  address   = {San Diego},
+  year      = {2002},
+}
+
+@book{AllenTildesley2017,
+  author    = {Allen, Michael P. and Tildesley, Dominic J.},
+  title     = {Computer Simulation of Liquids},
+  edition   = {2nd},
+  publisher = {Oxford University Press},
+  address   = {Oxford},
+  year      = {2017},
+}
+
+@book{HansenMcDonald2013,
+  author    = {Hansen, Jean-Pierre and McDonald, Ian R.},
+  title     = {Theory of Simple Liquids},
+  edition   = {4th},
+  publisher = {Academic Press},
+  address   = {Oxford},
+  year      = {2013},
+}
+
+%---------------------------------------------------------------------
+% Machine-learning reporting norms
+%---------------------------------------------------------------------
+
+@inproceedings{Bouthillier2021,
+  author    = {Bouthillier, Xavier and Delaunay, Pierre and Bronzi, Mirko and
+               Trofimov, Assya and Nichyporuk, Brennan and Szeto, Justin and
+               Sepah, Naz and Raff, Edward and Madan, Kanika and
+               Voleti, Vikram and Kahou, Samira Ebrahimi and Michalski, Vincent
+               and Serdyuk, Dmitriy and Arbel, Tal and Pal, Chris and
+               Varoquaux, Ga{\"e}l and Vincent, Pascal},
+  title     = {Accounting for Variance in Machine Learning Benchmarks},
+  booktitle = {Proceedings of Machine Learning and Systems (MLSys)},
+  year      = {2021},
+  note      = {arXiv:2103.03098},
+}
+
+@article{Pineau2021,
+  author  = {Pineau, Joelle and Vincent-Lamarre, Philippe and Sinha, Koustuv
+             and Larivi{\`e}re, Vincent and Beygelzimer, Alina and
+             d'Alch{\'e}-Buc, Florence and Fox, Emily and Larochelle, Hugo},
+  title   = {Improving Reproducibility in Machine Learning Research (A Report
+             from the {NeurIPS} 2019 Reproducibility Program)},
+  journal = {J. Mach. Learn. Res.},
+  volume  = {22},
+  pages   = {1},
+  year    = {2021},
+}
+
+@article{Kapoor2024,
+  author  = {Kapoor, Sayash and Cantrell, Emily M. and Peng, Kenny and
+             Pham, Thanh Hien and Bail, Christopher A. and Gundersen, Odd Erik
+             and Hofman, Jake M. and Hullman, Jessica and Lones, Michael A. and
+             Malik, Momin M. and Nanayakkara, Priyanka and Poldrack, Russell A.
+             and Raji, Inioluwa Deborah and Roberts, Michael and
+             Salganik, Matthew J. and Serra-Garcia, Marta and
+             Stewart, Brandon M. and Vandewiele, Gilles and Narayanan, Arvind},
+  title   = {{REFORMS}: Consensus-based Recommendations for Machine-learning-based
+             Science},
+  journal = {Sci. Adv.},
+  year    = {2024},
+  doi     = {10.1126/sciadv.adk3452},
+}
+
+%---------------------------------------------------------------------
+% The data and code deposit
+%---------------------------------------------------------------------
+
+@misc{Deposit,
+  author       = {[AUTHOR NAME]},
+  title        = {atomlab: source code, experiment configurations, raw outputs
+                  and analysis scripts for ``Error fields, not error norms''},
+  howpublished = {Zenodo},
+  year         = {2026},
+  note         = {Deposit [DEPOSIT ID]},
+  doi          = {[DOI]},
+}
