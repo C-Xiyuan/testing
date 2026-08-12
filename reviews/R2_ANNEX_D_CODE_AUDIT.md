@@ -32,7 +32,10 @@
 
 ## D.4 测试套件运行
 
-在审计机（4 核，Python 3.11.15 / NumPy 2.4.6 / SciPy 1.17.1 / Torch 2.13.0+cpu）完整运行 `pytest -q`：结果见本文件末尾追记。
+在审计机（4 核，Python 3.11.15 / NumPy 2.4.6 / SciPy 1.17.1 / Torch 2.13.0+cpu）完整运行 `pytest -q`：**约 780 项测试全部通过，1 项 skip，0 失败**，墙钟约 16 分钟。两点附注：
+
+1. 本次运行覆盖了 slow/physics 标记在内的**全量**测试——`pyproject.toml` 的 `addopts = "-q --strict-markers"` 并不默认排除 `slow`，所以 README 的「`pytest -q` # fast correctness suite」实际运行的是全量套件（README 的 fast/slow 二分描述与配置不符，属 R2-P1 级的又一处 README 失准；若要 fast 语义应加 `-m "not slow"` 到 addopts 或修正 README）。
+2. 通过的套件覆盖 D.5 的正面清单，但**不**覆盖 D.6 列出的三个缺口（HMC 自适应冻结、`PairBinObservable`、aligned 符号）——绿色套件与这三个缺口并存，正说明缺口在测试面之外。
 
 ## D.5 核实为健全的部分（正面清单）
 
