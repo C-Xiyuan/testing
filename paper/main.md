@@ -468,7 +468,11 @@ computed for this manuscript by the deposited script
 
 Every correlation is reported as ρ = value [low, high] with its *n*. Significance
 is quoted as a σ-distance, |value|/error, to one decimal place; no *p*-values are
-used. Prediction residuals quoted in σ are the difference between the measured
+used. Uncertainties are quoted to two significant figures and central values to
+the same decimal place, with two deliberate exceptions: shifts in pair counts are
+given throughout at the three-decimal precision of the deposited records, so that
+every one of them can be checked against the JSON without rounding; and exactness
+checks (Appendix A) carry their full digits and are labelled as such. Prediction residuals quoted in σ are the difference between the measured
 and predicted shift divided by the standard error of the *measurement*.
 
 Two noise conventions exist and we reconcile them here. The observable error
@@ -505,9 +509,10 @@ Four error fields were built against a single target observable, the pair count
 in the bin from 3.4 to 3.9 Å, and each was scaled to a prescribed force RMSE. Two
 levels were run, nominally 1.0 × 10⁻³ and 4.0 × 10⁻³ eV/Å. Measured out of sample
 — on the half of the reference trajectory not used for the construction — the
-four fields agree in force RMSE to 0.5 % at each level: 0.99535 to
-1.00054 × 10⁻³ eV/Å at the lower level and 3.9814 to 4.0022 × 10⁻³ eV/Å at the
-upper. Table I gives the full comparison and Fig. 1(a) plots it.
+four fields agree in force RMSE to 0.5 % at each level — a full spread of 0.52 %
+at both — running from 0.99535 to 1.00054 × 10⁻³ eV/Å at the lower level and
+3.9814 to 4.0022 × 10⁻³ eV/Å at the upper. Table I gives the full comparison and
+Fig. 1(a) plots it.
 
 The measured shifts in the target bin at the upper level run from −0.220 ± 0.640
 pairs for the null field, which is 0.3σ from zero, to +9.891 ± 0.611 pairs for
@@ -608,11 +613,13 @@ zoo the Spearman rank correlation between force RMSE and observable error is
 hundred times worse in force error really is worse, and no theory was needed to
 say so.
 
-**P1 as stated is not supported.** A rank correlation of 0.83 with an interval
-whose lower end is 0.67 is not a weak proxy. The falsification criterion as
-literally written, ρ > 0.9, is not met either — the interval includes 0.9 — so
-the pre-registered test returns neither a clean confirmation nor a clean
-falsification, and we decline to claim one.
+**P1 as stated is refuted.** A rank correlation of 0.83 with an interval whose
+lower end is 0.67 is not a weak proxy, and the prediction we registered is
+wrong. The separate and stricter criterion we also registered — that force RMSE
+would have to reach ρ > 0.9 against *every* observable error for the whole
+argument to collapse — is a different test, and the interval here includes 0.9,
+so that test is not decided by this measurement. Both statements are ours and we
+report both.
 
 What replaces P1 is sharper. Force RMSE cannot choose among models of
 *comparable* force error, which is the only situation a practitioner is ever in.
@@ -692,7 +699,7 @@ repeating this comparison at *n* ≥ 8 seeds is the highest-value follow-up we c
 name.
 
 Both EGNN records carry `linear_trustworthy = false`, with second-order ratios of
-0.41 and 0.14 against a median of 0.014 across the other eight models. The
+0.41 and 0.14 against a median of 0.015 across the other eight models. The
 self-diagnostic of Section 2.3(iii) fired on exactly the two models where the
 linear prediction is least reliable, and the predictions for those two are
 correspondingly quoted here as an ordering — the second seed is predicted to be
