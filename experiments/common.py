@@ -31,6 +31,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import platform
 import subprocess
@@ -51,13 +52,44 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
-def _git(*args: str) -> str:
+def _git(*args: str, strip: bool = True) -> str:
     try:
-        return subprocess.check_output(
+        out = subprocess.check_output(
             ["git", *args], cwd=REPO_ROOT, stderr=subprocess.DEVNULL, text=True
-        ).strip()
+        )
+        return out.strip() if strip else out
     except Exception:
         return "unknown"
+
+
+def _code_digest() -> dict:
+    """Hash the source that actually produced the result.
+
+    `git_dirty` alone is a bare boolean: it says the tree differed from the
+    commit but not how, so a reader cannot tell an edited sampler from an edited
+    README. These two fields make the provenance checkable. `dirty_paths` is the
+    porcelain listing, and `sha256` is over the content of every tracked Python
+    file under the library and experiment trees, sorted by path -- the digest
+    changes if and only if code that can affect a number changed.
+    """
+    # Not _git(...) with the default strip: it would eat the leading status
+    # column of the first line and truncate that path by one character.
+    status = _git("status", "--porcelain", strip=False)
+    dirty = [] if status.strip() in ("", "unknown") else sorted(
+        line[3:] for line in status.splitlines() if line[3:])
+    digest = hashlib.sha256()
+    sources = sorted(
+        p for d in ("atomlab", "experiments", "scripts")
+        for p in (REPO_ROOT / d).rglob("*.py")
+        if "__pycache__" not in p.parts)
+    for path in sources:
+        digest.update(path.relative_to(REPO_ROOT).as_posix().encode())
+        digest.update(path.read_bytes())
+    return {
+        "dirty_paths": dirty,
+        "n_source_files": len(sources),
+        "sha256": digest.hexdigest(),
+    }
 
 
 def _library_versions() -> dict:
@@ -254,6 +286,7 @@ class ExperimentContext:
             "git_commit": _git("rev-parse", "HEAD"),
             "git_branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
             "git_dirty": bool(_git("status", "--porcelain")),
+            "code": _code_digest(),
             "seed": self.seed,
             "quick_mode": self.quick,
             "config": self.config,
