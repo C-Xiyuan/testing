@@ -47,8 +47,10 @@ DEFAULTS = {
                   "mode": "shifted_force"},
     "observable": {"r_min": 3.0, "r_max": 7.0, "n_bins": 8,
                    "target_bin": [3.4, 3.9]},
+    # A model's own equilibrium differs from the reference's, so its chain needs
+    # a longer burn-in than a designed perturbation's does.
     "sampling": {"n_reference": 3000, "n_direct": 1500, "n_leapfrog": 8,
-                 "step_size": 2e-3, "burn_in": 300,
+                 "step_size": 2e-3, "burn_in": 1000,
                  "n_melt": 400, "n_anneal": 1000},
     "data": {
         "n_train_pool": 400,
@@ -215,7 +217,14 @@ def run(ctx: ExperimentContext) -> dict:
                   f"measured={r['target_measured']:+7.3f}+/-{r['target_error']:.3f}  "
                   f"({r['fit_seconds']:.0f}s fit)")
 
-    summary = analyse(ctx, [r for r in records if not r.get("failed")])
+    usable = [r for r in records
+              if not r.get("failed") and r.get("direct_equilibrated", True)]
+    dropped = [r for r in records
+               if not r.get("failed") and not r.get("direct_equilibrated", True)]
+    summary = analyse(ctx, usable)
+    summary["n_dropped_not_equilibrated"] = len(dropped)
+    summary["dropped"] = [r["name"] for r in dropped]
+    summary["n_linear_trustworthy"] = sum(1 for r in usable if r.get("linear_trustworthy"))
     ctx.save_json("records", records)
     ctx.save_json("summary", summary)
     report_summary(summary, records)
@@ -231,8 +240,21 @@ def evaluate_model(ctx, name, factory, train, val, test, cfg, potential,
     du = np.array([model.energy(c) - potential.energy(c) for c in frames])
     prediction = predict_shift(t_ref, du, temperature, n_resamples=400, seed=ctx.seed)
 
+    # A fitted model has its own equilibrium, which is not the reference's. If
+    # the chain has not reached it, the "shift" measured is a transient on the
+    # way there rather than a difference between two ensembles -- and it can be
+    # enormous, which is precisely the reading that would look like a dramatic
+    # result. So the drift check runs here too. A model that fails it is
+    # recorded and excluded from the correlations rather than aborting the run,
+    # because "this model's dynamics did not settle in the budget" is a fact
+    # about the model worth reporting.
     direct, direct_report = sample(ctx, cfg, model, ctx.scaled("sampling.n_direct"),
                                    seed=ctx.seed + 2, label=f"{name} direct", check=False)
+    equilibrated, drift_note = True, ""
+    try:
+        check_equilibrated(direct, label=f"{name} direct", check_order=False)
+    except (RuntimeError, ValueError) as exc:
+        equilibrated, drift_note = False, str(exc)
     t_direct = target.evaluate_trajectory(direct).ravel()
     measured = float(t_direct.mean() - t_ref_mean)
     error = float(np.hypot(blocking_analysis(t_direct).error, t_ref_err))
@@ -256,6 +278,10 @@ def evaluate_model(ctx, name, factory, train, val, test, cfg, potential,
         "target_measured": measured,
         "target_error": error,
         "direct_acceptance": direct_report.acceptance,
+        "direct_equilibrated": equilibrated,
+        "drift_note": drift_note,
+        "second_order_ratio": float(np.asarray(prediction.second_order_ratio)),
+        "linear_trustworthy": bool(prediction.is_trustworthy),
     }
 
 
@@ -291,8 +317,14 @@ def analyse(ctx, records) -> dict:
 
 def report_summary(summary, records):
     failed = [r for r in records if r.get("failed")]
+    dropped = summary.get("n_dropped_not_equilibrated", 0)
     print(f"\n  --- fitted-model zoo: {summary.get('n_models', 0)} models"
-          f"{f', {len(failed)} failed' if failed else ''} ---")
+          f"{f', {len(failed)} failed to fit' if failed else ''}"
+          f"{f', {dropped} excluded (chain not equilibrated)' if dropped else ''} ---")
+    if dropped:
+        print(f"  excluded: {', '.join(summary.get('dropped', []))}")
+    print(f"  linear response self-flagged trustworthy for "
+          f"{summary.get('n_linear_trustworthy', 0)} of {summary.get('n_models', 0)}")
     if summary.get("insufficient"):
         print("  too few models fitted to correlate anything")
         return
