@@ -255,6 +255,47 @@ comparable. Top-k overlap statistics were also computed and are *not* reported
 as evidence: with 34 members they moved between 0.33 and 0.67 depending on that
 correction, which means they are too noisy to carry a claim.
 
+**The intervals above bootstrap the membership of the zoo and not the precision
+of each member**, which the review is right to flag: every entry in the
+observable-error column is a Monte Carlo estimate with its own noise, and the
+quadrature subtraction is then floored at zero, which shuffles exactly the low
+end where the interesting comparisons sit.
+`scripts/zoo_uncertainty_propagation.py` restores the missing term by redrawing
+each member's measured norm from its own sampling distribution inside every
+bootstrap replicate, and sweeps the redraw scale rather than trusting one guess
+at it:
+
+| redraw σ | whole zoo, ρ(force) | band, ρ(force) | band, ρ(prediction) |
+|---|---|---|---|
+| 0 (as published) | 0.83 [0.67, 0.93] | 0.34 [−0.25, 0.79] | 0.94 [0.71, 1.00] |
+| 0.35 × noise | 0.83 [0.67, 0.92] | 0.34 [−0.24, 0.80] | 0.94 [0.70, 0.99] |
+| 0.71 × noise | 0.83 [0.64, 0.91] | 0.34 [−0.23, 0.80] | 0.94 [0.62, 0.97] |
+| 1.41 × noise | 0.83 [0.55, 0.88] | 0.34 [−0.20, 0.80] | 0.94 [0.40, 0.95] |
+
+**The two-regime description survives, and this one goes in the study's
+favour.** Even at a deliberately excessive 1.41 × noise redraw — well above the
+`noise/√8` the norm of an eight-component vector actually carries — the
+across-decades correlation still excludes zero, the within-band one still
+contains it, and the prediction still excludes it inside the band. The omitted
+term was real and it was not load-bearing.
+
+The same calculation says something sharper about which points in
+`figures/headline_regimes.png` are measurements. Redrawing each member's norm at
+0.71 × noise, these members land at exactly zero on a large fraction of draws:
+
+| member | in band | raw | noise | published | floors to zero |
+|---|---|---|---|---|---|
+| `random_s3_f5e-04` | no | 2.12 | 2.45 | 0.00 | 59 % |
+| `null_f4e-03` | **yes** | 2.65 | 2.43 | 1.05 | **45 %** |
+| `random_s2_f5e-04` | no | 3.40 | 2.83 | 1.88 | 39 % |
+| `null_f1e-03` | no | 3.18 | 2.47 | 2.01 | 34 % |
+
+These are upper limits drawn as points. `null_f4e-03` is the one that matters:
+it was the denominator of the 30× spread struck above, and its observable error
+is unresolved from zero on nearly half of all redraws. Striking that ratio was
+not a concession to the review's argument; it is what this calculation says
+independently.
+
 ## 3b. The same thing happens to models that were actually fitted
 
 Ten models — a pair spline, a linear ACE-style basis, Behler-Parrinello networks
