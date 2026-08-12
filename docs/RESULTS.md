@@ -493,14 +493,75 @@ in the tail. A covariance is mean-subtracted, and that subtraction *is* the
 normalisation, so the estimator never had the problem.
 
 The residual 4.7 σ is most likely the `O(ρ)` correction to `g = exp(−βu)`, which
-at ρ\* = 0.079 is not negligible. **This is not confirmed**, and the external
-review is right that until it is, this is a benchmark the estimator has *not
-passed* rather than evidence that it works. The test that would confirm it —
-a density series, or an exact `N = 2` calculation where `g = exp(−βu)` holds
-identically — has not been run. Note also that what is being compared here is an
-approximation valid to `O(ρ)` against an estimator that makes no such
-approximation, so this disagreement carries less weight than one between two
-exact quantities.
+at ρ\* = 0.079 is not negligible. What is being compared is an approximation
+valid to `O(ρ)` against an estimator that makes no such approximation, so the
+disagreement is as easily the benchmark's as the estimator's — and a test whose
+reference is approximate cannot certify one that is not.
+
+**The review asked for a density series or an exact `N = 2` calculation. Here is
+the second** (`scripts/validate_two_particle_exact.py`,
+`results/validation/two_particle_exact.json`). At two particles the pair
+distribution is not a series but a one-dimensional integral: with minimum image
+and a potential of range below half the box, the separation density is exactly
+`∝ 4πr² exp(−βu)` inside the minimum-image sphere, and the normalisation is
+`L³` plus a cutoff-sphere correction because the Boltzmann factor is one outside
+the range. Both are quadratures good to 10⁻¹⁴. There is no `O(ρ)` term left to
+blame anything on.
+
+| βσ(δU) | 2nd/1st | ESS | \|exact shift\| | linear error | reweighting error | reweighting, in σ |
+|---|---|---|---|---|---|---|
+| 0.013 | 0.038 | 1.000 | 0.00299 | **+0.2 %** | −1.5 % | 0.86 |
+| 0.052 | 0.151 | 0.998 | 0.01137 | **+5.3 %** | −1.5 % | 0.82 |
+| 0.209 | 0.604 | 0.974 | 0.03727 | **+28.6 %** | −1.6 % | 0.87 |
+| 0.522 | 1.510 | 0.918 | 0.06429 | **+86.4 %** | −1.7 % | 0.85 |
+| 1.306 | 3.775 | 0.857 | 0.07978 | **+275 %** | −1.8 % | 0.97 |
+| 2.612 | 7.549 | 0.830 | 0.08138 | **+636 %** | −1.8 % | 0.82 |
+
+Three results, and the middle one is the answer to §5.3's opening.
+
+**The sampler reproduces an exactly known ensemble** — 0.66 σ rms over four
+bins. Without that nothing below would be interpretable.
+
+**The estimator machinery is exact.** Exponential reweighting reproduces the
+exact shift to 1.5–1.8 % at every amplitude, across a 200-fold range of
+perturbation strength, at 0.82–0.97 σ throughout. That residual 1.7 % is the
+reference chain's own sampling error propagating, and the error bars cover it.
+**So the 4.7 σ of the dilute-gas check is a property of that check's `O(ρ)`
+reference, not a defect in the estimator.**
+
+**Linear response has a measurable breakdown point.** Its bias crosses 10 % at
+βσ(δU) ≈ 0.21, where the second-order ratio reads 0.604, and reaches 636 % by
+βσ = 2.6. This is the first quantitative statement in this repository about
+*where* the truncation fails rather than the assertion that it must somewhere.
+
+One caveat bounds all three. With a single pair, βσ(δU) at a given amplitude is
+far below its value in the 108-atom system, so this sweep reaches the breakdown
+regime only through amplitudes no fitted model would have. It establishes that
+the machinery is correct and that the truncation degrades in an orderly way; it
+does not transfer a breakdown threshold to a many-body system, where δU is a sum
+over many pairs and its distribution has a different shape.
+
+#### The benchmark found a bug in a claim-bearing module
+
+The first run of this sweep reported reweighting residuals of 0.02, 0.07, 0.38,
+1.49, 18.04 and 445.20 σ — apparently a catastrophic failure at large
+perturbation. The absolute errors told a different story: they were 1.5–1.8 % at
+every amplitude, exactly as above. **What was collapsing was the error bar**,
+from 0.00152 to 0.0000005, while the Kish effective sample size stayed between
+0.83 and 1.00 and the maximum weight fraction never exceeded 0.0003. Both
+standard diagnostics reported a healthy estimate the whole way down.
+
+`reweight()` computed `shift = reweighted mean − reference mean` and then handed
+the shift the bootstrap error of the *reweighted mean alone*. As βδU grows the
+weights approach a hard 0/1 exclusion; the reweighted mean of a depleted bin
+becomes the same number in every resample and its error genuinely does go to
+zero. The shift does not — it still carries all of the reference mean's
+uncertainty, and none of it was being reported. Fixed by resampling the
+difference as one statistic, which also handles the correlation between the two
+terms by construction. `tests/test_response.py` now asserts the monotone rise
+and the hard-exclusion limit, and asserts that the diagnostics stay healthy,
+because that is what makes the failure worth a test. The σ column above is from
+the corrected code.
 
 ### 5.4 The second-order warning light does not work
 
