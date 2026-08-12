@@ -122,27 +122,55 @@ What survives is the weaker and still sufficient statement that force error and
 observable error depend differently on the shape of the error field, so their
 ratio is not a constant — §4 measures that ratio varying by five.
 
-### 5.2 A discrepancy between direct sampling and the two same-sample estimators
+### 5.2 An open discrepancy, with three explanations ruled out
 
-In the amplitude sweep, at the smallest perturbation, the three estimates were:
+In the amplitude sweep, at the smallest perturbation, the three estimates
+disagreed: first order −3.835, exact reweighting −3.884, direct sampling
+−1.948 ± 0.821. The two sharing the reference samples agreed to 1.3 %; the one
+requiring an independent chain disagreed with both by a factor of two.
 
-| estimator | value | shares samples with reference? |
-|---|---|---|
-| first order | −3.835 | yes |
-| reweighted (exact to all orders, ESS 0.83) | −3.884 | yes |
-| direct sampling | −1.948 ± 0.821 | no |
+The obvious diagnosis was that the direct estimate's error bar was too small:
+blocking measures error *within* a chain, and a difference between two chains
+also carries the offset between their slow modes, which no within-chain
+estimator can see. `scripts/check_between_chain_scatter.py` measured that offset
+by sampling both potentials from six independent seeds each.
 
-The two that share the reference samples agree to 1.3 %. The one that requires
-an independent Markov chain disagrees with both by a factor of two. That points
-at the direct estimate — specifically at its error bar, since blocking measures
-the error *within* a chain and the difference between two chains also carries
-the offset between their slow modes, which no within-chain estimator can see.
+**The diagnosis was wrong.** Measured on the same perturbation and a single bin:
 
-`scripts/check_between_chain_scatter.py` measures that offset directly by
-sampling the same potential from several independent seeds. Note that the exp07
-measurements in §1, which used twice as many frames and a scalar observable, are
-well calibrated (1.01 σ rms against prediction), so whatever this is, it is not
-a general failure of the direct measurements.
+| quantity | value |
+|---|---|
+| within-chain blocking error | 0.589 pairs |
+| between-chain scatter | 0.312 pairs |
+| ratio | **0.53** |
+
+Blocking is *conservative* by about a factor of two, not optimistic. The
+measured shift across the six independent chain pairs is
+`[2.553, 2.773, 2.349, 2.611, 1.788, 2.188]` — mean **+2.377 ± 0.144**, single
+pair spread 0.354, against the ±0.832 the sweep had quoted.
+
+So the direct measurement is reliable and the discrepancy is real. On a fresh
+3000-frame reference chain the same-sample estimators give **+1.725 ± 0.101**
+(first order) and **+1.757** (exact reweighting, ESS fraction 0.83) — a 35 %
+systematic difference from the +2.377 that direct sampling measures.
+
+Three explanations are excluded by measurement:
+
+- **Not the error bars.** Between-chain scatter is half the quoted error.
+- **Not the second-order truncation.** First-order and the all-orders
+  reweighting identity agree with each other to 2 %.
+- **Not incomplete relaxation of the perturbed chain.** That would bias the
+  measured shift *toward* the reference and make it smaller in magnitude; it is
+  larger.
+
+What remains is a genuine open question about either the reweighting
+estimator's finite-sample behaviour under correlated samples — the Kish
+effective sample size assumes independence, and the true independent count here
+is smaller by the autocorrelation time — or something not yet identified. It is
+recorded here unresolved rather than attributed to the nearest plausible cause.
+
+Note that the exp07 measurements in §1 used a different observable and twice as
+many frames and are well calibrated at 1.01 σ rms against prediction, so
+whatever this is, it is not a general failure of either estimator.
 
 ### 5.3 The dilute-gas closed form
 
