@@ -161,21 +161,30 @@ dozens of models against a dozen observables this is a large practical saving;
 more importantly, it is a falsifiable prediction, and `experiments/exp06` tests
 it against direct MD.
 
-**(iii) The second-order term is computable, and is a candidate warning light.**
-The `n = 2` term `(β²/2)⟨ÃδŨ²⟩₀` is estimable from the very same samples, and
-its size relative to the first-order term is the obvious self-diagnostic: a small
-ratio ought to mean the linear prediction is trustworthy, and a large one that
-the error field is not a perturbation at all.
+**(iii) The second-order term is a correction, not a gate.** The `n = 2` term
+`(β²/2)⟨ÃδŨ²⟩₀` is estimable from the very same samples, and it can be used two
+ways. Both were tried and they came out differently, which is worth stating
+carefully because the difference is easy to elide.
 
-That it *ought* to work is not evidence that it does, and the measurements in
-this repository so far say it does not. `exp06` flags two cases as trustworthy
-of which only one agrees with direct sampling. `exp09` finds that adding the
-second-order term to the prediction makes the residuals worse on every measure —
-larger rms, larger field-to-field spread, larger interaction term — rather than
-better. Both are recorded in `docs/RESULTS.md`. Until a threshold is frozen on
-one set of error fields and its false-trust rate measured on another, the ratio
-is a heuristic under test, not a validated gate. It is used in this repository
-to *flag* cases for attention and never to certify one.
+*Added to the prediction, it corrects.* In `exp09`, over eight error fields and
+eight independent reference chains, including it takes the systematic residual
+offset from +0.781 σ to +0.089 σ and removes the field-to-field structure
+entirely — the spread of field effects falls to 0.422 against a noise floor of
+0.435. The largest first-order field effect belongs to the field with the
+largest `|ρ₀(A, δU)|`, which is where a second-order correction should be
+largest.
+
+*Used as a threshold, it does not discriminate.* The obvious self-diagnostic —
+trust the prediction when the ratio of second to first order is small — has a
+false-trust rate of 19 % over 89 cases carrying an independent direct
+measurement, and an area under the ROC curve of 0.556 against 0.5 for no
+information. It does not separate the cases that agree from those that do not,
+at any threshold.
+
+There is no contradiction: a correction can improve an average without its own
+magnitude predicting which individual case will be wrong. The consequence for
+this repository is that the second-order term is *computed and added* wherever
+the samples allow it, and is never used to certify a case.
 
 ### 3.1 Vector observables
 

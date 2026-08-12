@@ -64,36 +64,47 @@ displaces all of them together.
 `exp09` measures the size of that effect directly, with eight independent
 reference chains and four independent direct chains per field, decomposing the
 residual table into a reference-chain contribution, a field contribution, and
-the rest. What the corrected statement is, is recorded in §5.6 with that
-experiment's numbers. Until then the honest form of this section's claim is:
-**the prediction tracks the measurement across a factor of fifty in shift
-magnitude, and its calibration at the one-standard-error level is not
-established.**
+the rest. The corrected statement is §5.5, and it is
+not the one this section made.
 
 The practical payoff is unaffected by that distinction, and is the reason the
 prediction is worth calibrating: evaluating a model's effect on an observable
 costs one energy evaluation per stored frame instead of a full simulation.
 
-### 2.1 The second-order term, and where it fails
+### 2.1 The second-order term works as a correction and fails as a gate
+
+These are different claims about the same quantity and the difference is the
+whole of §5.4 and §5.5. Stated together so neither is read as the other:
+
+**As a correction, added to the prediction, the second-order term does its job.**
+Across `exp09`'s 64 cells it takes the systematic offset from **+0.781 σ to
++0.089 σ** and removes the field-dependent structure entirely — the spread of
+field effects falls from 0.698 to 0.422 against a direct-chain noise floor of
+0.435, so what looked like a real per-field bias at first order is exactly the
+truncation. The largest first-order field effect belongs to the `aligned` field
+(+1.36 σ), which is the field with the largest |ρ(A, δU)| and therefore the one
+where a second-order correction should bite hardest. That is the mechanism
+predicting where it is needed and then supplying it.
 
 For a null-space field the first-order term vanishes by construction, so any
-residual effect must be second order — and the same expansion predicts that too.
-At both force levels the measured residual agrees with the second-order estimate
-(−0.540 and −0.439 pairs, both within the error bar).
+residual effect must be second order; at both force levels the measured residual
+agrees with the second-order estimate (−0.540 and −0.439 pairs, both within the
+error bar). That case is a weaker test than it looks — there is nothing for the
+correction to be added to — but it points the same way.
 
-**Two other measurements say the second-order term is not usable as a general
-correction, and they are the ones to weight.** In `exp06` two amplitudes are
-flagged trustworthy by the second-order ratio and only one of them agrees with
-direct sampling. In `exp09`, adding the second-order term to the prediction
-makes the residuals *worse* on every measure — larger rms, larger field-to-field
-spread, larger interaction — across eight fields and eight reference chains.
+**As a gate, thresholding on the ratio of second to first order, it does not
+work at all.** Over 89 cases with an independent direct measurement its
+false-trust rate is 19 % and its AUC is 0.556 (§5.4). A correction that improves
+the average is not the same thing as a statistic whose size tells you which
+individual case will disagree, and the second-order term is the first without
+being the second.
 
-The reconciliation is that the null-space case is the one where the second-order
-term is the *entire* signal, so getting it right there is a weaker test than it
-looks: there is nothing for it to be added to. Where the first-order term is
-non-zero, the second-order estimate is noisy enough that including it costs more
-than it buys. The correction term is right in the case constructed to isolate
-it, and is not a general improvement.
+> **A correction to this document.** An earlier version of this section said the
+> opposite — that adding the second-order term makes the residuals worse on
+> every measure. That came from `exp09` run under `--quick`, at 5 % of
+> production chain length, where the second-order estimate is noise. The
+> manifest recorded `quick_mode: true` and the figure script refuses to read
+> such a run, but the number reached prose anyway. The production run is above.
 
 ### 2.2 How much data the construction needs
 
@@ -497,37 +508,132 @@ threshold the linear prediction can be trusted, above it not.
 That is a screening test, and a screening test is judged by its error rates on
 cases where the truth is known some other way. Those are computable from every
 case in this repository where both the diagnostic and an independent direct
-measurement exist — 25 of them, across `exp06` and two `exp03` arms
+measurement exist — 89 of them, across `exp06`, two `exp03` arms and `exp09`
 (`scripts/warning_light_calibration.py`, output in
 `results/validation/warning_light_calibration.json`):
 
 | | agrees with direct MD | disagrees |
 |---|---|---|
-| diagnostic says trust | 18 | **4** |
-| diagnostic says beware | 2 | 1 |
+| diagnostic says trust | 59 | **14** |
+| diagnostic says beware | 13 | 3 |
 
-- **False-trust rate 18 %** (4 of 22), upper 95 % limit **37 %**. A diagnostic
-  that certifies four wrong answers in twenty-two is worse than no diagnostic,
-  because it turns an unknown into a confident error.
-- **Sensitivity 0.20**: it flags one of the five genuine disagreements.
-- **The statistic barely separates the two groups at all.** Median ratio 0.033
-  for agreeing cases and 0.091 for disagreeing ones, AUC 0.59 against 0.5 for
-  no information, one-sided *p* = 0.29. This is not a threshold that needs
-  moving; it is a statistic with little discriminating power here.
+- **False-trust rate 19 %** (14 of 73), upper 95 % limit **28 %**. A diagnostic
+  that certifies fourteen wrong answers in seventy-three is worse than no
+  diagnostic, because it turns an unknown into a confident error.
+- **Sensitivity 0.18**: it flags three of the seventeen genuine disagreements.
+- **The statistic barely separates the two groups at all.** Median ratio 0.096
+  for agreeing cases and 0.098 for disagreeing ones — indistinguishable — with
+  AUC 0.556 against 0.5 for no information, one-sided *p* = 0.24. This is not a
+  threshold that needs moving; it is a statistic with almost no discriminating
+  power here.
 
 Two caveats, neither of which rescues it. The 0.25 threshold was chosen a
 priori from the theory rather than fitted to these data — better than tuning,
-but not the frozen-development-set protocol a real validation needs. And the 25
+but not the frozen-development-set protocol a real validation needs. And the 89
 cases share a system, an observable and in places a reference chain, so the
 binomial interval is optimistically narrow.
 
-`exp09` adds an independent line of evidence pointing the same way: adding the
-second-order term to the prediction makes the residuals worse, not better, on
-every measure. §2.1 gives the reconciliation with the one case where the
-second-order term *is* right.
-
 **The claim is withdrawn.** The ratio is reported alongside every prediction as
 a descriptive statistic and is not used to certify anything.
+
+This is *not* a finding that the second-order term is useless. Added to the
+prediction it removes a real systematic offset and a real field-dependent bias
+(§2.1, §5.5). What it cannot do is tell you in advance which case will be wrong,
+and those are different jobs: an AUC of 0.556 says the ratio's size carries
+almost no information about whether that particular prediction will disagree,
+however useful the term itself is when added.
+
+### 5.5 What the "1.01 σ" actually was
+
+`exp09`, 8 independent reference chains × 8 designed error fields × 4
+independent direct chains per field = 64 residuals, 80 minutes,
+`results/exp09_calibration_replication/`. Its manifest records
+`dirty_paths: ['results/exp09_calibration_replication/']` — the only difference
+between the working tree and commit `9ffab92` was the experiment's own output.
+
+The residual table decomposes because the three error sources have different
+footprints: a reference chain's error in ⟨A⟩ is constant down a row, a field's
+direct-chain error is constant down a column, and a genuine field-dependent
+failure of the prediction is also constant down a column but is not noise. Each
+observed spread is set against the spread its own quoted error predicts, so the
+test is a ratio rather than a threshold.
+
+| | first order | + second-order term | predicted by the quoted errors |
+|---|---|---|---|
+| residual rms | 1.985 σ | 1.717 σ | 1 |
+| **grand mean** | **+0.781 σ** | **+0.089 σ** | 0 |
+| row (reference-chain) spread | 1.477 σ | 1.161 σ | 0.898 |
+| **column (field) spread** | **0.698 σ** | **0.422 σ** | 0.435 |
+| interaction rms | 0.997 σ | 1.267 σ | — |
+
+Four things follow, and the first is the answer to the review's question.
+
+**The offset is a property of the reference draw.** The eight row effects are
+[+1.69, +1.83, −2.54, −0.28, +0.47, +0.59, −1.34, −0.41] σ and they track their
+own chains' means: the two lowest reference chains (⟨A⟩ = 209.66) give the two
+most positive rows, the highest (211.38) gives the most negative. exp07's eight
+residuals were all *negative*; exp09's are 42/64 *positive*. A quantity whose
+sign flips with the reference draw is a realisation, not a bias. The review's
+P0-2 is confirmed and its mechanism identified.
+
+**Most of the remaining offset is the truncation, and the second-order term
+removes it.** Adding that term takes the grand mean from +0.781 σ to +0.089 σ
+and the field-effect spread from 0.698 to 0.422 against a noise floor of 0.435 —
+a variance ratio of 2.58 falling to 0.94. The largest first-order field effect
+is the `aligned` field's +1.36 σ, and `aligned` is the field with the largest
+|ρ(A, δU)|, which is exactly where a second-order correction should be largest.
+This was pre-registered in the experiment's docstring as the test of whether the
+column structure is the truncation showing itself, and it is.
+
+**The prediction's own error was missing from the denominator, and it is the
+whole of the interaction.** The residuals were normalised by
+`sqrt(direct_sem² + reference_error²)`, which describes the *measurement* and
+omits the prediction's Monte Carlo error — a per-cell quantity, the only one with
+an interaction footprint. `scripts/residual_variance_budget.py` finds the
+observed interaction (0.997 σ) is 1.19 × the omitted term (0.840 σ), and
+restoring it takes the rms from 1.985 σ to 1.434 σ. The review's complaint that
+prediction uncertainty was never propagated is correct and this is its size.
+
+**What is left over is the error bar on the reference chain.** The row spread is
+1.477 σ against 0.898 predicted, a factor 1.64; and directly, the scatter of the
+eight reference means (0.591 pairs) exceeds their mean blocking error (0.456) by
+1.30. Both say the same thing: blocking underestimates how much ⟨A⟩ moves
+between independent chains here. Note that this contradicts
+`scripts/check_between_chain_scatter.py`, which measured the ratio at **0.53**
+— blocking conservative by a factor of two — on a different bin of the same
+system (§5.2). Two measurements of the same kind of quantity, giving opposite
+answers, mean the blocking error's reliability is itself variable and should not
+be assumed in either direction.
+
+**So the corrected claim.** Predicted and measured observable shifts agree with
+no detectable systematic bias once the second-order term is included
+(+0.089 σ over 64 cells) and no field-dependent structure beyond direct-chain
+noise. The residuals are wider than the quoted errors by roughly 1.4 ×, and that
+excess is accounted for: the prediction's own error was omitted from the
+denominator, and the reference chain's blocking error understates its
+between-chain scatter. Neither is a defect in the response formula. **What was
+wrong was the error bar, not the estimator** — and the "1.01 σ rms" was never
+evidence either way.
+
+#### A design flaw in exp09, found in its own output
+
+exp09 seeds its direct chains by chain index alone, `seed + 5000 + 17·d`, with
+no dependence on the field. All eight fields therefore share four random
+streams — the same common-random-number entanglement the review criticised in
+exp07, reproduced in the experiment written to fix a different problem.
+
+Its size is measurable from the deposited chain means. The component shared
+across fields at fixed chain index is 0.134 pairs against a per-field
+chain-to-chain sd of 0.401, so about 11 % of the direct-chain variance. The
+consequence is one-directional: shared streams make the per-field direct errors
+more alike, which *lowers* the column-effect noise floor and so makes the test
+for field structure conservative rather than permissive. It does confound the
+grand mean with a common direct-chain draw, which is why the grand mean is
+reported alongside the row and column structure rather than on its own.
+
+The seeds are left as they were run. Editing them now would break the match
+between the deposited numbers and the source digest the manifest records, which
+is the thing this repository has just finished building.
 
 ## 6. What is not here
 

@@ -1,17 +1,17 @@
 {
   "threshold": 0.25,
   "agreement_sigma": 2.0,
-  "n_cases": 25,
-  "n_trusted": 22,
-  "n_false_trust": 4,
-  "false_trust_rate": 0.18181818181818182,
-  "false_trust_upper_95": 0.36909113432556817,
-  "sensitivity": 0.2,
-  "specificity": 0.9,
-  "auc": 0.59,
+  "n_cases": 89,
+  "n_trusted": 73,
+  "n_false_trust": 14,
+  "false_trust_rate": 0.1917808219178082,
+  "false_trust_upper_95": 0.2834522839885513,
+  "sensitivity": 0.17647058823529413,
+  "specificity": 0.8194444444444444,
+  "auc": 0.5563725490196079,
   "threshold_was_frozen_on_held_out_data": false,
   "cases_are_independent": false,
-  "verdict": "4 of 22 trusted cases disagree with direct sampling; the upper limit on the false-trust rate is 37%, far above any tolerance one would set, so the diagnostic must not be used to certify a case",
+  "verdict": "14 of 73 trusted cases disagree with direct sampling; the upper limit on the false-trust rate is 28%, far above any tolerance one would set, so the diagnostic must not be used to certify a case",
   "cases": [
     {
       "source": "exp06 amplitude sweep",
@@ -262,6 +262,646 @@
       "error": 0.5692768537675501,
       "agrees": true,
       "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 0",
+      "ratio": 0.5026403722804736,
+      "predicted": 0.6672337805158646,
+      "measured": 1.0603333333333183,
+      "error": 0.6839012712746622,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 0",
+      "ratio": 0.18221163697411905,
+      "predicted": 10.388954994693316,
+      "measured": 11.643499999999989,
+      "error": 0.8337325630205297,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 0",
+      "ratio": 0.21145473449316937,
+      "predicted": 5.621145791592903,
+      "measured": 7.053333333333342,
+      "error": 0.7083994767692715,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 0",
+      "ratio": 0.08061753503006011,
+      "predicted": -2.984782067931734,
+      "measured": -1.6158333333333417,
+      "error": 0.5960395834591554,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 0",
+      "ratio": 0.07762759844267322,
+      "predicted": 2.9902268940065064,
+      "measured": 4.424000000000007,
+      "error": 0.6408445464491824,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 0",
+      "ratio": 0.156322697760448,
+      "predicted": -2.8047214553927864,
+      "measured": -1.1344999999999743,
+      "error": 0.597967799931937,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 0",
+      "ratio": 0.4737403695727115,
+      "predicted": 0.3377996995629242,
+      "measured": 1.623500000000007,
+      "error": 0.6004630711845603,
+      "agrees": false,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 0",
+      "ratio": 0.13419590579153887,
+      "predicted": 4.856903074152689,
+      "measured": 5.442333333333323,
+      "error": 0.612075059343445,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 1",
+      "ratio": 2.2600462479058394,
+      "predicted": -0.3522238508158876,
+      "measured": 1.064333333333309,
+      "error": 0.5910725673024599,
+      "agrees": false,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 1",
+      "ratio": 0.09399933166562924,
+      "predicted": 8.96613909541891,
+      "measured": 11.64749999999998,
+      "error": 0.7224441713967159,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 1",
+      "ratio": 0.22681122813895185,
+      "predicted": 5.872114958834025,
+      "measured": 7.057333333333332,
+      "error": 0.6766376859579754,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 1",
+      "ratio": 0.12947016937757386,
+      "predicted": -1.8334803226263305,
+      "measured": -1.611833333333351,
+      "error": 0.524809056953088,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 1",
+      "ratio": 0.1244450438258969,
+      "predicted": 3.4741149552545982,
+      "measured": 4.427999999999997,
+      "error": 0.5810851191326128,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 1",
+      "ratio": 0.19631706667403287,
+      "predicted": -2.9163653089885226,
+      "measured": -1.1304999999999836,
+      "error": 0.5928859798683135,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 1",
+      "ratio": 0.3267095916977067,
+      "predicted": 1.4716379508348056,
+      "measured": 1.6274999999999977,
+      "error": 0.5509777713372077,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 1",
+      "ratio": 0.143811171722127,
+      "predicted": 4.423558757034136,
+      "measured": 5.446333333333314,
+      "error": 0.561548097123289,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 2",
+      "ratio": 1.9718372759728977,
+      "predicted": -0.19427114647703733,
+      "measured": -0.660333333333341,
+      "error": 0.6521957128930495,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 2",
+      "ratio": 0.11156719132981108,
+      "predicted": 10.2839239585822,
+      "measured": 9.92283333333333,
+      "error": 0.8185339438226971,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 2",
+      "ratio": 0.09231971147146076,
+      "predicted": 6.348623140418968,
+      "measured": 5.332666666666682,
+      "error": 0.7244887070285533,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 2",
+      "ratio": 0.03125230870443777,
+      "predicted": -2.4235351113048744,
+      "measured": -3.336500000000001,
+      "error": 0.5738358383958003,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 2",
+      "ratio": 0.03721450872514813,
+      "predicted": 4.0254308022556575,
+      "measured": 2.7033333333333474,
+      "error": 0.6597123171430952,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 2",
+      "ratio": 0.0990579404711953,
+      "predicted": -2.514244913785533,
+      "measured": -2.8551666666666335,
+      "error": 0.6015706583250775,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 2",
+      "ratio": 0.09761148389178553,
+      "predicted": 1.1788603552874215,
+      "measured": -0.09716666666665219,
+      "error": 0.6050350268451091,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 2",
+      "ratio": 0.025626896662949903,
+      "predicted": 4.953399345335262,
+      "measured": 3.721666666666664,
+      "error": 0.6312962846971335,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 3",
+      "ratio": 0.38923464420352744,
+      "predicted": 0.3822662000952685,
+      "measured": -0.07433333333335668,
+      "error": 0.7296092213245274,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 3",
+      "ratio": 0.1451228470455155,
+      "predicted": 9.724825455423758,
+      "measured": 10.508833333333314,
+      "error": 0.8396539545972321,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 3",
+      "ratio": 0.10917623425461903,
+      "predicted": 4.993528774804245,
+      "measured": 5.918666666666667,
+      "error": 0.7335610332652135,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 3",
+      "ratio": 0.03369613975724131,
+      "predicted": -2.6312713094725733,
+      "measured": -2.7505000000000166,
+      "error": 0.6844128379573803,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 3",
+      "ratio": 0.20077481800090016,
+      "predicted": 2.1335166717565888,
+      "measured": 3.2893333333333317,
+      "error": 0.7040868419591119,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 3",
+      "ratio": 0.09958363881698706,
+      "predicted": -1.9106592215315086,
+      "measured": -2.2691666666666492,
+      "error": 0.6774356143320815,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 3",
+      "ratio": 0.015680544434589497,
+      "predicted": 0.15059538401427844,
+      "measured": 0.4888333333333321,
+      "error": 0.7088603222534893,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 3",
+      "ratio": 0.027495872197338494,
+      "predicted": 4.099973391622678,
+      "measured": 4.307666666666648,
+      "error": 0.6716803378879217,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 4",
+      "ratio": 0.3610517811340902,
+      "predicted": 0.20391542800821,
+      "measured": 0.4376666666666438,
+      "error": 0.612826951729645,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 4",
+      "ratio": 0.019639696389202876,
+      "predicted": 9.731037597903208,
+      "measured": 11.020833333333314,
+      "error": 0.8020783247064948,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 4",
+      "ratio": 0.1908273837951185,
+      "predicted": 5.245212255798212,
+      "measured": 6.430666666666667,
+      "error": 0.7008763165694021,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 4",
+      "ratio": 0.032501221528748375,
+      "predicted": -2.38347150242317,
+      "measured": -2.238500000000016,
+      "error": 0.5567555220812241,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 4",
+      "ratio": 0.4032046636487596,
+      "predicted": 2.9624731145685295,
+      "measured": 3.801333333333332,
+      "error": 0.6080978664908808,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 4",
+      "ratio": 0.4236252941314503,
+      "predicted": -1.9191345436918872,
+      "measured": -1.7571666666666488,
+      "error": 0.5852468114350544,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 4",
+      "ratio": 0.4535845849502328,
+      "predicted": 0.5331490633140207,
+      "measured": 1.0008333333333326,
+      "error": 0.5603275122165303,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 4",
+      "ratio": 0.11185180562099098,
+      "predicted": 4.297830347366954,
+      "measured": 4.819666666666649,
+      "error": 0.5922873384398453,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 5",
+      "ratio": 0.8052212310713843,
+      "predicted": 0.22016245280098576,
+      "measured": 0.06433333333330893,
+      "error": 0.537462958337318,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 5",
+      "ratio": 0.0022753798272453296,
+      "predicted": 8.395002806973979,
+      "measured": 10.64749999999998,
+      "error": 0.6345012143356332,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 5",
+      "ratio": 0.16684372562948135,
+      "predicted": 4.6151335728175225,
+      "measured": 6.057333333333332,
+      "error": 0.5822132013778256,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 5",
+      "ratio": 0.035513841202669344,
+      "predicted": -2.5120164165104173,
+      "measured": -2.611833333333351,
+      "error": 0.4892509699297071,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 5",
+      "ratio": 0.2198070569771089,
+      "predicted": 2.4885800082559864,
+      "measured": 3.4279999999999973,
+      "error": 0.5286957354459169,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 5",
+      "ratio": 0.15880362771927006,
+      "predicted": -1.8818356241530843,
+      "measured": -2.1304999999999836,
+      "error": 0.49582092526888794,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 5",
+      "ratio": 0.14185433245286558,
+      "predicted": 0.8772948312448585,
+      "measured": 0.6274999999999977,
+      "error": 0.5170284543651503,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 5",
+      "ratio": 0.12613858974119338,
+      "predicted": 3.9093359766332703,
+      "measured": 4.446333333333314,
+      "error": 0.4825085584022956,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 6",
+      "ratio": 2.1175453515443534,
+      "predicted": -0.3089610752166763,
+      "measured": -0.10033333333336714,
+      "error": 0.72488168802656,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 6",
+      "ratio": 0.011381770423991676,
+      "predicted": 10.818056029204127,
+      "measured": 10.482833333333303,
+      "error": 0.8925627969052198,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 6",
+      "ratio": 0.01283699322775126,
+      "predicted": 6.375150514044137,
+      "measured": 5.892666666666656,
+      "error": 0.8662679221923504,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 6",
+      "ratio": 0.04889733342893427,
+      "predicted": -2.9304422417041787,
+      "measured": -2.776500000000027,
+      "error": 0.6211055078523842,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 6",
+      "ratio": 0.05781896905715313,
+      "predicted": 3.9387187516206352,
+      "measured": 3.263333333333321,
+      "error": 0.7197233655182423,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 6",
+      "ratio": 0.17203904365139813,
+      "predicted": -2.4391566361055057,
+      "measured": -2.2951666666666597,
+      "error": 0.6833057379916541,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 6",
+      "ratio": 0.5544705736389387,
+      "predicted": 1.283965411470935,
+      "measured": 0.46283333333332166,
+      "error": 0.6810613991733747,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 6",
+      "ratio": 0.04336929575362304,
+      "predicted": 4.994932398536776,
+      "measured": 4.281666666666638,
+      "error": 0.6758719872020829,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "null vs chain 7",
+      "ratio": 0.03490913445124611,
+      "predicted": -0.6874818137784291,
+      "measured": 0.214999999999975,
+      "error": 0.6796071660030132,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "aligned vs chain 7",
+      "ratio": 0.07747418659547875,
+      "predicted": 10.583745065334854,
+      "measured": 10.798166666666646,
+      "error": 0.8817564922374492,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random0 vs chain 7",
+      "ratio": 0.028830602870834186,
+      "predicted": 6.242867249344927,
+      "measured": 6.207999999999998,
+      "error": 0.7703225473265913,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random1 vs chain 7",
+      "ratio": 0.029841683130995278,
+      "predicted": -2.550117274051625,
+      "measured": -2.461166666666685,
+      "error": 0.6201388488412468,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random2 vs chain 7",
+      "ratio": 0.004513904482886243,
+      "predicted": 3.3402750201378755,
+      "measured": 3.5786666666666633,
+      "error": 0.6690546708710111,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random3 vs chain 7",
+      "ratio": 0.019425459520183697,
+      "predicted": -2.339874116347092,
+      "measured": -1.9798333333333176,
+      "error": 0.6411246928483382,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random4 vs chain 7",
+      "ratio": 0.008555309415652065,
+      "predicted": 1.02328214244056,
+      "measured": 0.7781666666666638,
+      "error": 0.6422870101668583,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp09 replication",
+      "case": "random5 vs chain 7",
+      "ratio": 0.08839194553941221,
+      "predicted": 4.470490885170365,
+      "measured": 4.59699999999998,
+      "error": 0.642107817847453,
+      "agrees": true,
+      "trusted": true
     }
   ]
 }

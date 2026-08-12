@@ -290,22 +290,27 @@ evaluation per stored frame per model. That is a large saving when screening
 many models, and it makes the claim
 falsifiable, since prediction and measurement are separate experiments.
 
-\emph{(iii) The second-order term suggests a warning light, and it does not
-work.} The $n = 2$
-term is estimable from the same samples, and its ratio to the first-order term
-suggests itself as a self-diagnostic: where the ratio is small the linear
-prediction should be trustworthy, and where it is not, no linear reasoning about
-the error field is safe.
+\emph{(iii) The second-order term is a correction, not a gate.} The $n = 2$
+term is estimable from the same samples and can be used two ways, which came out
+differently.
 
-We proposed that and then scored it as what it is, a screening test, over every
-case in this study where the diagnostic and an independent direct measurement
-both exist ($n = 25$; Sec.~\ref{sec:warninglight}). Of 22 cases it certifies, 4
-disagree with direct sampling --- a false-trust rate of 18\%, upper 95\% limit
-37\% --- and it flags 1 of the 5 genuine disagreements. The statistic barely
-separates the two groups at any threshold: area under the ROC curve 0.59
-against 0.5 for no information, one-sided $p = 0.29$. \textbf{The claim is
-withdrawn.} We report the ratio alongside every prediction as a descriptive
-number and use it to certify nothing.
+\emph{Added to the prediction, it corrects.} Over eight error fields and eight
+independent reference chains (Sec.~\ref{sec:calibration}), including it takes the
+systematic residual offset from $+0.78\sigma$ to $+0.09\sigma$ and removes the
+field-to-field structure with it, the spread of field effects falling to
+$0.42\sigma$ against a noise floor of $0.44\sigma$. The largest first-order field
+effect belongs to the field carrying the largest $|\rho_0(A,\dU)|$, which is
+where a second-order correction should be largest.
+
+\emph{Used as a threshold, it does not discriminate.} The obvious
+self-diagnostic --- trust the prediction where the ratio of second to first
+order is small --- has a false-trust rate of 19\% over the 89 cases in this
+study carrying an independent direct measurement, and an area under the ROC
+curve of 0.556 against 0.5 for no information (Sec.~\ref{sec:warninglight}).
+\textbf{That claim is withdrawn.} There is no contradiction between the two: a
+correction can improve an average without its own magnitude predicting which
+individual case will be wrong. We compute and add the term, and certify nothing
+with it.
 
 \subsection{Vector observables, and the contrast with free energy}
 
@@ -964,6 +969,90 @@ back to $8.4$ pairs, the saturation Sec.~\ref{sec:retraction}
 anticipated --- and Sec.~\ref{sec:w32} takes up what that does to a fitted
 exponent.
 
+\subsection{What the agreement in Sec.~\ref{sec:prediction} actually is}
+\label{sec:calibration}
+
+The $1.01\sigma$ of Sec.~\ref{sec:prediction} was presented as a calibration
+pass and is not one, for a reason we did not see and an external review did: the
+eight residuals are all negative, with a common offset of $-0.86\sigma$ and a
+scatter about it of $0.57\sigma$. An rms near one built that way is a systematic
+displacement plus a spread \emph{smaller} than the quoted errors. The eight are
+also not independent --- each measured shift subtracts the same reference-chain
+mean.
+
+We therefore repeated the measurement with the reference chain as a unit of
+replication: eight independent reference chains, eight designed error fields,
+and four independent direct chains per field, giving 64 residuals in which the
+three error sources have distinguishable footprints. A reference chain's error
+is constant down a row, a field's direct-chain error is constant down a column,
+and a genuine field-dependent failure of the prediction is also constant down a
+column but is not noise. Each observed spread is set against the spread its own
+quoted error predicts, so what is tested is a ratio rather than a threshold.
+
+\begin{center}
+\begin{tabular}{lccc}
+\hline\hline
+ & first order & $+$ second order & predicted \\
+\hline
+residual rms & $1.985\sigma$ & $1.717\sigma$ & 1 \\
+grand mean & $\mathbf{+0.781\sigma}$ & $\mathbf{+0.089\sigma}$ & 0 \\
+row (reference-chain) spread & $1.477\sigma$ & $1.161\sigma$ & 0.898 \\
+column (field) spread & $\mathbf{0.698\sigma}$ & $\mathbf{0.422\sigma}$ & 0.435 \\
+interaction rms & $0.997\sigma$ & $1.267\sigma$ & --- \\
+\hline\hline
+\end{tabular}
+\end{center}
+
+\textbf{The offset is a property of the reference draw.} The row effects are
+$[+1.69, +1.83, -2.54, -0.28, +0.47, +0.59, -1.34, -0.41]\sigma$ and they track
+their own chains' means: the two lowest reference chains give the two most
+positive rows, the highest gives the most negative. Where
+Sec.~\ref{sec:prediction}'s eight residuals were all negative, these 64 are 42
+positive. A quantity whose sign follows the reference realisation is not a bias.
+
+\textbf{Most of what remains is the truncation.} Adding the second-order term
+takes the grand mean from $+0.781\sigma$ to $+0.089\sigma$ and the field-effect
+spread from $0.698\sigma$ to $0.422\sigma$ against a direct-chain noise floor of
+$0.435\sigma$ --- a variance ratio of 2.58 falling to 0.94. The largest
+first-order field effect is the aligned field's $+1.36\sigma$, and that field
+carries the largest $|\rho_0(A,\dU)|$ in the set, which is where a second-order
+correction should be largest. This was the pre-registered test of whether the
+column structure is the truncation showing itself.
+
+\textbf{The prediction's own error was missing from the denominator.} Residuals
+were normalised by the measurement error alone, omitting the prediction's Monte
+Carlo error --- a per-cell quantity and the only term with an interaction
+footprint. The observed interaction is $1.19\times$ the omitted term, and
+restoring it takes the rms from $1.985\sigma$ to $1.434\sigma$.
+
+\textbf{What is left is the reference chain's error bar.} The row spread exceeds
+its prediction by $1.64\times$, and directly, the scatter of the eight reference
+means (0.591 pairs) exceeds their mean blocking error (0.456) by $1.30\times$.
+This contradicts our own six-chain measurement in Sec.~\ref{sec:discrepancy},
+which found blocking \emph{conservative} by a factor of two on a different bin
+of the same system. Two measurements of the same quantity disagreeing in
+direction is itself the finding: the blocking error's reliability varies and
+should not be assumed in either direction.
+
+So the corrected claim. Predicted and measured shifts agree with no detectable
+systematic bias once the second-order term is included, and with no
+field-dependent structure beyond direct-chain noise. The residuals are wider
+than the quoted errors by roughly $1.4\times$, and that excess is accounted for
+by two omissions in the error budget rather than by anything in the response
+formula. \textbf{What was wrong was the error bar, not the estimator.}
+
+One flaw in this experiment belongs here rather than in a footnote. It seeds its
+direct chains by chain index alone, so all eight fields share four random
+streams --- the same common-random-number entanglement we criticise ourselves
+for in Sec.~\ref{sec:counterexamples}, reproduced in the experiment written to
+remove a different one. Measured from the deposited chain means, the shared
+component is 0.134 pairs against a per-field chain-to-chain sd of 0.401, about
+11\% of the direct-chain variance. Its effect is one-directional: shared streams
+make the per-field errors more alike, lowering the column noise floor and making
+the test for field structure conservative. It does confound the grand mean with
+a common direct draw, which is why the grand mean is never read on its own
+above.
+
 %======================================================================
 \section{What did not work}
 \label{sec:failures}
@@ -1118,8 +1207,9 @@ the key \texttt{flagged\_cases\_all\_agree: false}.
 That is one experiment, and the question deserves the whole sample. A
 screening test is characterised by its error rates on cases whose truth is
 known independently, so we pooled every case in this study carrying both the
-diagnostic and a direct measurement --- the seven amplitudes of the sweep and
-the eighteen fitted models of Sec.~\ref{sec:fitted} at two budgets, 25 in all.
+diagnostic and a direct measurement --- the seven amplitudes of the sweep, the
+eighteen fitted models of Sec.~\ref{sec:fitted} at two budgets, and the 64
+reference-chain/field cells of Sec.~\ref{sec:calibration} --- 89 in all.
 Using the threshold already fixed in the code (ratio $<0.25$, chosen a priori
 because a truncated series needs its next term small, and not tuned on these
 data) and calling a case a disagreement when prediction and measurement differ
@@ -1130,23 +1220,23 @@ by more than two combined standard errors:
 \hline\hline
  & agrees with direct MD & disagrees \\
 \hline
-diagnostic says trust & 18 & \textbf{4} \\
-diagnostic says beware & 2 & 1 \\
+diagnostic says trust & 59 & \textbf{14} \\
+diagnostic says beware & 13 & 3 \\
 \hline\hline
 \end{tabular}
 \end{center}
 
 The false-trust rate --- the quantity that matters, since it is the rate at
 which the diagnostic converts an unknown into a confident error --- is
-$4/22 = 18\%$, with an upper 95\% limit of 37\%. Sensitivity to genuine failure
-is $1/5 = 0.20$. And the statistic does not separate the two groups at any
-threshold: median ratio 0.033 among agreeing cases against 0.091 among
-disagreeing ones, area under the ROC curve 0.59 against 0.5 for no information,
-one-sided $p = 0.29$.
+$14/73 = 19\%$, with an upper 95\% limit of 28\%. Sensitivity to genuine failure
+is $3/17 = 0.18$. And the statistic does not separate the two groups at any
+threshold: median ratio 0.096 among agreeing cases against 0.098 among
+disagreeing ones --- indistinguishable --- with area under the ROC curve 0.556
+against 0.5 for no information, one-sided $p = 0.24$.
 
 Two caveats and neither rescues it. The threshold was chosen a priori rather
 than frozen on a held-out development set, which is better than tuning but is
-not the validation protocol a safety diagnostic needs; and the 25 cases share a
+not the validation protocol a safety diagnostic needs; and the 89 cases share a
 system, an observable and in places a reference chain, so the binomial interval
 is optimistically narrow. \textbf{We withdraw the claim.} The second-order ratio
 is reported with every prediction as a descriptive statistic, and nothing in

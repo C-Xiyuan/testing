@@ -1,0 +1,22 @@
+{
+  "measurement error only (as published)": {
+    "rms": 1.9847137758823041,
+    "grand_mean": 0.781017907747599,
+    "row_sd": 1.4770556260694527,
+    "col_sd": 0.6983154803547349,
+    "interaction_rms": 0.9967091834752401
+  },
+  "measurement + prediction error": {
+    "rms": 1.4339067435690416,
+    "grand_mean": 0.560130635773783,
+    "row_sd": 1.0873387972004025,
+    "col_sd": 0.44722880216969363,
+    "interaction_rms": 0.7299403170167365
+  },
+  "interaction_vs_prediction_error": {
+    "interaction_rms": 0.9967091834752401,
+    "prediction_error_scale": 0.8398879567182675,
+    "ratio": 1.1867168418151002,
+    "verdict": "the interaction is what the omitted prediction error accounts for; the normalisation was wrong and nothing else is"
+  }
+}

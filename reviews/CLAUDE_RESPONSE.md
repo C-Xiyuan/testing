@@ -27,10 +27,10 @@ the design rather than an intention.
 | Review item | Verdict | Evidence or counter-evidence | Concrete action | Commit / experiment | Claim after action |
 |---|---|---|---|---|---|
 | **P0-1** end-to-end consistency | Partially agree | The review treats the exp06 amplitude-sweep disagreement and the six-chain 35 %/3.7 σ result as one failure. They have **opposite signs**: at 4.25 Å direct sampling is *smaller* than the prediction, at 5.25 Å it is *larger*. No single estimator bias produces both. Separately, the 3.7 σ uses a prediction error bar (±0.101) that is a within-chain blocking error from **one** reference chain and therefore does not include how much the prediction moves between chains. | `exp10` — 8 reference and 8 surrogate chains, two bins, two samplers, forward/reverse FEP + BAR + two-state MBAR, bracketing initialisations, relaxation ladder, per-chain prediction scatter. Pre-registered estimand, ±0.5 pair equivalence bound, decision rule fixed before the confirmatory run. | `experiments/exp10_endtoend_consistency`, new module `atomlab/analysis/fep.py` validated in `tests/test_fep.py` | *(filled in §2 below)* |
-| **P0-2** calibration / common offset | **Agree** | Reproduced independently before reading the review's own numbers: the eight exp07 residuals are all negative, mean −0.861 σ, scatter about that 0.571 σ, rms 1.013 σ. An rms near one built from a common offset plus a sub-unit scatter is not a calibration pass. | `exp09` — 8 independent reference chains × 8 fields × 4 independent direct chains per field, with the residual table decomposed into reference-chain (row) and field (column) effects, each compared against the spread its own quoted error predicts. | `experiments/exp09_calibration_replication` | *(filled in §2)* |
+| **P0-2** calibration / common offset | **Agree**, and the mechanism is now identified | Reproduced independently before reading the review's numbers: the eight exp07 residuals are all negative, mean −0.861 σ, scatter 0.571 σ. `exp09` then decomposes 64 residuals from 8 independent reference chains: the row effects track their own chains' means, exp07's all-negative offsets become 42/64 *positive*, and a quantity whose sign flips with the reference draw is a realisation rather than a bias. Of the remainder, the truncation accounts for the grand mean (+0.781 σ → **+0.089 σ** on adding the second-order term) and the field structure (variance ratio 2.58 → 0.94); the omitted prediction error accounts for the interaction (observed 0.997 σ against 0.840 σ predicted, ratio 1.19). | `exp09` plus `scripts/residual_variance_budget.py`. | `experiments/exp09_calibration_replication`, `results/.../variance_budget.json` | **The estimator shows no detectable bias; the error bars were too small by ≈1.4 ×.** The prediction's own error was missing from the denominator and the reference chain's blocking error understates its between-chain scatter by 1.30 ×. The "1.01 σ" was never evidence either way. |
 | **P0-3** counterexample replication | **Agree** | One construction chain, one evaluation split, two force levels that are the same field direction rescaled, and shared random streams between the two direct runs. Existence is established; stability is not. | Not yet run. Design frozen in §5 (Gate A1) with the experimental unit set to the construction/reference cluster. | — | Downgraded now, in `docs/RESULTS.md` §1 and here, to a single-state constructive example. |
 | **P0-4** clustered zoo / post-hoc band | **Agree on the clustering, disagree on the consequence of the missing measurement error** | The clustering objection is correct and no analysis fixes it: the 34 members are a handful of parameter families sharing a reference trajectory, a baseline and a random stream, and every window in the sweep re-uses the same points. The 30× spread's denominator (`null_f4e-03`, 2.65 raw against 2.43 noise) is not resolved from zero — worse than the review knew: redrawing it from its own sampling distribution floors it to exactly zero in **45 %** of draws. But the review also predicts that propagating each member's Monte Carlo uncertainty will disturb the low-end ordering, and **it does not**. Restoring that term and sweeping the redraw scale to a deliberately excessive 1.41 × noise leaves the across-decades correlation excluding zero (0.83 [0.55, 0.88]), the within-band one containing it (0.34 [−0.20, 0.80]), and the prediction excluding it inside the band (0.94 [0.40, 0.95]). | Struck the 30×; replaced "coarse filter, not a selector" with the within-zoo statement in §4 below; wrote `scripts/zoo_uncertainty_propagation.py` and reported the sweep and the floor rates in `docs/RESULTS.md` §3a. | `scripts/zoo_uncertainty_propagation.py`, `results/exp05_proxy_correlation/uncertainty_propagation.json` | Restricted to a descriptive statement about this fixed zoo — but one whose intervals now carry both sources of uncertainty. |
-| **P0-5** warning-light false trust | **Agree**, and it is worse than the review says | The review had one false trust from `exp06`. Scoring the diagnostic as a screening test over all 25 cases in the repository where it and an independent direct measurement both exist gives a **false-trust rate of 18 % (4/22, upper 95 % limit 37 %)**, sensitivity 0.20, and **AUC 0.59** (0.5 = no information, one-sided *p* = 0.29) — the statistic barely separates agreeing from disagreeing cases at all. Independently, `exp09` finds that adding the second-order term makes the residuals worse on every measure. | Wrote `scripts/warning_light_calibration.py` and `docs/RESULTS.md` §5.4, which withdraws the claim outright. `docs/theory.md` §3(iii) rewritten from "computable warning light" to "candidate warning light" with both failures named; `docs/RESULTS.md` §2.1 explains why the one case where the second-order term *is* right is a weaker test than it looks. | `scripts/warning_light_calibration.py`, `results/validation/warning_light_calibration.json`, `exp09` | **Withdrawn.** The ratio is reported as a descriptive statistic and used to certify nothing. |
+| **P0-5** warning-light false trust | **Agree on the gate, disagree that the term itself is the problem** | The review had one false trust from `exp06`. Scoring the diagnostic as a screening test over all 89 cases in the repository carrying both the diagnostic and an independent direct measurement gives a **false-trust rate of 19 % (14/73, upper 95 % limit 28 %)**, sensitivity 0.18, and **AUC 0.556** (0.5 = no information, *p* = 0.24); the median ratio is 0.096 among agreeing cases and 0.098 among disagreeing ones, indistinguishable. So the gate is worse than the review knew. But the term itself is not: added to the prediction it takes `exp09`'s systematic offset from +0.78 σ to +0.09 σ and removes the field-dependent structure with it. A correction that improves an average is not a statistic that says which case will be wrong. | Wrote `scripts/warning_light_calibration.py` and `docs/RESULTS.md` §5.4, which withdraws the claim outright. `docs/theory.md` §3(iii) rewritten from "computable warning light" to "candidate warning light" with both failures named; `docs/RESULTS.md` §2.1 explains why the one case where the second-order term *is* right is a weaker test than it looks. | `scripts/warning_light_calibration.py`, `results/validation/warning_light_calibration.json`, `exp09` | **Withdrawn.** The ratio is reported as a descriptive statistic and used to certify nothing. |
 | **P1-1** fitted-model inference | **Agree** | Ten models sharing system, observable, training pool, reference chain and code path, with two seeds per network family and every ranking interval spanning zero. The EGNN 27× is n = 2. | Rewrote `docs/RESULTS.md` §3b: removed "external-validity check … and it passes", added the residual decomposition per arm, labelled the EGNN pair as hypothesis-generating. | `docs/RESULTS.md` §3b | Feasibility result: the response calculation reaches training-induced error fields and predicts them at the right size. |
 | **P1-2** README evidence status | **Agree** | README listed exp01–exp08 and the full module inventory as if all of it were evidence; four experiments were never written and `atomlab/training/` is empty. | README rewritten with the four-state table the review asks for (implemented / validated / claim-bearing / planned), per module and per experiment, plus an explicit "narrowest supportable statement". | `README.md` | — |
 | **Gate A** scope | Accept | — | Adopted as the next programme, with the primary cell chosen in §5 rather than "more systems". | — | — |
@@ -51,7 +51,62 @@ linear prediction is also constant down a column but is not sampling noise. Each
 observed spread is compared against the spread its own quoted error predicts, so
 the test is a ratio and not a threshold.
 
-*(Results table inserted below once the production run completes.)*
+*Result.* 8 reference chains × 8 fields × 4 direct chains = 64 residuals.
+
+| | first order | + second-order term | predicted by the quoted errors |
+|---|---|---|---|
+| residual rms | 1.985 σ | 1.717 σ | 1 |
+| grand mean | **+0.781 σ** | **+0.089 σ** | 0 |
+| row (reference-chain) spread | 1.477 σ | 1.161 σ | 0.898 |
+| column (field) spread | **0.698 σ** | **0.422 σ** | 0.435 |
+| interaction rms | 0.997 σ | 1.267 σ | — |
+
+Four readings, in the order the decomposition forces:
+
+1. **The offset is the reference draw.** Row effects [+1.69, +1.83, −2.54,
+   −0.28, +0.47, +0.59, −1.34, −0.41] σ track their own chains' means; the two
+   lowest reference chains give the two most positive rows. exp07's residuals
+   were 8/8 negative, exp09's are 42/64 positive. A sign that flips with the
+   reference draw is a realisation, not a bias. **The review's P0-2 is
+   confirmed.**
+2. **The truncation is most of what is left.** Adding the second-order term
+   takes the grand mean to +0.089 σ and the field-effect spread to 0.422
+   against a 0.435 noise floor. The largest first-order field effect is
+   `aligned`'s +1.36 σ, and `aligned` carries the largest |ρ(A, δU)| — exactly
+   where a second-order correction should be largest. This was pre-registered
+   in the module docstring as the test of that hypothesis.
+3. **The prediction's own error is the whole interaction.** It was omitted from
+   the denominator, is the only per-cell term, and
+   `scripts/residual_variance_budget.py` finds the observed interaction is
+   1.19 × its size. Restoring it takes the rms from 1.985 σ to 1.434 σ. The
+   review's complaint here is correct and this is its magnitude.
+4. **What remains is the reference chain's error bar.** Row spread 1.477 σ
+   against 0.898 predicted; and directly, the scatter of the eight reference
+   means (0.591 pairs) exceeds their mean blocking error (0.456) by 1.30 ×.
+   This *contradicts* `check_between_chain_scatter.py`, which measured 0.53 on a
+   different bin of the same system — blocking conservative by a factor of two.
+   Two measurements of the same quantity disagreeing in direction means the
+   blocking error's reliability is itself variable and must not be assumed.
+
+*A flaw in exp09, found in its own output and left in.* It seeds direct chains
+by chain index alone, so all eight fields share four random streams — the same
+common-random-number entanglement the review criticised in exp07, reproduced in
+the experiment written to fix a different problem. Measured from the deposited
+chain means, the shared component is 0.134 pairs against a per-field sd of
+0.401, about 11 % of the direct-chain variance. It makes the field-structure
+test conservative rather than permissive, and it confounds the grand mean with a
+common direct draw, which is why the grand mean is never read alone above. The
+seeds are left as run: changing them now would break the match between the
+deposited numbers and the source digest the manifest records.
+
+*A correction this experiment forced on my own earlier text.* Before the
+production run I wrote, in `docs/theory.md`, `docs/RESULTS.md`, both manuscript
+files and this document, that adding the second-order term makes the residuals
+worse on every measure. That came from `exp09` under `--quick`, at 5 % of
+production chain length, where the second-order estimate is noise. The manifest
+recorded `quick_mode: true` and the figure script refuses to read such a run —
+the guard existed and the number went into prose anyway. All five places are
+corrected.
 
 ### exp10 — end-to-end consistency
 
@@ -348,10 +403,13 @@ second-order term is a computable warning light."* New:
 > light.** That it ought to work is not evidence that it does, and the
 > measurements here say it does not: exp06 flags two cases trustworthy of which
 > one disagrees with direct sampling, and exp09 finds that adding the
-> second-order term makes the residuals worse on every measure. Until a
-> threshold is frozen on one set of error fields and its false-trust rate
-> measured on another, the ratio is a heuristic under test. It is used to flag
-> cases for attention and never to certify one.
+> second-order term, *added to the prediction*, removes a systematic offset of
+> +0.78 σ and the field-dependent structure with it. Used the other way — as a
+> threshold on its own size, to decide which prediction to trust — it has a
+> false-trust rate of 19 % over 89 cases and an area under the ROC curve of
+> 0.556 against 0.5 for no information. A correction that improves an average
+> is not a statistic that identifies which case will be wrong. The term is
+> computed and added; it certifies nothing.
 
 **"selector"** — removed from every summarising position. Old: *"force error is a
 coarse filter, not a selector."* New:
