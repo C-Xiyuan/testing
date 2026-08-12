@@ -306,19 +306,19 @@ not run, and nothing in this paper bears on it.
 
 ### 3.1. System
 
-The reference system is Lennard-Jones argon, *N* = 108 atoms in a cubic cell with
-periodic boundary conditions at number density ρ = 0.0200 Å⁻³ and temperature
+The reference system is Lennard-Jones argon, *N* = 108 atoms in a cubic periodic
+cell at number density ρ = 0.0200 Å⁻³ and temperature
 *T* = 120 K; in reduced units ρ* = ρσ³ = 0.790 and
 *T*\* = *k*<sub>B</sub>*T*/ε = 1.004, a fluid state point below the freezing
 density at that temperature. The parameters are ε = 0.0103 eV, σ = 3.405 Å,
 cutoff 7.0 Å, in the **shifted-force** form.
 
-The cutoff mode is not cosmetic. Table VII in Appendix A gives the energy and
-force discontinuities of the four available modes measured at *r_c* ∓ 10⁻⁷ Å. A
+The cutoff mode is not cosmetic: Table VII (Appendix A) gives the energy and
+force discontinuities of the four available modes at *r_c* ∓ 10⁻⁷ Å. A
 merely shifted potential has a continuous energy and a force discontinuity of
 1.8 × 10⁻⁴ eV/Å, which delivers an impulse every time a pair crosses the cutoff.
-This study measures small systematic differences between ensembles; an artefact
-of that kind would not be distinguishable from the effect under investigation.
+This study measures small systematic differences between ensembles, and an
+artefact of that kind would be indistinguishable from the effect under study.
 
 ### 3.2. Sampling
 
@@ -331,21 +331,21 @@ symmetric, so the stationary distribution is exactly e^{−β*U*} *regardless of
 integration error*, which appears only as a reduced acceptance rate and never as
 a biased distribution.
 
-That property is the reason for the choice, and it forecloses an objection that
-would otherwise be fatal: a thermostat sampling something slightly other than the
-canonical distribution would introduce exactly the kind of small systematic
-difference between two ensembles that this study attributes to model error.
-Hamiltonian Monte Carlo removes the possibility by construction. Production
-settings are 8 leapfrog steps per proposal with the step size adapted during
-burn-in to an acceptance of 0.75, giving ≈ 30 fs after adaptation. An independent
-single-particle Metropolis sampler sharing no code beyond the potential is
-included as a cross-check.
+That property is the reason for the choice: a thermostat sampling something
+slightly other than the canonical distribution would introduce exactly the kind
+of small systematic difference between two ensembles that this study attributes
+to model error, and Hamiltonian Monte Carlo removes that possibility by
+construction. Production
+settings are 8 leapfrog steps per proposal, with the step size adapted in
+burn-in to acceptance 0.75, giving ≈ 30 fs. An independent
+single-particle Metropolis sampler sharing no code beyond the potential serves
+as a cross-check.
 
 The sampler was validated against exact equipartition on a 32-atom Einstein
 crystal at 100 K, where both moments are known in closed form:
-⟨*U*⟩ = 0.41462 ± 0.00196 eV against the exact (3*N*/2)*k*<sub>B</sub>*T* =
-0.41363 eV (0.5σ), and Var(*U*) = 0.003459 eV² against the exact
-(3*N*/2)(*k*<sub>B</sub>*T*)² = 0.003564 eV² (Table VIII). Both moments matter,
+⟨*U*⟩ = 0.41462 ± 0.00196 eV against the exact 0.41363 eV (0.5σ), and
+Var(*U*) = 0.003459 eV² against the exact 0.003564 eV² (Table VIII). Both
+moments matter,
 because an incorrect temperature scale reproduces the mean and fails on the
 variance.
 
@@ -366,24 +366,23 @@ No sampler diagnostic caught this. Acceptance rate and integration error were
 healthy throughout, because they measure whether the Markov chain is being
 *simulated* correctly, not whether it has reached its stationary distribution.
 Those are different questions and only the second bears on an ensemble average.
-We record the failure at length because it is invisible in exactly the way that
-matters: every quantity in this paper is a small difference between two
-ensembles, and an unrelaxed reference ensemble does not announce itself — it
-simply moves the answer.
+We record it at length because it is invisible in exactly the way that matters:
+every quantity in this paper is a small difference between two ensembles, and an
+unrelaxed reference does not announce itself — it simply moves the answer.
 
 The protocol now used melts at 5× the target temperature for a few hundred
 proposals, anneals to the target temperature, and refuses to return a
-configuration with *Q*₆ > 0.20. Melting at the target temperature also works but
-is an order of magnitude slower, because the barrier to be crossed is precisely
-the one that makes the crystal metastable. A 108-atom liquid gives *Q*₆ ≈ 0.08
+configuration with *Q*₆ > 0.20. Melting at the target temperature works but is
+an order of magnitude slower, since the barrier is the one that makes the crystal
+metastable. A 108-atom liquid gives *Q*₆ ≈ 0.08
 and perfect fcc gives 0.5745, so the threshold is far from both. After the
 protocol, *Q*₆ = 0.074 and *U*/*N* = −0.0315 eV with no drift between the halves
 of the production run. Every production trajectory is then split in half and both
 its energy and its order parameter are compared between halves; a drift exceeding
 three combined standard errors *raises* rather than warns, because a failure mode
 with no outward sign will eventually be ignored if it is only a warning. The
-quick-run mode that shrinks every other size parameter for smoke tests
-deliberately never shortens equilibration.
+quick-run mode that shrinks every other size parameter deliberately never
+shortens equilibration.
 
 ### 3.4. Observables
 
@@ -392,43 +391,38 @@ The measured quantities are pair counts in radial bins,
 3.0 to 7.0 Å. These differ from the radial distribution function *g*(*r*) in that
 bin only by a constant at fixed *N* and *V* (Allen and Tildesley 2017), and the
 conversion is provided, but the analysis is done on the counts. The reason is
-interpretability rather than convenience: response theory applies to an
-observable that is a plain function of configuration, and a bin count is exactly
-that, so no normalisation stands between the predicted quantity and the measured
-one.
+interpretability: response theory applies to an observable that is a plain
+function of configuration, and a bin count is exactly that, with no normalisation
+between the predicted and the measured quantity.
 
 The bins taken together form a vector observable. The designed-perturbation arm
 additionally targets a *scalar*: the pair count in a single bin, 3.4 to 3.9 Å,
-across the first peak. That matters statistically, since it makes the covariance
-a *K*-vector rather than a *K* × *J* matrix and so estimable from far fewer
-frames. It is also a limitation, stated here as well as in Section 7: the
-headline demonstration of Section 4.1 concerns a single-bin observable, and
-Section 4.3 shows directly that the result does not transfer to the other bins of
-the same curve.
+across the first peak. That matters statistically: it makes the covariance a
+*K*-vector rather than a *K* × *J* matrix, estimable from far fewer frames. It is also a limitation, stated here as well as in Section 7: the
+headline demonstration concerns a single-bin observable, and Section 4.3 shows
+that the result does not transfer to the other bins of the same curve.
 
 ### 3.5. Designed error fields
 
-Error fields are constructed as full potentials with analytic forces and virial,
-so that a surrogate is built by ordinary addition. All derivatives agree with
+Error fields are full potentials with analytic forces and virial, so a surrogate
+is built by ordinary addition. All derivatives agree with
 finite differences to ~10⁻¹⁰ on both cubic and sheared triclinic cells.
 
-The constructions used here expand a pair error field in a basis of Gaussian
-shell bumps, which makes the covariance with an observable *linear* in the
-expansion coefficients. Choosing coefficients in the null space of that
-covariance, or parallel to it, is then linear algebra rather than optimisation,
-and yields three families: *null*, whose first-order predicted effect on the
+The constructions expand a pair error field in a basis of Gaussian shell bumps,
+which makes the covariance with an observable *linear* in the coefficients.
+Choosing coefficients in the null space of that covariance, or parallel to it, is
+then linear algebra rather than optimisation, giving three families: *null*, whose first-order predicted effect on the
 target observable is zero by construction; *aligned*, of maximal effect per unit
-force error; and *random*, the control. All are then scaled to the same force
-RMSE on the reference ensemble, so the number a practitioner would report is held
-fixed across the comparison.
+force error; and *random*, the control. All are scaled to the same force RMSE on
+the reference ensemble, so the number a practitioner would report is held fixed
+across the comparison.
 
-Out-of-sample discipline is essential and we state it explicitly. A null field is
-orthogonal to the observable *on the frames it was built from* by definition, so
+Out-of-sample discipline is essential. A null field is orthogonal to the observable *on the frames it was built from* by definition, so
 the construction is worthless unless it survives on fresh frames. The reference
 trajectory is split: fields are constructed on one half, and every reported
 number — force RMSE, predicted shift, covariance, measured shift — is computed on
 the other. How many construction frames are needed before the construction
-generalises is itself measured and reported (Table II), because with a badly
+generalises is itself measured and reported (Section 4.2), because with a badly
 estimated covariance the null space found is the null space of the noise.
 
 ### 3.6. Fitted models
@@ -460,20 +454,19 @@ set to four integrated autocorrelation times of the *product* series that carrie
 the error, (*A_m* − Ā)(δ*U_m* − δŪ); using the observable's own correlation time
 underestimates the block length whenever δ*U* varies slowly, which is precisely
 the systematic-error case this paper is about. A jackknife with a different bias
-structure is available as a cross-check; Appendix B gives the estimators and
-their validation in full. Interval estimates from
-`results/exp05_proxy_correlation` use 2000 bootstrap resamples; intervals
-computed for this manuscript by the deposited script
+structure is available as a cross-check; Appendix B gives the estimators in
+full. Interval estimates from the deposited exp05 outputs use 2000 bootstrap
+resamples; those computed for this manuscript by the deposited script
 `scripts/compute_band_correlations.py` use 2000 resamples with seed 20240517.
 
 Every correlation is reported as ρ = value [low, high] with its *n*. Significance
 is quoted as a σ-distance, |value|/error, to one decimal place; no *p*-values are
-used. Uncertainties are quoted to two significant figures and central values to
-the same decimal place, with two deliberate exceptions: shifts in pair counts are
-given throughout at the three-decimal precision of the deposited records, so that
-every one of them can be checked against the JSON without rounding; and exactness
-checks (Appendix A) carry their full digits and are labelled as such. Prediction residuals quoted in σ are the difference between the measured
-and predicted shift divided by the standard error of the *measurement*.
+used. Uncertainties carry two significant figures and central values the same decimal
+place, with two exceptions: pair-count shifts are given at the three-decimal
+precision of the deposited records, so each can be checked against the JSON
+without rounding, and exactness checks (Appendix A) carry their full digits and
+are labelled as such. Prediction residuals in σ are the measured minus predicted shift divided by the
+standard error of the *measurement*.
 
 Two noise conventions exist and we reconcile them here. The observable error
 across the designed-surrogate zoo is a norm of a difference curve, and a norm is
@@ -482,8 +475,8 @@ reported in this paper use the noise-subtracted series
 |*v*_true| = (|*v*_meas|² − E|*v*_noise|²)^{1/2}, floored at zero. The
 subtraction changes every reported ρ by less than 0.01, but it is necessary at
 the low-force-error end, where signal and noise are comparable and the raw norm
-is almost entirely noise. The raw-series values are given in a footnote to
-Table III as a robustness check.
+is almost entirely noise. The raw-series values are reported beside the
+noise-subtracted ones in Section 4.4 as a robustness check.
 
 ### 3.8. Reproducibility and compute
 
@@ -495,8 +488,8 @@ after it.
 
 The five experiment runs reported here total 13,311 s of wall time, about 3.7 h,
 on a four-core x86-64 Linux machine (Python 3.11.15, NumPy 2.4.6, SciPy 1.17.1,
-PyTorch 2.13.0+cpu). The manifests record the core count and the platform string
-but not the processor model, so we do not state one. The largest single run is
+PyTorch 2.13.0+cpu). The manifests record the core count and platform string but
+not the processor model, so we do not state one. The largest single run is
 the ten-model fitted zoo at 4,796 s.
 
 ---
@@ -1062,7 +1055,7 @@ involves no human or animal subjects.
 ## Data availability
 
 The data that support the findings of this study are openly available in Zenodo
-at http://doi.org/[DOI], reference number [DEPOSIT ID] (Ref. 48). The deposit
+at http://doi.org/[DOI], reference number [DEPOSIT ID]. The deposit
 contains the complete `atomlab` source code, the experiment configurations, and
 the raw outputs of every experiment reported here — `summary.json`,
 `records.json`, and the per-experiment manifests, each of which records the git
@@ -1072,6 +1065,9 @@ external dataset was used, downloaded, or required: every configuration analysed
 here was generated by the deposited code from the stated seeds. All analysis
 scripts that produce the figures and tables in this article are included in the
 same deposit.
+
+*(The deposit is additionally cited as a numbered reference in the bibliography,
+as AIP requires.)*
 
 ---
 
@@ -1231,7 +1227,7 @@ is never used. The σ-distance is |measured| / |its standard error|.
 | | aligned | 0.99535 × 10⁻³ | −0.582 | +2.552 ± 0.140 | +1.835 ± 0.579 | 3.2 |
 | 4.0 × 10⁻³ | null | 4.00217 × 10⁻³ | +0.009 | −0.113 ± 0.333 | −0.220 ± 0.640 | 0.3 |
 | | random (seed 1) | 3.99586 × 10⁻³ | +0.110 | −1.306 ± 0.331 | −1.482 ± 0.579 | 2.6 |
-| | random (seed 0) | 3.99100 × 10⁻³ | −0.430 | +5.778 ± 0.418 | +5.320 ± 0.589 | 9.0 |
+| | random (seed 0) | 3.99100 × 10⁻³ | −0.430 | +5.778 ± 0.417 | +5.320 ± 0.589 | 9.0 |
 | | aligned | 3.98141 × 10⁻³ | −0.582 | +10.206 ± 0.558 | +9.891 ± 0.611 | 16.2 |
 
 ### Table II. How many frames the null-space construction needs.

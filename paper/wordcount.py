@@ -31,21 +31,9 @@ def abstract_count(text: str) -> int:
     return len(strip_to_words(body))
 
 
-def main():
-    text = TEX.read_text()
-    print(f"abstract words: {abstract_count(text)}")
-
-    # Comments.
-    text = re.sub(r"(?<!\\)%.*", "", text)
-
-    # Everything up to and including \maketitle (preamble, title, abstract).
-    text = text.split(r"\maketitle", 1)[1]
-
-    # Everything from \appendix onward (appendices, floats, bibliography).
-    text = text.split(r"\appendix", 1)[0]
-
-    # Float environments that appear before \appendix (none at present, but be
-    # safe if floats are moved inline).
+def clean(text: str) -> str:
+    """Strip everything the count excludes, leaving prose."""
+    # Float environments.
     for env in ("figure*", "figure", "table*", "table"):
         text = re.sub(r"\\begin\{%s\}.*?\\end\{%s\}" % (re.escape(env), re.escape(env)),
                       " ", text, flags=re.S)
@@ -59,13 +47,46 @@ def main():
     text = re.sub(r"\\(sub)*section\*?\{[^}]*\}", " ", text)
     text = re.sub(r"\\paragraph\*?\{[^}]*\}", " ", text)
     text = re.sub(r"\\label\{[^}]*\}", " ", text)
-    text = re.sub(r"\\(cite|onlinecite|ref|eqref)\{[^}]*\}", " X ", text, flags=re.S)
+    # A citation renders as a superscript numeral and is not counted as a word;
+    # a cross-reference renders as a number in running text and is counted.
+    text = re.sub(r"\\cite\{[^}]*\}", " ", text, flags=re.S)
+    text = re.sub(r"\\(onlinecite|ref|eqref)\{[^}]*\}", " X ", text, flags=re.S)
 
     # Remaining macros, braces and inline maths markers.
     text = re.sub(r"\\[a-zA-Z@]+\*?", " ", text)
     text = re.sub(r"[{}$\\&]", " ", text)
+    return text
 
-    words = [w for w in text.split() if any(c.isalnum() for c in w)]
+
+def per_section(body: str) -> list[tuple[str, int]]:
+    """Word count of each top-level section, in document order."""
+    marks = [(m.start(), m.group(1)) for m in
+             re.finditer(r"\\section\*?\{([^}]*)\}", body)]
+    out = []
+    for i, (pos, name) in enumerate(marks):
+        end = marks[i + 1][0] if i + 1 < len(marks) else len(body)
+        words = [w for w in clean(body[pos:end]).split() if any(c.isalnum() for c in w)]
+        out.append((name, len(words)))
+    return out
+
+
+def main():
+    text = TEX.read_text()
+    print(f"abstract words: {abstract_count(text)}")
+
+    # Comments.
+    text = re.sub(r"(?<!\\)%.*", "", text)
+
+    # Everything up to and including \maketitle (preamble, title, abstract).
+    text = text.split(r"\maketitle", 1)[1]
+
+    # Everything from \appendix onward (appendices, floats, bibliography).
+    text = text.split(r"\appendix", 1)[0]
+
+    for name, n in per_section(text):
+        print(f"  {name:<32s} {n:5d}")
+
+    words = [w for w in clean(text).split() if any(c.isalnum() for c in w)]
     print(f"main-text words (Secs. 1-9, excluding abstract, floats, "
           f"appendices, references): {len(words)}")
 
