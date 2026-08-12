@@ -125,6 +125,37 @@ Inside the band the physics still varies by a factor of thirty, force error
 explains almost none of it, and the response prediction explains nearly all of
 it. See `figures/headline_regimes.png`.
 
+**That window was chosen after looking at the data, so it does not stand on its
+own.** `scripts/band_robustness.py` removes the choice by sweeping every
+multiplicative window of every width across the whole force-RMSE range:
+
+| window width | placements | median ρ (force) | median ρ (prediction) |
+|---|---|---|---|
+| 2.0× | 16 | 0.32 | 0.90 |
+| 2.6× | 24 | 0.33 | 0.94 |
+| 3.0× | 29 | 0.34 | 0.94 |
+| 4.0× | 55 | **0.58** | 0.94 |
+| 6.0× | 70 | 0.59 | 0.95 |
+| 10× | 92 | 0.62 | 0.97 |
+
+Two things follow, and one of them is a correction to the paragraph above.
+
+The correction: the reported window is 4.0× wide, and the *median* 4.0× window
+gives ρ = 0.58, not 0.34. The reported value sits at the **16th percentile** of
+same-width placements. It was a favourable window, and quoting it alone
+overstated the effect.
+
+The result that survives without any window selection: at widths of 3× or below,
+the median ρ(force) over all placements is **0.32–0.34** and never exceeds 0.90,
+while the median ρ(prediction) is **0.90–0.94**. Across all 286 windows of all
+widths, the prediction is above 0.8 in **100 %** of them; force error is below
+0.5 in 43 %. The narrower the comparison — that is, the closer to the situation
+of choosing between comparable models — the less force error resolves and the
+more the prediction does.
+
+This check was run before any external review, and it found against the way the
+result had been presented. The window-free statement is the one to quote.
+
 So the corrected claim, which the data does support: **force error is a coarse
 filter, not a selector.** It will tell you that a badly fitted model is bad. It
 will not tell you which of your good models to use, and the designed

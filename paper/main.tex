@@ -79,52 +79,50 @@ pair-radial observable class, designed fields.
 
 A machine-learned interatomic potential is fitted to energies and forces, its
 root-mean-square force error on a held-out set is reported, the model is used to
-run dynamics, a physical observable is extracted from that trajectory, and the
-observable is believed. Every step of that chain is routine, and the chain as a
-whole encodes an inference: small force error implies good physics. This paper
-asks what actually connects the two ends, and finds that the connection is not
-the one the reported metric measures.
+run dynamics, a physical observable is extracted, and the
+observable is believed. Every step is routine, and the chain
+encodes an inference: small force error implies good physics. This paper
+asks what connects the two ends, and finds that it is not
+what the reported metric measures.
 
-The mismatch is structural and can be stated in one sentence. Writing the fitted
+The mismatch is structural. Writing the fitted
 potential as $U = U_0 + \dU$, where $U_0$ is the reference and $\dU$ is the
 \emph{error field} --- a function on configuration space, not a number --- the
 shift in a static ensemble average $\avg{A}$ is, at leading order, a linear
 functional of $\dU$, while the squared force RMSE is a quadratic functional of
-$\nabla\dU$. A linear functional of a function and a quadratic functional of its
-gradient are related by an inequality and by nothing stronger. The inequality is
-loose, and Sec.~\ref{sec:results} shows how loose.
+$\nabla\dU$. The two are related by an inequality and by nothing stronger. That
+inequality is loose, and Sec.~\ref{sec:results} shows how loose.
 
-Testing that claim requires knowing $\dU$, which in ordinary practice is exactly
+Testing the claim requires knowing $\dU$, which in practice is exactly
 what one does not have: the reference is density-functional theory, available on
-a finite set of computed configurations. We therefore take an analytic classical
+a finite set of configurations. We therefore take an analytic classical
 potential as the ground truth. Lennard-Jones argon\cite{Jones1924, Rahman1964,
 Verlet1967} is uninteresting as physics and exact as a reference, and that is
-the point. Because $U_0$ is known everywhere in configuration space rather than
+the point. Because $U_0$ is known everywhere rather than
 on a test set, $\dU$ is exactly computable at every sampled configuration,
-reference observables converge to arbitrary precision so that a discrepancy is a
-property of the surrogate rather than of the reference, and --- decisively ---
+reference observables converge to arbitrary precision, and --- decisively ---
 error fields can be \emph{designed} to have chosen statistical properties. That
 converts an observational claim about a correlation between two reported numbers
-into a constructive one: we can build models that a force-error report cannot
+into a constructive one: we build models that a force-error report cannot
 distinguish and that disagree about the physics by sixteen standard errors.
 
-The empirical half of this story is already known. Benchmarks that run
-simulations with machine-learned potentials rather than only scoring them on
-held-out forces have reported that force error and simulation quality come
+The empirical half of this story is known. Benchmarks that run
+simulations with machine-learned potentials rather than only scoring held-out
+forces have reported that force error and simulation quality come
 apart\cite{Fu2023, Stocker2022}, and the recommendation to validate on
-simulation observables is now explicit in the methodological
-literature\cite{Morrow2023}. Practitioners have also reported specific failures
-that a force RMSE does not anticipate\cite{Kovacs2021, Deng2025, Pota2024}. The
-statistical machinery we use is equally standard: the identity below is
+simulation observables is explicit in the methodological
+literature\cite{Morrow2023}; practitioners report specific failures
+that a force RMSE does not anticipate\cite{Kovacs2021, Deng2025, Pota2024}. Our
+statistical machinery is equally standard: the identity below is
 Zwanzig's free-energy-perturbation relation\cite{Zwanzig1954} expanded in
 cumulants, and the same covariance appears as a parameter gradient in
 differentiable trajectory reweighting\cite{Thaler2021} and as the vehicle for
 propagating committee uncertainty to thermodynamic
-averages\cite{Imbalzano2021}. We claim no novelty for it, here or anywhere
-below. What we claim is narrower and we state it defensively: the reading of
+averages\cite{Imbalzano2021}. We claim no novelty for it. What we claim is
+narrower: the reading of
 that textbook identity as an indictment of the reported evaluation metric; the
 analytic-oracle construction that makes $\dU$ exactly known; the constructive
-falsification at force RMSE matched to 0.5\%; and the decomposition of the
+falsification at matched force RMSE; and the decomposition of the
 proxy's performance into an across-decades regime and a within-band regime,
 which turns a vague ``weak proxy'' claim into two sharp and opposite ones.
 
@@ -134,25 +132,24 @@ which turns a vague ``weak proxy'' claim into two sharp and opposite ones.
 in a static observable is a covariance between the observable and the error
 field, with the full cumulant series available and its second-order term usable
 as a self-diagnostic (Sec.~\ref{sec:theory}).
-\item A quantitative validation of that prediction on an analytic reference:
-root-mean-square residuals of $1.01\sigma$ over eight designed error fields
-($n = 8$), $1.06\sigma$ over ten fitted models ($n = 10$) and $1.00\sigma$ over
-eight more fitted at a smaller data budget ($n = 8$), at a cost of one energy
+\item A quantitative validation on an analytic reference:
+root-mean-square prediction residuals of $1.01\sigma$ over eight designed error
+fields, $1.06\sigma$ over ten fitted models and $1.00\sigma$ over
+eight more fitted at a smaller budget, at one energy
 evaluation per stored frame per model and no simulation with the surrogate. In
-the two eight-member arms every residual has the same sign, and we decompose the
-figure into a common offset and the scatter about it rather than quoting it as a
-calibration (Secs.~\ref{sec:prediction} and \ref{sec:fitted}).
+the two eight-member arms every residual has the same sign, and we decompose
+those figures into a common offset and the scatter about it rather than quoting
+them as calibrations (Secs.~\ref{sec:prediction} and \ref{sec:fitted}).
 \item A constructive counterexample set: four error fields matched in force RMSE
-to 0.5\%, whose target-observable shifts run from $-0.22 \pm 0.64$ to
+to 0.52\%, whose target-observable shifts run from $-0.22 \pm 0.64$ to
 $+9.89 \pm 0.61$ pairs, ordered by $\rho(A,\dU)$
 (Sec.~\ref{sec:counterexamples}).
 \item A decomposition of force RMSE's value as a ranking metric: strong across a
-361-fold range of force RMSE, unresolved within a narrow band where the physics
+361-fold range, unresolved within a narrow band where the physics
 still varies (Sec.~\ref{sec:regimes}). This refutes our own pre-registered
 prediction and replaces it with a more useful one.
-\item Three refuted predictions of our own, reported as results rather than as
-caveats (Sec.~\ref{sec:failures}), together with a boundary of
-validity of the linear estimator and an open, unresolved 35\% discrepancy
+\item Three refuted predictions of our own, reported as results rather than
+caveats (Sec.~\ref{sec:failures}), with an open, unresolved 35\% discrepancy
 between two ways of measuring the same shift.
 \item A methodological result of independent interest: a reference ensemble that
 was a slowly melting crystal, wrong in energy by 16--38\%, and invisible to
@@ -162,13 +159,13 @@ shifts were twenty times any real effect here (Sec.~\ref{sec:fitted}).
 \end{enumerate}
 
 Section~\ref{sec:failures}, ``What did not work,'' is not an appendix and not a
-limitations paragraph. Three predictions made in this study were refuted by this
-study: a $w^{3/2}$ scaling of observable error with the width of the error
+limitations paragraph. Three predictions made in this study were refuted by it:
+a $w^{3/2}$ scaling of observable error with the width of the error
 field, a smoothness-ratio metric we proposed as a replacement diagnostic, and
 the prediction that force RMSE would rank models weakly. The first two are
 wrong. The third is wrong in an instructive direction --- force RMSE ranks
-models \emph{well} across decades and poorly only inside a narrow band --- and
-the corrected statement is stronger and more useful than the one we set out to
+surrogates \emph{well} across decades and poorly only inside a narrow band ---
+and the corrected statement is more useful than the one we set out to
 demonstrate.
 
 %======================================================================
@@ -252,37 +249,36 @@ Cauchy--Schwarz bound
 with $\rho_0$ the Pearson correlation under the reference ensemble. Force RMSE
 reports none of the three factors on the right: not the observable's own
 fluctuation $\sigma_0(A)$, not the error field's spread $\sigma_0(\dU)$, and
-above all not the correlation, which is the factor that separates a harmless
-model from a harmful one and which appears nowhere in standard practice.
+above all not the correlation, the factor that separates a harmless
+model from a harmful one and that appears nowhere in standard practice.
 
 \emph{(ii) It needs only reference-ensemble samples.} Every expectation in
-Eq.~\eqref{eq:linear} is taken under $\avgz{\cdot}$. Given a stored reference
+Eq.~\eqref{eq:linear} is taken under $\avgz{\cdot}$, so given a stored reference
 trajectory and the ability to evaluate $U$ and $U_0$ on its frames,
 $\Delta\avg{A}$ is predictable without ever simulating the surrogate: one energy
-evaluation per stored frame per model. For screening many models against many
-observables this is a large saving, and it is also what makes the claim
-falsifiable, since the prediction and the direct measurement are then separate
+evaluation per stored frame per model. That is a large saving when screening
+many models, and it is what makes the claim
+falsifiable, since prediction and direct measurement are then separate
 experiments.
 
 \emph{(iii) The second-order term is a candidate warning light.} The $n = 2$
 term is estimable from the same samples, and its ratio to the first-order term
 suggests itself as a self-diagnostic: where the ratio is small the linear
 prediction should be trustworthy, and where it is not, the error field is not a
-perturbation and no linear reasoning about it is safe --- including the field's
-own implicit assumption that a little more accuracy helps a little. We state
-this as a hypothesis rather than a result, because our own tests of it are
-mixed: Sec.~\ref{sec:breakdown} reports a sweep in which one of the two cases
-the diagnostic certified was in fact the largest unexplained disagreement in
-this paper. We report the diagnostic wherever it was recorded, report its
+perturbation and no linear reasoning about it is safe. We state
+this as a hypothesis, not a result, because our own tests of it are
+mixed --- Sec.~\ref{sec:breakdown} reports a sweep in which one of the two cases
+the diagnostic certified is the largest unexplained disagreement in
+this paper. We report it wherever it was recorded, report its
 absence where it was not, and do not treat it as established.
 
 \subsection{Vector observables, and the contrast with free energy}
 
-The radial distribution function is not a scalar but a vector of bin
+The radial distribution function is a vector of bin
 occupancies $A_k$, and Eq.~\eqref{eq:linear} applies componentwise, giving a
 predicted difference curve $\Delta\avg{A_k} = -\beta\,\Cov_0(A_k, \dU)$. The
-natural summary of ``how wrong is the structure'' is then a norm of that vector
---- but the norm is taken \emph{after} the projection, which is the opposite
+natural summary of ``how wrong is the structure'' is a norm of that vector
+--- but taken \emph{after} the projection, the opposite
 order of operations from force RMSE, where the norm is taken first and no
 projection is ever performed.
 
@@ -294,47 +290,47 @@ relation\cite{Zwanzig1954},
 \end{equation}
 so the free-energy error is controlled at leading order by the \emph{mean} of
 the error field while observable errors are controlled by its
-\emph{covariances}. A model can therefore have an excellent free energy and poor
+\emph{covariances}: a model can have an excellent free energy and poor
 structure, or the reverse. Already at this level no single scalar can summarise
 model quality.
 
 \subsection{Why this particular norm}
 \label{sec:frequency}
 
-Result 1a says that norms are the wrong kind of object. A second argument says
-why the norm the field has settled on is especially poorly matched. Expand the
-error field in an orthonormal basis $\{\varphi_k\}$ labelled by spatial
-frequency, $\dU = \sum_k c_k \varphi_k$. Then
+Result 1a says norms are the wrong kind of object; a second argument says
+why the particular norm the field has settled on is especially poorly matched.
+Expand the error field in an orthonormal basis $\{\varphi_k\}$ labelled by
+spatial frequency, $\dU = \sum_k c_k \varphi_k$. Then
 \begin{align}
 \Cov_0(A,\dU) &= \sum_k c_k \,\Cov_0(A, \varphi_k), \label{eq:modecov}\\
 \big\langle\|\nabla\dU\|^2\big\rangle &\sim \sum_k k^2 |c_k|^2. \label{eq:modeforce}
 \end{align}
 The gradient in Eq.~\eqref{eq:modeforce} contributes a factor $k^2$: force error
 weights the error spectrum by the square of its spatial frequency. The
-covariance in Eq.~\eqref{eq:modecov} applies no such weight, and because
+covariance applies no such weight, and because
 physical observables are smooth functions of configuration, $\Cov_0(A,
 \varphi_k)$ typically \emph{decays} with $k$. The two functionals weight the
-same error spectrum in opposite directions, which produces two failure modes
+same spectrum in opposite directions, giving two failure modes
 that are not symmetric in their consequences. A \emph{false alarm} is
 high-frequency interpolation wiggle of the kind flexible regressors produce
 between training points: inflated by $k^2$ in the force error, contributing
 almost nothing to any smooth observable, reported as bad and in fact harmless. A
 \emph{false confidence} is smooth systematic error --- a slightly wrong tail, a
-slightly wrong well depth, a bias from an under-covered region of the training
-distribution: nearly free in force RMSE, and able to move observables. The
-second is the dangerous direction, and it is the error structure that
+slightly wrong well depth, a bias from an under-covered training region:
+nearly free in force RMSE, and able to move observables. The
+second is the dangerous direction, and it is what
 regularised fits and smooth kernels prefer to produce.
 
 \subsection{A heuristic, retracted in advance}
 \label{sec:retraction}
 
-It is tempting to make Sec.~\ref{sec:frequency} quantitative with a
-one-parameter family. Perturb a pair potential by a Gaussian shell bump of
+It is tempting to make Sec.~\ref{sec:frequency} quantitative. Perturb a pair
+potential by a Gaussian shell bump of
 amplitude $a$, centre $r_0$ and width $w$, $\delta u(r) = a\exp[-(r-r_0)^2 /
 2w^2]$. Its gradient scales as $a/w$ and the fraction of pairs inside the shell
-scales as $w$, giving $\mathrm{RMSE}_F \sim a/\sqrt{w}$; its coupling to the
+as $w$, giving $\mathrm{RMSE}_F \sim a/\sqrt{w}$; its coupling to the
 radial distribution function is an integral over the shell,
-$|\Cov_0(g,\dU)| \sim a\,w$. At fixed force error the ratio would then grow as
+$|\Cov_0(g,\dU)| \sim a\,w$. At fixed force error the ratio would grow as
 \begin{equation}
 \big|\Delta\avg{g}\big| \big/ \mathrm{RMSE}_F \;\sim\; w^{3/2},
 \label{eq:w32}
@@ -343,27 +339,26 @@ which is unbounded: two error fields with identical force RMSE could differ in
 observable error by any factor one likes.
 
 We retract Eq.~\eqref{eq:w32} as a prediction, on analytic grounds and in
-advance of the measurement. Both inputs have regimes of validity that a real
-system leaves quickly. Counting pairs in the shell as $\propto w$ holds only
-while $w$ is small compared with the scale on which $g(r)$ varies, which near
-the first peak of liquid argon is a few tenths of an \AA ngstr\"om, so the
-estimate is already marginal at $w = 0.3$~\AA. And treating the observable as
+advance of the measurement. Counting pairs in the shell as $\propto w$ holds
+only while $w$ is small compared with the scale on which $g(r)$ varies, which
+near the first peak of liquid argon is a few tenths of an \AA ngstr\"om, so the
+estimate is marginal already at $w = 0.3$~\AA. And treating the observable as
 integrating the whole bump fails once $w$ exceeds the bin width of a discretised
 $g(r)$: the coupling saturates, and beyond saturation the bump pushes pairs into
 a bin from one side while pushing them out on the other, so the two
 contributions partly cancel. Neither objection needs a measurement. What
-survives, and what we do test, is the weaker statement that force error and
+survives, and what we test, is the weaker statement that force error and
 observable error depend differently on the \emph{shape} of the error field, so
 their ratio is not a constant. Section~\ref{sec:width} measures that ratio
-varying by a factor of 4.7 at fixed force error, and Sec.~\ref{sec:w32} reports
+varying by 4.7 at fixed force error, and Sec.~\ref{sec:w32} reports
 the measured exponent, 0.56 [0.09, 1.34], against the 1.5 of Eq.~\eqref{eq:w32}.
 
 \subsection{What the theory does not cover}
 \label{sec:dynamics}
 
-Everything above concerns static averages. Transport coefficients are different
-in kind: perturbing $U_0 \to U_0 + \dU$ changes both the ensemble the average is
-taken over, which Result 1a covers, and the propagator generating the dynamics,
+Everything above concerns static averages. Transport coefficients differ
+in kind: perturbing $U_0 \to U_0 + \dU$ changes both the ensemble averaged over,
+which Result 1a covers, and the propagator generating the dynamics,
 which it does not. Trajectory-level divergence grows exponentially with the
 Lyapunov exponent, so a trajectory-wise perturbative treatment is hopeless past
 a few picoseconds.
@@ -372,13 +367,13 @@ This suggests an asymmetry, which we state as a conjecture and label
 pre-registered and untested: force error should be a \emph{better} proxy for
 dynamical observables than for static ones, because $\delta F$ enters the
 equations of motion directly whereas static averages see only the projection
-$\Cov_0(A,\dU)$. There is independent literature support for the asymmetry ---
-Wu \emph{et al.}\cite{Wu2024} derive a correction to lattice thermal
-conductivity that depends on a \emph{norm} of the force error, which is exactly
-what one expects when $\delta F$ acts through the dynamics rather than through a
-projection. The experiment designed to test our conjecture, a rank correlation
+$\Cov_0(A,\dU)$. There is independent support --- Wu \emph{et
+al.}\cite{Wu2024} derive a correction to lattice thermal
+conductivity depending on a \emph{norm} of the force error, exactly
+what one expects when $\delta F$ acts through the dynamics rather than a
+projection. The experiment designed to test the conjecture, rank correlations
 computed separately for static and dynamical observables, was not run, and
-nothing in this paper bears on it.
+nothing here bears on it.
 
 %======================================================================
 \section{Methods}
@@ -387,19 +382,19 @@ nothing in this paper bears on it.
 
 \subsection{System}
 
-The reference system is Lennard-Jones argon\cite{Jones1924}, $N = 108$ atoms in
+The reference is Lennard-Jones argon\cite{Jones1924}, $N = 108$ atoms in
 a cubic periodic cell at number density
-$\rho = 0.0200$~\AA$^{-3}$ and temperature $T = 120$~K; in reduced units
+$\rho = 0.0200$~\AA$^{-3}$ and $T = 120$~K; in reduced units
 $\rho^* = \rho\sigma^3 = 0.790$ and $T^* = k_BT/\epsilon = 1.004$, a fluid state
 point below the freezing density at that temperature\cite{Verlet1967,
-HansenMcDonald2013}. The parameters are $\epsilon = 0.0103$~eV,
+HansenMcDonald2013}. Parameters are $\epsilon = 0.0103$~eV,
 $\sigma = 3.405$~\AA, cutoff $7.0$~\AA, in the \emph{shifted-force} form.
 
-The cutoff mode is not cosmetic: Table~\ref{tab:cutoff}
+The cutoff mode is not cosmetic. Table~\ref{tab:cutoff}
 (Appendix~\ref{app:validation}) gives the energy and force discontinuities of
-the four available modes at $r_c \mp 10^{-7}$~\AA. A merely shifted
-potential has a continuous energy and a force discontinuity of
-$1.8\times10^{-4}~\eVA$, delivering an impulse every time a pair crosses the
+the four available modes at $r_c \mp 10^{-7}$~\AA: a merely shifted
+potential has continuous energy and a force discontinuity of
+$1.8\times10^{-4}~\eVA$, delivering an impulse whenever a pair crosses the
 cutoff --- indistinguishable, in a study of small systematic differences between
 ensembles, from the effect under study.
 
@@ -411,13 +406,13 @@ momenta from a Maxwell--Boltzmann distribution, integrates a short velocity
 Verlet trajectory\cite{Swope1982}, and accepts on the change in the total
 Hamiltonian. Because velocity Verlet is symplectic and time-reversible the
 proposal is symmetric, so the stationary distribution is exactly $e^{-\beta U}$
-\emph{regardless of integration error}, which appears only as a reduced
-acceptance rate and never as a biased distribution. That is the reason for the
+\emph{regardless of integration error}, which appears only as reduced
+acceptance and never as a biased distribution. That is the reason for the
 choice: a thermostat sampling something slightly other than the canonical
 distribution would introduce exactly the kind of small systematic difference
-between two ensembles that this study attributes to model error. Production
-settings are 8 leapfrog steps per proposal, with the step size adapted in
-burn-in to acceptance 0.75, giving $\approx 30$~fs. An
+between ensembles that this study attributes to model error. Production
+settings are 8 leapfrog steps per proposal, step size adapted in
+burn-in to acceptance 0.75, giving $\approx 30$~fs; an
 independent single-particle Metropolis sampler\cite{Metropolis1953} sharing no
 code beyond the potential is a cross-check.
 
@@ -432,52 +427,49 @@ matter: a wrong temperature scale reproduces the mean and fails the variance.
 
 The liquid is built by scaling an fcc lattice to liquid density. That
 configuration is a crystal, and sampling it directly produces a slowly melting
-crystal.
-
-On the original protocol the global Steinhardt bond-order
+crystal. On the original protocol the global Steinhardt bond-order
 parameter\cite{Steinhardt1983, LechnerDellago2008} $Q_6$ fell monotonically from
 0.5745, the perfect fcc value, to 0.43 over 600 proposals and was still falling,
 while the potential energy climbed monotonically and was still climbing. The
 equilibrated liquid sits at $-0.0311$~eV/atom; those runs were sampling $-0.036$
 to $-0.043$~eV/atom, so the reference ensemble was wrong in energy by 16 to
-38\%; our project notes round that to ``30--40\%''.
+38\% (our project notes round that to ``30--40\%'').
 
-No sampler diagnostic caught this. Acceptance rate and integration error were
-healthy throughout, because they measure whether the Markov chain is being
+No sampler diagnostic caught it. Acceptance rate and integration error were
+healthy throughout, because they measure whether the chain is being
 \emph{simulated} correctly, not whether it has reached its stationary
 distribution --- different questions, of which only the second bears on an
 ensemble average.
 
 The protocol now used melts at $5\times$ the target temperature for a few
-hundred proposals, anneals to the target temperature, and refuses to return a
+hundred proposals, anneals, and refuses to return a
 configuration with $Q_6 > 0.20$; a 108-atom liquid gives
-$Q_6 \approx 0.08$ and perfect fcc gives 0.5745. After the protocol,
-$Q_6 = 0.074$ and $U/N = -0.0315$~eV with no drift
-between the halves of the production run. Every production trajectory is then
-split in half and both its energy and its order parameter are compared between
+$Q_6 \approx 0.08$ and perfect fcc gives 0.5745. Afterwards
+$Q_6 = 0.074$ and $U/N = -0.0315$~eV, with no drift
+between halves of the production run. Every production trajectory is
+split in half and both energy and order parameter compared between
 halves; a drift exceeding three combined standard errors \emph{raises} rather
-than warns, because a failure mode with no outward sign will eventually be
+than warns, because a failure mode with no outward sign will be
 ignored if it is only a warning. The same check runs on each fitted surrogate's
 trajectory, which has its own equilibrium and need not have reached
-it; Sec.~\ref{sec:fitted} reports the one occasion on which it fired. The
-quick-run mode that shrinks every other size parameter never shortens
-equilibration.
+it; Sec.~\ref{sec:fitted} reports the one occasion on which it fired. Quick-run
+mode, which shrinks every other size parameter, never shortens equilibration.
 
 \subsection{Observables}
 
 The measured quantities are pair counts in radial bins,
 $A_k(x) = |\{(i,j) : r_k \le r_{ij} < r_{k+1}\}|$, on eight bins spanning 3.0 to
-7.0~\AA{} (centres 3.25, 3.75, \dots, 6.75~\AA). They differ from the radial
-distribution function $g(r)$ in that bin only by a
-constant at fixed $N$ and $V$\cite{AllenTildesley2017}; the analysis is done on
-the counts because response theory applies to a plain function of configuration,
-and a bin count is one, with no normalisation between predicted and measured.
+7.0~\AA{} (centres 3.25, 3.75, \dots, 6.75~\AA). They differ from $g(r)$ in that
+bin only by a constant at fixed $N$ and $V$\cite{AllenTildesley2017}; the
+analysis uses the counts because response theory applies to a plain function of
+configuration, and a bin count is one, with no normalisation between predicted
+and measured.
 
-The bins taken together form a vector observable. The designed-perturbation arm
-of Sec.~\ref{sec:counterexamples} additionally targets a \emph{scalar}: the pair
-count between 3.4 and 3.9~\AA. That bin is deliberately
+The bins together form a vector observable. The designed-perturbation arm
+of Sec.~\ref{sec:counterexamples} additionally targets a \emph{scalar}, the pair
+count between 3.4 and 3.9~\AA{} --- deliberately
 offset from the eight-bin grid, so a shift in it cannot be read off the
-difference curve. Targeting a scalar makes the covariance a $K$-vector rather
+difference curve. A scalar target makes the covariance a $K$-vector rather
 than a $K\times J$ matrix, estimable from far fewer frames. It is also a
 limitation, restated in Sec.~\ref{sec:scope}: the headline demonstration
 concerns a single bin, and Sec.~\ref{sec:orthogonality} shows the result does
@@ -489,26 +481,23 @@ not transfer to the other bins.
 Error fields are full potentials with analytic forces and virial, so a surrogate
 is ordinary addition; all derivatives agree with
 finite differences to $\sim 10^{-10}$ on cubic and sheared triclinic cells.
-
 The constructions expand a pair error field in a basis of fourteen Gaussian
-shell bumps, which makes the covariance with an observable \emph{linear} in the
+shell bumps, making the covariance with an observable \emph{linear} in the
 coefficients. Choosing coefficients in the null space of that covariance, or
-parallel to it, is then linear algebra rather than optimisation, giving three
-families: \emph{null}, whose first-order predicted effect on
-the target observable is zero by construction; \emph{aligned}, of maximal effect
-per unit force error; and \emph{random}, the control. All are scaled to the same
+parallel to it, is then linear algebra rather than optimisation, giving
+\emph{null} fields, whose first-order predicted effect on
+the target is zero by construction; \emph{aligned} fields, of maximal effect
+per unit force error; and \emph{random} controls. All are scaled to the same
 force RMSE on the reference ensemble, so the number a practitioner would report
-is held fixed across the comparison.
-
-Two null constructions appear below: the \emph{scalar-null} field, orthogonal to
-the single target bin, and the \emph{curve-null} field, orthogonal to all eight
-bins at once.
+is held fixed. Two null constructions appear below: the \emph{scalar-null}
+field, orthogonal to the single target bin, and the \emph{curve-null} field,
+orthogonal to all eight bins at once.
 
 Out-of-sample discipline is essential, because a null field is orthogonal to the
 observable \emph{on the frames it was built from} by definition. The reference
-trajectory is split: fields are constructed on one half, and every
+trajectory is split: fields are constructed on one half and every
 reported number --- force RMSE, predicted shift, covariance, measured shift ---
-is computed on the other. How many construction frames are needed is itself
+computed on the other. How many construction frames are needed is itself
 measured (Sec.~\ref{sec:prediction}), because with a badly estimated covariance
 the null space found is the null space of the noise.
 
@@ -522,18 +511,18 @@ atomic-cluster-expansion-style bases\cite{Drautz2019, Bartok2013}
 (\texttt{linear\_l2}, \texttt{linear\_l4}); Behler--Parrinello
 networks\cite{Behler2007, Behler2011} at two widths and two initialisation seeds
 each (\texttt{bpnn\_16x2}, \texttt{bpnn\_64x2}); and an $E(3)$-equivariant
-message-passing network\cite{Batzner2022, Gilmer2017} at two initialisation
-seeds (\texttt{egnn\_c8}). These are deliberately small surrogates of a
+message-passing network\cite{Batzner2022, Gilmer2017} at two seeds
+(\texttt{egnn\_c8}). These are deliberately small surrogates of a
 classical potential, not the published potentials\cite{Bartok2010,
 Batatia2022, Schutt2018, Thompson2015} whose evaluation motivates the work;
 those architectures are cited as background only. A
 Gaussian-approximation-potential-style kernel
 model\cite{Bartok2010} exists in the codebase but is not in the reported zoo.
-Two further arms at smaller data budgets are reported in
+Two further arms at smaller data budgets appear in
 Secs.~\ref{sec:fitted} and \ref{sec:breakdown}. The four
 Behler--Parrinello records carry \texttt{fit\_converged = false} --- their
 optimiser reached its iteration limit rather than its tolerance --- and we
-report them anyway, because their force errors are the smallest in the zoo and
+report them anyway, since their force errors are the smallest in the zoo and
 dropping them would be a post hoc filter.
 
 \subsection{Uncertainty estimation}
@@ -543,17 +532,15 @@ Every uncertainty here is a \textbf{standard error} from correlated-sample
 statistics: $\pm$ always denotes a standard error, never a standard deviation,
 and $1/\sqrt{M}$ is never used, because treating $M$ correlated Monte Carlo
 frames as independent understates the error by roughly $\sqrt{2\tau_{\rm int}}$,
-a factor of several for a typical liquid observable.
-
-Means use Flyvbjerg--Petersen blocking\cite{Flyvbjerg1989}, with the plateau
-taken over levels retaining at least eight blocks. Covariances, correlations and
+a factor of several for a typical liquid observable. Means use
+Flyvbjerg--Petersen blocking\cite{Flyvbjerg1989}; covariances, correlations and
 fitted slopes use a moving-block bootstrap\cite{Kunsch1989, PolitisRomano1994}
-with block length set to four integrated autocorrelation times of the
+at four integrated autocorrelation times of the
 \emph{product} series that carries the error, $(A_m - \bar A)(\dU_m -
-\overline{\dU})$; the observable's own correlation time underestimates the
-block length whenever $\dU$ varies slowly, which is the systematic-error case
-this paper is about. A jackknife with a different bias
-structure is a cross-check; Appendix~\ref{app:statistics} gives the
+\overline{\dU})$, since the observable's own correlation time underestimates the
+block length whenever $\dU$ varies slowly --- the systematic-error case
+this paper is about. A jackknife with different bias
+structure is a cross-check, and Appendix~\ref{app:statistics} gives the
 estimators in full. Deposited exp05 intervals use 2000 bootstrap resamples;
 those computed here by
 \texttt{scripts/compute\_band\_correlations.py} and
@@ -567,7 +554,7 @@ uncertainties to two significant figures and central values to the same decimal
 place, the one exception being exactness checks
 (Appendix~\ref{app:validation}), which carry full digits and are labelled as
 such. The deposited records hold the unrounded values.
-Prediction residuals in $\sigma$ are the measured minus predicted shift divided
+Prediction residuals in $\sigma$ are measured minus predicted, divided
 by the standard error of the \emph{measurement}; within an arm every surrogate
 is measured against the same reference-trajectory mean, so those residuals are
 not independent, and Sec.~\ref{sec:prediction} works through the consequence.
@@ -585,18 +572,16 @@ noise-subtracted ones in Sec.~\ref{sec:regimes}.
 
 Each experiment writes a manifest recording the git commit, whether the working
 tree was dirty, the full configuration, per-stage wall times, library versions
-and the seed. Seeds derive from a single experiment seed through named
+and the seed; seeds derive from one experiment seed through named
 \texttt{SeedSequence} sub-streams, so inserting a stage does not perturb every
-later result.
-
-We state what those manifests record, because this paper is about auditability.
-The six runs reported here come from five distinct commits, and \textbf{every
-one was produced from a dirty working tree}, so no number here can be
-regenerated from a named revision; a clean re-run from a tagged commit is the
+later result. We state what those manifests record, because this paper is about
+auditability: the six runs reported here come from five distinct commits, and
+\textbf{every one was produced from a dirty working tree}, so no number here can
+be regenerated from a named revision. A clean re-run from a tagged commit is the
 fix, and was not done. The six runs total 17{,}033~s of wall time, about 4.7~h,
 on a four-core x86-64 Linux machine (Python 3.11.15, NumPy 2.4.6, SciPy
-1.17.1, PyTorch 2.13.0+cpu). The manifests record core count and platform but
-not the processor model, so we state none. The
+1.17.1, PyTorch 2.13.0+cpu); the manifests record core count and platform but
+not the processor model, so we state none, and the
 largest single run is the ten-model fitted zoo at 4{,}796~s.
 
 %======================================================================
@@ -607,236 +592,317 @@ largest single run is the ten-model fitted zoo at 4{,}796~s.
 \subsection{Four error fields at matched force RMSE}
 \label{sec:counterexamples}
 
-Four error fields were built against a single target observable, the pair count
-between 3.4 and 3.9~\AA, and each was scaled to a prescribed force RMSE at two
+Four error fields were built against one target observable, the pair count
+between 3.4 and 3.9~\AA, each scaled to a prescribed force RMSE at two
 levels, nominally $1.0\times10^{-3}$ and $4.0\times10^{-3}~\eVA$.
 Measured out of sample --- on the half of the reference trajectory not used for
-the construction --- the four fields agree in force RMSE to within 0.52\% at
-each level, running from $0.99535$ to $1.00054 \times 10^{-3}~\eVA$ at
-the lower level and $3.9814$ to $4.0022\times10^{-3}~\eVA$ at the upper.
-Table~\ref{tab:counterexamples} gives
-the full comparison and Fig.~\ref{fig:mechanism}(a) plots it.
+the construction --- they agree in force RMSE to within 0.52\% at
+each level, running from $0.99535$ to $1.00054 \times 10^{-3}~\eVA$ and from
+$3.9814$ to $4.0022\times10^{-3}~\eVA$ (Table~\ref{tab:counterexamples},
+Fig.~\ref{fig:mechanism}(a)).
 
 The measured shifts in the target bin at the upper level run from
 $-0.22 \pm 0.64$ pairs for the scalar-null field, $0.3\sigma$ from zero, to
-$+9.89 \pm 0.61$ pairs for the aligned field, $16.2\sigma$ from zero.
-The two random controls sit between them, at $-1.48 \pm 0.58$ ($2.6\sigma$)
+$+9.89 \pm 0.61$ pairs for the aligned field, $16.2\sigma$ from zero, with the
+two random controls between them at $-1.48 \pm 0.58$ ($2.6\sigma$)
 and $+5.32 \pm 0.59$ ($9.0\sigma$). At the lower level the same four fields
 give $-0.55 \pm 0.58$ ($0.9\sigma$), $-1.45 \pm 0.58$ ($2.5\sigma$),
-$+0.84 \pm 0.59$ ($1.4\sigma$) and $+1.83 \pm 0.58$ ($3.2\sigma$). The
-lower-level measurements are not the upper-level ones divided
-by four: the \emph{predictions} scale almost exactly with the force level (2.55
-against 10.21 pairs for the aligned field) because they are linear in $\dU$,
-but the measurements at the lower level are noisier relative to their own signal
+$+0.84 \pm 0.59$ ($1.4\sigma$) and $+1.83 \pm 0.58$ ($3.2\sigma$): not the
+upper-level values divided
+by four. The \emph{predictions} do scale with the force level (2.55
+against 10.21 pairs for the aligned field), being linear in $\dU$,
+but the lower-level measurements are noisier relative to their own signal
 and land at 1.83 rather than at a quarter of 9.89.
 
 The sharpest form of the comparison is the \emph{difference} between the two
 extreme fields, because every field in this arm is measured against the same
 reference-trajectory mean (Sec.~\ref{sec:uncertainty}) and that term cancels
 identically in a difference. At the upper level the aligned field sits
-$10.11$ pairs above the scalar-null field. Combining the two tabulated errors in
-quadrature double-counts the shared reference term and so overstates the
-uncertainty; even on that conservative footing the separation is $11.4\sigma$,
-and the true figure is larger.
+$10.11$ pairs above the scalar-null field; combining the tabulated errors in
+quadrature double-counts the shared term and so overstates the
+uncertainty, and even on that conservative footing the separation is
+$11.4\sigma$.
 
 Two conclusions follow. First, the reported
-metric cannot distinguish these four models. Their force RMSE agrees to 0.52\%
-out of sample; any procedure that selects a model by force error would rank them
-as equivalent; one of them leaves the target observable untouched and another
-moves it by sixteen standard errors. Second, the quantity that does distinguish
-them is the correlation $\rho(A,\dU)$. Ordering the four fields by $\rho$ ---
+metric cannot distinguish these four models: any procedure selecting by force
+error would rank them equivalent, yet one leaves the target observable untouched
+while another moves it by sixteen standard errors. Second, what does distinguish
+them is $\rho(A,\dU)$: ordering the fields by it ---
 random seed 1 at $+0.110$, null at $+0.009$, random seed 0 at $-0.430$, aligned
-at $-0.582$ --- orders the measured shifts monotonically at both force levels,
-and the relation is close to linear [Fig.~\ref{fig:mechanism}(a)], which is what
+at $-0.582$ --- orders the measured shifts monotonically at both levels,
+near-linearly [Fig.~\ref{fig:mechanism}(a)], as
 $\Delta\avg{A} = -\beta\,\sigma_0(A)\,\sigma_0(\dU)\,\rho_0$ requires when the
-first two factors are held nearly fixed. This is an existence proof, not a
-frequency claim: it shows that force RMSE \emph{can} be blind to a large
-observable error, not how often fitting produces error fields with weight in
-that blind direction.
+first two factors are nearly fixed. This is an existence proof, not a
+frequency claim: force RMSE \emph{can} be blind to a large
+observable error; how often fitting produces error in that direction is
+not addressed here.
 
 \subsection{The prediction works}
 \label{sec:prediction}
 
 The predicted column of Table~\ref{tab:counterexamples} is
-$-\beta\,\Cov_0(A,\dU)$ evaluated on the reference trajectory alone. No
-molecular dynamics and no Monte Carlo with any surrogate entered it; the
+$-\beta\,\Cov_0(A,\dU)$ evaluated on the reference trajectory alone; no
+molecular dynamics or Monte Carlo with any surrogate entered it, while the
 measured column comes from explicit Hamiltonian Monte Carlo sampling of each
-perturbed potential, 3000 frames each. Across all eight designed fields the
+perturbed potential, 3000 frames each. Across the eight designed fields the
 root-mean-square residual between prediction and measurement is $1.01\sigma$
-(Fig.~\ref{fig:prediction}, $n = 8$). The prediction agrees with the measurement
-at exactly the level the error bars claim, neither better nor worse. This is the
-practical payoff: evaluating a model's effect on an observable costs one energy
-evaluation per stored frame rather than a full simulation.
+(Fig.~\ref{fig:prediction}, $n = 8$).
 
-The second-order term of the same expansion is right as well. For a null field
-the first-order term vanishes by construction, so any residual effect must be
-second order, and Eq.~\eqref{eq:cumulants} predicts it. The second-order
-estimates are $+0.021 \pm 0.023$ pairs at the lower force level and
-$+0.332 \pm 0.374$ at the upper. Subtracting the first- and second-order terms
-from the measurements leaves $-0.540 \pm 0.580$ and $-0.439 \pm 0.640$ pairs,
-both consistent with zero. The formula is not merely right at leading order; its
-own correction term is right too, which is what licenses the use of that term as
-the self-diagnostic of Sec.~\ref{sec:cumulant}(iii).
+That $1.01\sigma$ is not a calibration, and we decompose it
+rather than quote it. All eight residuals are negative; their mean is
+$-0.86\sigma$ and their scatter about that mean $0.57\sigma$, so the
+root-mean-square is the quadrature sum of a systematic offset and a scatter
+\emph{smaller} than the error bars claim, the two happening to
+cancel. Eight matching signs have probability $1/128$ under independent
+residuals, and a one-sample $t$ on the offset gives $t = -4.3$ on 7 degrees of
+freedom. The mechanism is in the code, not the physics: every field
+in an arm is compared against the same reference-trajectory mean, so the
+residuals share one realisation of the reference-chain error while the
+tabulated error treats it as independent per field. The
+40-configuration arm of Sec.~\ref{sec:fitted} reproduces the pattern almost
+exactly --- offset $-0.85\sigma$, scatter $0.57\sigma$, again eight negatives
+out of eight --- as a shared baseline predicts and a genuine
+mis-calibration would not. The defensible statements are that the prediction
+scatters about the measurements at $0.57\sigma$
+($n = 8$), better than the quoted uncertainties, and that a common offset of
+about half a pair sits under the arm. We report the offset rather than
+correcting for it, because with one reference chain it cannot be separated from
+a genuine bias in the estimator.
 
-How much data does the null-space construction need? Table~\ref{tab:budget}
-gives the answer. Constructed on 250, 500, 1000 and 2000 frames and evaluated on
-disjoint frames, the out-of-sample predicted shift is $0.041 \pm 0.067$,
-$0.142 \pm 0.071$, $0.037 \pm 0.077$ and $0.028 \pm 0.078$ pairs, against the
-in-sample values of order $10^{-15}$ that the construction guarantees. Set
-against the aligned field's $10.206$ pairs at the same force error, the
-suppression is roughly $400\times$, and it holds out of sample. An earlier
-attempt using 30 construction frames gave 1.2 to 1.6 pairs: the null space of a
-covariance estimated from 30 samples is the null space of the noise. The
-construction is only as good as the covariance estimate, and
-Table~\ref{tab:budget} is where that stops mattering.
+For a null field the first-order term vanishes by construction, so any residual
+must be second order, and Eq.~\eqref{eq:cumulants} estimates it: $+0.021
+\pm 0.023$ pairs at the lower force level and $+0.33 \pm 0.37$ at the upper,
+against measurement standard errors of $0.58$ and $0.64$. Both are
+consistent with zero and neither resolved from it, so this is a
+non-rejection with essentially no power: at the lower level the measurement
+could not have detected a $0.021$-pair effect at all.
+\textbf{We withdraw the claim that the second-order term is thereby
+confirmed.} It also has the opposite sign to the residual it would have to
+explain --- after the first-order term the residual is $-0.107$ pairs at
+the upper level and $-0.44$ once the second-order term is added, so including
+it makes agreement worse, and likewise at the lower level, which is what the
+common offset above predicts. The
+second-order ratio remains a plausible diagnostic, reported wherever it
+was recorded, but this arm does not test it.
+
+How much data does the null-space construction need? Built on 250, 500,
+1000 and 2000 frames and evaluated on
+disjoint ones, the out-of-sample predicted shift is $0.041 \pm 0.067$,
+$0.142 \pm 0.071$, $0.037 \pm 0.077$ and $0.028 \pm 0.078$ pairs
+(Table~\ref{tab:budget}), against
+in-sample values of order $10^{-15}$ that the construction guarantees. Against
+the aligned field's $10.21$ pairs at the same force error, that is a
+suppression of $360\times$ at 2000 construction frames and $72\times$ at the
+least favourable row, out of sample. An earlier construction using
+30 frames failed to generalise --- the null space of a covariance estimated
+from 30 samples is the null space of the noise --- but that run predates the
+deposited records and its artefact was not retained, so we quote no number.
 
 \subsection{Orthogonality is specific to the observable it was built for}
 \label{sec:orthogonality}
 
-The null field is orthogonal to one observable, and to one observable only.
-Figure~\ref{fig:counterexamples} shows the full difference curve for the null,
-aligned and random fields at both force levels. At $4\times10^{-3}~\eVA$ the
-null field leaves its target bin alone at $-0.220 \pm 0.640$ pairs and moves the
-largest non-target bin by $11.36 \pm 0.95$ pairs, which is as much as the
-aligned field moves its own largest non-target bin, $11.18 \pm 1.21$ pairs.
+The scalar-null field is orthogonal to one observable and to one only.
+Figure~\ref{fig:counterexamples} shows the full difference curves at both force
+levels. At $4\times10^{-3}~\eVA$ the scalar-null field leaves its target bin
+alone at $-0.22 \pm 0.64$ pairs --- that bin is not one of the eight plotted,
+and the value is from Table~\ref{tab:counterexamples} --- while moving the
+largest non-target bin by $11.36 \pm 0.95$ pairs, as much as the
+aligned field moves its own largest, $11.2 \pm 1.2$ pairs.
 
-This is a limit on the claim as much as it is a result. What
-Sec.~\ref{sec:counterexamples} demonstrates is that force RMSE fails to predict
-a \emph{particular} observable, not that any model is globally harmless. The
-null field is not a benign potential; it is a potential that has been made blind
-in one direction and is as damaging as its aligned counterpart in others.
-Harmlessness is a relation between an error and a question, not a property of a
-model. It follows that no single scalar can summarise model quality --- not
-force RMSE and not any replacement for it, because a scalar is a projection onto
-one direction and there are as many directions as there are questions. What can
+Orthogonality is therefore specific to the \emph{set} of observables a field
+was built against --- and enlarging that set works. The curve-null field of
+Sec.~\ref{sec:regimes}, built at the same $4\times10^{-3}~\eVA$ against all
+eight bins at once, has a difference curve whose largest component is
+$1.39$ pairs and whose norm, $2.65$ pairs against a noise level of $2.43$, is
+the smallest in the 34-member zoo and not resolved from zero. Nulling one
+scalar silences one bin; nulling the vector silences the curve. That is this
+paper's recommendation in constructive form, and also a
+correction to a stronger claim we might have made: it is \emph{not} true that no
+error field can be harmless in general, only that harmlessness is relative to a
+stated set of questions and must be bought against each.
+
+This limits the claim as much as it supports it.
+Section~\ref{sec:counterexamples} shows that force RMSE fails to predict
+a \emph{particular} observable, not that any model is globally harmless: the
+scalar-null field is blind
+in one direction and as damaging as its aligned counterpart in others. No
+single scalar can summarise model quality --- not
+force RMSE and not any replacement --- because a scalar is a projection onto
+one direction and there are as many directions as questions. What can
 be computed cheaply is a \emph{vector} of response scores, one per observable of
-interest, at one energy evaluation per stored frame per model.
+interest. Both null
+constructions use the reference-ensemble covariance, which a practitioner lacks;
+they are an instrument for separating the size of an error from its
+shape, not a recipe.
 
 \subsection{Across decades and within a band}
 \label{sec:regimes}
 
-This subsection reports the refutation of one of this study's own predictions.
-The prediction, registered before the experiments were run, was:
+This subsection reports the refutation of one of this study's own predictions,
+registered before the experiments were run:
 
 \begin{quote}
 \textbf{P1 (weak-proxy).} Across a model zoo, rank correlation between force
 RMSE and downstream observable error is weak and observable-dependent.
 \end{quote}
 
-\noindent The pre-registered falsification criterion attached to it was that
-force RMSE should rank-correlate strongly, with Spearman $\rho > 0.9$, against
-observable error across a diverse zoo.
+\noindent The falsification criterion attached to it named an
+\emph{architecture-diverse} model zoo: force RMSE would have to rank-correlate
+strongly, at Spearman $\rho > 0.9$, against observable error across such a zoo.
 
-The measurement. Thirty-four designed surrogates were built spanning
+Thirty-four designed surrogates were built spanning
 $5.0\times10^{-4}$ to $1.80\times10^{-1}~\eVA$ in force RMSE, a factor of 361:
 eighteen Gaussian shell perturbations at three centres, three widths and two
-amplitudes; four high-frequency oscillatory fields; eight random fields at two
-force levels; and the null and aligned fields at two force levels. The
-observable is the full eight-bin difference curve and the observable error is
-its norm. Across the whole zoo the Spearman rank correlation between force RMSE
+amplitudes; four high-frequency oscillatory fields; eight random fields; and the
+curve-null and aligned fields, each at two force levels. The
+observable is the eight-bin difference curve and the observable error its
+norm; 26 of the 34 members have an observable error resolvable from zero, and
+the mutual ranks of the other eight are noise. Across the zoo the
+Spearman rank correlation between force RMSE
 and observable error is $\rho = 0.83$ [0.67, 0.93], $n = 34$
-[Table~\ref{tab:regimes}, Fig.~\ref{fig:regimes}(a)]. That is strong. A model a
+[Table~\ref{tab:regimes}, Fig.~\ref{fig:regimes}(a)]. That is strong: a model a
 hundred times worse in force error really is worse, and no theory was needed to
 say so.
 
-\textbf{P1 as stated is refuted.} A rank correlation of 0.83 with an interval
-whose lower end is 0.67 is not a weak proxy, and the prediction we registered is
-wrong. The separate and stricter criterion we also registered --- that force
-RMSE would have to reach $\rho > 0.9$ against \emph{every} observable error for
-the whole argument to collapse --- is a different test, and the interval here
-includes 0.9, so that test is not decided by this measurement. Both statements
-are ours and we report both.
+\textbf{P1 as stated is refuted --- on this population.} A rank correlation of
+0.83 whose interval bottoms out at 0.67 is not a weak proxy. Two qualifications
+belong in the same breath. The stricter criterion we also registered,
+$\rho > 0.9$ against \emph{every}
+observable error, is a different test, and the interval here includes 0.9, so
+that test is undecided. And the population is a zoo of \emph{designed error
+fields}, not the architecture-diverse zoo of fitted models the criterion named;
+the one fitted-model zoo here is Sec.~\ref{sec:fitted}, whose
+correlations are not reportable. We refute P1 on a substituted
+population, which is weaker than refuting it on the registered one.
 
 What replaces P1 is sharper. Force RMSE cannot choose among models of
-\emph{comparable} force error, which is the only situation a practitioner is
-ever in. Restricting to the 15 zoo members whose force RMSE lies in the window
-$1.5$ to $6.0\times10^{-3}~\eVA$ --- a window chosen by the analyst after
-seeing the data, hard-coded in the figure script, and not pre-registered ---
-force RMSE spans a factor of 2.59 while the observable error still spans a
-factor of 30. Inside that band force RMSE gives $\rho = 0.34$ [$-0.26$, 0.77],
-$n = 15$, an interval that includes zero, while the response prediction of
-Eq.~\eqref{eq:linear} gives $\rho = 0.94$ [0.76, 1.00], $n = 15$, an interval
-that does not [Fig.~\ref{fig:regimes}(b)]. We are careful about what this
-licenses: force RMSE is \emph{not resolved from zero} inside the band. It is not
-demonstrated to be zero, and 15 members is not many. The contrast that survives
-is between one predictor whose interval excludes zero and another whose does
-not.
+\emph{comparable} force error, the only situation a practitioner is
+ever in. Among the 15 zoo members whose force RMSE lies in the window
+$1.5$ to $6.0\times10^{-3}~\eVA$ --- chosen by the analyst after
+seeing the data, hard-coded in the figure script, not pre-registered ---
+force RMSE spans a factor of 2.59 while observable error spans a
+factor of 30, and force RMSE gives $\rho = 0.34$ [$-0.26$, 0.77],
+$n = 15$, an interval including zero, against the response prediction's
+$\rho = 0.94$ [0.76, 1.00], $n = 15$, an interval that does not
+[Fig.~\ref{fig:regimes}(b)]. Force RMSE is \emph{not resolved from zero} inside
+the band; it is not demonstrated to be zero, and 15 members is not many.
+
+Three features of that band restrict what those numbers mean, and all three cut
+against us. The $30\times$ spread is set by its denominator, the curve-null
+field, whose noise-subtracted error of $1.05$ pairs is a near-total cancellation
+of a raw $2.65$ against a noise level of $2.43$ and is not resolved from zero;
+on the raw series the band spans $12\times$, and without the two designed
+fields, $6.5\times$. Six of the fifteen members share a force
+RMSE of exactly $4.0\times10^{-3}~\eVA$ by construction, so 40\% of the band is
+tied in the predictor. And the band contains the fields we designed. The contrast
+survives all three: dropping the designed fields gives
+$\rho(\text{force RMSE}) = 0.33$ against
+$\rho(\text{response prediction}) = 0.91$, $n = 13$, and the nine
+shell-family members, whose force RMSE values are all distinct, give $0.28$
+against $0.98$, $n = 9$ --- quoted without intervals,
+because at those sample sizes a percentile bootstrap over members is
+uninformative. They are robustness checks, not results. What survives
+is one predictor whose interval excludes zero and another whose does
+not, over a spread of $6.5\times$ rather than $30\times$.
 
 The corrected claim is therefore: \emph{force error is a coarse filter, not a
-selector}. It will tell you that a badly fitted model is bad. It will not tell
-you which of your good models to use, and the designed counterexamples of
-Sec.~\ref{sec:counterexamples} show why: within a band the ordering is set by
+selector}. It will tell you a badly fitted model is bad; it will not tell
+you which of your good models to use, and Sec.~\ref{sec:counterexamples} shows
+why --- within a band the ordering is set by
 the projection, which force error does not measure.
 
-Two secondary findings come from the same run and are visible in
+Two secondary findings come from the same run, both visible in
 Fig.~\ref{fig:proxies}(c). First, \textbf{the smoothness ratio proposed in this
-work is refuted}. The quantity $\sigma_0(\dU)/\mathrm{RMSE}_F$ was proposed by
-us as an empirical stand-in for the inverse spectral weighting of
-Sec.~\ref{sec:frequency}; across the zoo it gives $\rho = -0.02$ [$-0.37$,
-0.35], $n = 34$, and on the raw series $\rho = -0.01$ [$-0.37$, 0.37], $n = 34$.
-It carries no information here. Proposed and refuted in the same study; see
+work is refuted}: $\sigma_0(\dU)/\mathrm{RMSE}_F$, which we proposed
+as an empirical stand-in for the inverse spectral weighting of
+Sec.~\ref{sec:frequency}, gives $\rho = -0.02$ [$-0.37$,
+0.35], $n = 34$ across the zoo and $\rho = -0.01$ [$-0.37$, 0.37], $n = 34$ on
+the raw series. It carries no information here; see
 Sec.~\ref{sec:smoothness}. Second, the per-atom energy spread outranks every
-force metric, $\rho = 0.92$ [0.82, 0.97], $n = 34$, against 0.83 for force RMSE.
-The theory does not predict this. A plausible reading is that the per-atom
-energy spread tracks $\sigma_0(\dU)$, the second factor in the Cauchy--Schwarz
-bound of Eq.~\eqref{eq:cs}, and so captures the magnitude factor that force RMSE
-measures only through a gradient --- but we label that a conjecture rather than
+force metric, $\rho = 0.92$ [0.82, 0.97], $n = 34$, against $\rho = 0.83$
+[0.67, 0.93], $n = 34$ for force RMSE.
+The theory does not predict this. It plausibly tracks $\sigma_0(\dU)$, the
+second factor in the Cauchy--Schwarz
+bound of Eq.~\eqref{eq:cs}, capturing the magnitude that force RMSE
+sees only through a gradient --- but that is a conjecture, not
 a result, since nothing here tests it.
 
-Top-$k$ overlap statistics between proxy rankings and the truth ranking were
-also computed. They are withheld: with 34 members they moved between 0.33 and
-0.67 depending on the noise-subtraction convention, which means they are too
-noisy to carry a claim.
+Top-$k$ overlap statistics between proxy and truth rankings were
+computed and are withheld. On the one deposited series, the raw one,
+top-three overlap ranges from 0.00 to 0.67 and top-five from 0.40 to 0.80
+across the nine proxy metrics; no noise-subtracted top-$k$ series was retained,
+so the convention dependence cannot be checked either. At
+$n = 34$ they are too unstable to carry a claim.
 
 \subsection{Models that were actually fitted}
 \label{sec:fitted}
 
-The designed fields test the mechanism; the fitted models test whether it
-survives contact with objects produced by fitting rather than by construction.
-Table~\ref{tab:zoo} lists the ten models of Sec.~\ref{sec:zoo}, their force
+The designed fields test the mechanism; fitted models test whether it
+survives contact with objects produced by fitting. Table~\ref{tab:zoo} lists
+the ten models of Sec.~\ref{sec:zoo}, their force
 RMSE, and their predicted and measured shifts in the target bin.
 
-The response formula holds. The root-mean-square residual between predicted and
-measured shift across the ten is $1.06\sigma$, matching the $1.01\sigma$
-obtained on the designed fields. This is the external-validity check for
-Sec.~\ref{sec:prediction} and it passes. The second-order self-diagnostic is
-recorded for every model in this arm and flags 8 of the 10 as
-linearly trustworthy.
+The response formula holds: the root-mean-square residual across the ten is
+$1.06\sigma$, matching the $1.01\sigma$
+on the designed fields. This is the external-validity check for
+Sec.~\ref{sec:prediction} and it passes. The self-diagnostic is
+recorded for every model here and flags 8 of the 10 as
+linearly trustworthy. The caution of Sec.~\ref{sec:prediction} applies again:
+seven of the ten residuals are negative, mean $-0.49\sigma$
+($t = -1.5$, not significant alone), scatter $1.00\sigma$, and this arm too
+measures every model against one shared reference mean.
+
+A third arm belongs on the record and was omitted from earlier drafts.
+Ten models were also fitted to \emph{40} configurations; eight
+gave a prediction residual of $1.00\sigma$ ($n = 8$), decomposing as above
+into an offset of $-0.85\sigma$ and a scatter of
+$0.57\sigma$, all eight negative. The other two matter more: both
+\texttt{egnn\_c8} seeds there produced apparent
+shifts of $-95.5 \pm 1.7$ and $-112.8 \pm 2.8$ pairs, twenty times
+any real effect in this study, and the stationarity check of
+Sec.~\ref{sec:equilibration} identified both surrogate chains as unequilibrated
+and excluded them. \textbf{Excluding models from an arm on a diagnostic is a
+disclosure obligation and we discharge it here:} without that check, the largest
+numbers in this paper would have been transients towards the models' own
+equilibria rather than differences between ensembles.
 
 Immediately, and without softening: \textbf{the rank correlations from this arm
 are not reportable.} Force RMSE spans only $4.0\times10^{-4}$ to
-$6.1\times10^{-3}~\eVA$ across the ten models and buys almost no measurable
+$6.1\times10^{-3}~\eVA$ and buys almost no measurable
 difference in the observable, whose error spans 0.049 to 4.10 pairs with most
-values at the noise floor. On this reference potential, at this data budget,
+values at the noise floor: on this reference, at this budget,
 nearly every architecture is good enough that its observable error is
-indistinguishable from zero. Every confidence interval from this arm spans zero:
+indistinguishable from zero. Every interval from the arm spans zero ---
 force RMSE $\rho = 0.43$ [$-0.35$, 0.96], force MAE $\rho = 0.35$ [$-0.49$,
-0.92], energy RMSE $\rho = 0.05$ [$-0.77$, 0.76], the smoothness ratio
-$\rho = -0.53$ [$-0.86$, 0.06], the response prediction $\rho = 0.18$ [$-0.70$,
+0.92], energy RMSE $\rho = 0.05$ [$-0.77$, 0.76], smoothness ratio
+$\rho = -0.53$ [$-0.86$, 0.06], response prediction $\rho = 0.18$ [$-0.70$,
 0.83], all $n = 10$. Nothing about ranking can be concluded from this arm, and
-nothing is. It establishes exactly one thing, the $1.06\sigma$ residual.
+nothing is. It establishes one thing, the $1.06\sigma$ residual.
 
-One pair in the zoo is worth stating on its own, with its weakness attached.
-\texttt{egnn\_c8\_s0} and \texttt{egnn\_c8\_s1} are the same architecture, the
-same training data and the same hyperparameters, differing only in
-initialisation seed. Their force RMSE differs by 36\%, $0.0045$ against
-$0.0061~\eVA$. Their measured target-bin errors are $-0.15 \pm 0.57$ pairs
-($0.3\sigma$, indistinguishable from zero) and $-4.10 \pm 0.69$ pairs
-($6.0\sigma$), a factor of 27. Both were predicted from the reference trajectory
-alone, at $-0.98$ and $-3.03$ pairs. Anyone selecting between these two on force
-RMSE would see a 36\% difference and reasonably call them equivalent.
-\textbf{This is $n = 2$.} It is the most quotable observation in the paper and
-its weakest evidence, and the two facts belong in the same sentence. Seed
+One pair is worth stating on its own, with its weakness attached.
+\texttt{egnn\_c8\_s0} and \texttt{egnn\_c8\_s1} share architecture,
+training data and hyperparameters, differing only in
+initialisation seed. Their force RMSE differs by 35\%, $0.0045$ against
+$0.0061~\eVA$; their measured target-bin errors are $-0.15 \pm 0.57$ pairs
+($0.3\sigma$) and $-4.10 \pm 0.69$ pairs
+($6.0\sigma$), a factor of 27; both were predicted from the reference trajectory
+alone, at $-0.98$ and $-3.03$ pairs. Anyone selecting between them on force
+RMSE would see a 35\% difference and reasonably call them equivalent.
+\textbf{This is $n = 2$:} the most quotable observation in the paper and
+its weakest evidence, and the two facts belong in one sentence. Seed
 variance is a known and under-reported source of spread in machine-learning
 benchmarks\cite{Bouthillier2021, Pineau2021, Kapoor2024}; repeating this
-comparison at $n \ge 8$ seeds is the highest-value follow-up we can name.
+at $n \ge 8$ seeds is the highest-value follow-up we can name.
 
 Both EGNN records carry \texttt{linear\_trustworthy = false}, with second-order
-ratios of 0.41 and 0.14 against a median of 0.015 across the other eight models.
-The self-diagnostic of Sec.~\ref{sec:cumulant}(iii) fired on exactly the two
-models where the linear prediction is least reliable, and the predictions for
-those two are correspondingly quoted here as an ordering --- the second seed is
-predicted to be worse, and is --- rather than as precise values.
+ratios of 0.41 and 0.14 against a median of 0.015 across the other eight, so
+their predictions are quoted as an ordering --- the second
+seed is predicted worse, and is --- rather than as values. The
+diagnostic's performance is partial rather than clean: ranking the ten
+by $|$residual$|$, two of the three worst are the
+flagged EGNN pair, but the worst is \texttt{linear\_l2} at $-1.60\sigma$,
+which the diagnostic flags trustworthy. It fired on two of the three least
+reliable predictions, not on exactly the two least reliable.
 
 \subsection{Damage varies fivefold at fixed force error}
 \label{sec:width}
@@ -846,15 +912,18 @@ width $w$ of the error field in $r$. Six Gaussian shell fields at
 $r_0 = 4.2$~\AA{} and $w$ from 0.10 to 1.00~\AA{} were amplitude-scaled to
 $2.0\times10^{-3}~\eVA$; the residual spread in force RMSE across the sweep is
 $3.3\times10^{-15}~\eVA$, that is, exactly fixed.
-Figure~\ref{fig:mechanism}(b) shows the result. The measured norm of the
-difference curve spans a factor of 4.66, from $2.13 \pm 2.15$ pairs at
-$w = 0.10$~\AA{} to $9.95 \pm 2.47$ pairs at $w = 0.65$~\AA. The first-order
-prediction tracks the same rise across the range, from 3.22 to 9.68 pairs, with
-much smaller uncertainty; the direct measurements at the small-$w$ end carry
-error bars comparable to their own values, so the ordering across the sweep is
-carried mainly by the prediction, and the honest statement of the measurement is
+The measured norm of the difference curve spans a factor of 4.66, from
+$2.1 \pm 2.1$ pairs at $w = 0.10$~\AA{} to $9.9 \pm 2.5$ pairs at
+$w = 0.65$~\AA{} [Fig.~\ref{fig:mechanism}(b)]. The first-order
+prediction tracks the rise, from 3.22 to 9.68 pairs, with
+much smaller uncertainty; the direct measurements at small $w$ carry
+error bars comparable to their own values, so the ordering is
+carried mainly by the prediction, and the honest statement is
 that the observed range is $4.7\times$ with the lowest point consistent with
-zero.
+zero. The sweep is not monotone: the largest width falls
+back to $8.4$ pairs, the saturation Sec.~\ref{sec:retraction}
+anticipated analytically, and Sec.~\ref{sec:w32} returns to what that
+does to a fitted exponent.
 
 %======================================================================
 \section{What did not work}
@@ -864,127 +933,165 @@ zero.
 \subsection{The \texorpdfstring{$w^{3/2}$}{w3/2} scaling is wrong}
 \label{sec:w32}
 
-Section~\ref{sec:retraction} predicted, and then retracted on analytic grounds,
+Section~\ref{sec:retraction} predicted, then retracted on analytic grounds,
 that at fixed force error the observable damage would grow as $w^{3/2}$. The
-measurement on the sweep of Sec.~\ref{sec:width}, on a
-verified-stationary ensemble, gives a fitted exponent of \textbf{0.56} from the
-direct sampling and \textbf{0.45} from the first-order prediction
-[Fig.~\ref{fig:response}(b)], against the predicted 1.5. The estimate is wrong
-by a factor of three in the exponent.
+sweep of Sec.~\ref{sec:width}, on a
+verified-stationary ensemble, gives a fitted exponent of \textbf{0.56}
+[0.09, 1.34] from direct sampling and \textbf{0.45} from the first-order
+prediction, against the predicted 1.5 [Fig.~\ref{fig:response}(b)].
 
-The retraction was made analytically and before the measurement, for the two
-reasons given in Sec.~\ref{sec:retraction}, so this is not a prediction quietly
-withdrawn once it failed --- but it did fail, and a heuristic that survives its
-own author's scepticism only to be refuted by measurement is worth reporting as
-a refutation. What survives is the
-weaker and still sufficient statement that force error and observable error
-depend differently on the shape of the error field, so their ratio is not a
-constant; Sec.~\ref{sec:width} measures that ratio varying by 4.7 at exactly
-fixed force RMSE, and that is the statement the argument of this paper actually
-needs.
+We lead with the interval rather than the point estimate.
+It is a 20{,}000-draw Monte Carlo propagation of the blocking errors on the six
+direct-sampling points, and it is wide: the exponent is about two
+standard errors from zero, and 1.4\% of resamples reach 1.5, so the refutation
+is supported but not overwhelmingly. The
+first-order series gives 0.45 with far smaller point-to-point scatter, but the
+deposit carries no per-point uncertainty for it, so we quote no interval.
+Worse for a power law, the direct sweep is not monotone --- the
+norms run 2.1, 5.3, 4.9, 7.7, 9.9, 8.4 pairs and turn over at the largest width,
+the saturation predicted analytically in
+Sec.~\ref{sec:retraction} --- and one power law across a range that includes
+saturation is not a well-posed fit; dropping the saturating
+point moves the exponent to 0.72, still far from 1.5.
+
+The retraction was made analytically and before the measurement, so this is not
+a prediction quietly withdrawn once it failed. But it did fail. What survives
+is the weaker and sufficient statement that force error and observable
+error depend differently on the shape of the error field, so their ratio is not
+a constant; Sec.~\ref{sec:width} measures it varying by 4.7 at exactly
+fixed force RMSE.
 
 \subsection{The proposed smoothness-ratio metric is refuted}
 \label{sec:smoothness}
 
-If force RMSE weights the error spectrum by $k^2$ and observables weight it by
-roughly $k^0$, then a ratio of an error-field magnitude to a force error should
+If force RMSE weights the error spectrum by $k^2$ and observables by
+roughly $k^0$, a ratio of error-field magnitude to force error should
 carry information about where in the spectrum a model's error sits. We proposed
-$\sigma_0(\dU)/\mathrm{RMSE}_F$ on exactly that reasoning. Measured against
+$\sigma_0(\dU)/\mathrm{RMSE}_F$ on that reasoning. Against
 observable error across the 34-member zoo it gives $\rho = -0.02$ [$-0.37$,
-0.35], $n = 34$ on the noise-subtracted series and $\rho = -0.01$ [$-0.37$,
-0.37], $n = 34$ on the raw series. On either convention it carries no
-information at all here. Proposed and refuted in the same study.
+0.35], $n = 34$ noise-subtracted and $\rho = -0.01$ [$-0.37$,
+0.37], $n = 34$ raw: on either convention, no
+information at all. Proposed and refuted in the same study.
 
-For completeness, the same quantity restricted to the post hoc band of
-Sec.~\ref{sec:regimes} gives $\rho = 0.84$ [0.49, 0.98], $n = 15$. We do not
-present that as support for the metric: the band is analyst-chosen after the
-fact, the members inside it are dominated by one family of shell perturbations,
+For completeness, the same quantity inside the post hoc band of
+Sec.~\ref{sec:regimes} gives $\rho = 0.84$ [0.49, 0.98], $n = 15$. That is not
+support for the metric: the band is analyst-chosen after the
+fact, its members are dominated by one family of shell perturbations,
 and the zoo-level correlation --- the pre-specified comparison --- is consistent
 with zero. The metric is refuted at the level at which it was proposed.
 
-\subsection{An open 35\% discrepancy, with three explanations excluded}
+\subsection{An open 35\% discrepancy, with four explanations excluded}
 \label{sec:discrepancy}
 
 In the amplitude sweep of Fig.~\ref{fig:response}(a), at the smallest
 perturbation ($\beta\sigma_0(\dU) = 0.427$), three estimates of the same shift
-in the peak bin disagreed: first order $-3.835 \pm 0.170$ pairs, exact
+in the peak bin disagreed: first order $-3.84 \pm 0.17$ pairs, exact
 reweighting $-3.884$ pairs at an effective-sample-size fraction\cite{Kish1965}
-of 0.83, and direct sampling $-1.948 \pm 0.821$ pairs
+of 0.83, and direct sampling $-1.95 \pm 0.82$ pairs
 (Table~\ref{tab:discrepancy}). The two estimators sharing the reference samples
-agree with each other to 1.3\%; the one requiring an independent chain disagrees
+agree to 1.3\%; the one requiring an independent chain disagrees
 with both by a factor of two.
 
-The obvious diagnosis is that the direct estimate's error bar is too small.
-Blocking measures the error within a chain, and a difference between two chains
+The obvious diagnosis is that the direct estimate's error bar is too small:
+blocking measures error within a chain, and a difference between two chains
 also carries the offset between their slow modes, which no within-chain
-estimator can see. \textbf{We tested that diagnosis and it was wrong.} Sampling
+estimator sees. \textbf{We tested that diagnosis and it was wrong.} Sampling
 both potentials from six independent seeds each gives a within-chain blocking
-error of 0.589 pairs against a between-chain scatter of 0.312 pairs, a ratio of
-0.53: blocking is \emph{conservative} here by about a factor of two, not
-optimistic. The six independent seed pairs give measured shifts of
-$[2.553, 2.773, 2.349, 2.611, 1.788, 2.188]$ pairs, mean
-$+2.377 \pm 0.144$ ($n = 6$). This check was run on the same perturbation but on
-a different bin --- the one centred at 5.25~\AA{} rather than the peak bin at
-4.25~\AA{} --- so the sign and size differ from the row above; what transfers is
-the size of the between-chain offset and the reliability of the direct estimate.
+error of 0.589 pairs against a between-chain scatter of 0.312, a ratio of
+0.53: blocking is \emph{conservative} here by about a factor of two. The six
+seed pairs give shifts $[2.553, 2.773, 2.349, 2.611, 1.788, 2.188]$ pairs, mean
+$+2.377 \pm 0.144$ ($n = 6$), measured on the same perturbation but
+a different bin --- 5.25~\AA{} rather than the peak bin at
+4.25~\AA{} --- so sign and size differ from the row above; what transfers is
+the between-chain offset and the reliability of the direct estimate.
 
 So the direct measurement is reliable and the discrepancy is real. On a fresh
 3000-frame reference chain the two same-sample estimators give
-$+1.725 \pm 0.101$ pairs (first order) and $+1.757$ pairs (exact reweighting),
-against the direct $+2.377 \pm 0.144$: a difference of 0.652 pairs, 35\% of the
-reweighted value and 38\% of the first-order value, and $3.7\sigma$ on the
-combined uncertainty.
+$+1.73 \pm 0.10$ pairs (first order) and $+1.757$ pairs (reweighting),
+against the direct $+2.38 \pm 0.14$: differences of 0.652 pairs from the
+first-order estimate, 38\% of it, and 0.620 from the reweighted
+estimate, 35\% of it, the first being $3.7\sigma$ on the combined uncertainty.
 
-Three explanations are excluded by measurement. \emph{Not the error bars}: the
-between-chain scatter is half the quoted within-chain error, not larger. \emph{Not
-second-order truncation}: the first-order estimate and the all-orders
-reweighting identity agree with each other to 2\%, so the truncation cannot be
-the difference. \emph{Not incomplete relaxation of the perturbed chain}: that
-would bias the measured shift \emph{toward} the reference and make it smaller in
-magnitude, and it is larger.
+Four explanations are excluded. \emph{Not the error bars}: the
+between-chain scatter is half the quoted within-chain error, not larger.
+\emph{Not second-order truncation}: first order and the all-orders
+reweighting identity agree to 2\%. \emph{Not incomplete relaxation of the
+perturbed chain}: that would bias the measured shift \emph{toward} the reference
+and make it smaller, and it is larger. And \emph{not the effective sample
+size}, which is what an earlier draft of this paper proposed. The Kish
+figure\cite{Kish1965} certifying the reweighting estimate does assume
+independent samples, and the true independent count in a correlated chain is
+smaller by the autocorrelation time --- but that is a diagnostic of the
+\emph{reweighting} estimator alone, and the first-order estimator carries no
+importance weights while deviating from direct sampling by the same amount. An
+explanation confined to the exponential average cannot account for a deviation
+shared by an estimator containing no exponential average.
 
-What remains is a candidate we did not test. The Kish effective sample
-size\cite{Kish1965} used to certify the reweighting estimate assumes independent
-samples, and the true independent count in a correlated chain is smaller by the
-integrated autocorrelation time; recomputing the effective size as
-$M/(2\tau_{\rm int})$, with the $\tau_{\rm int}$ the codebase already estimates,
-is the obvious next test and was not run. We record the item as unresolved
-rather than attributing it to the nearest plausible cause. It is not a general
+What remains is the candidate suggested by Sec.~\ref{sec:prediction}, untested.
+Both same-sample estimators are computed on one reference
+chain and would move together with any unlucky realisation of it; the
+direct estimate averages six independent chain pairs and would not. The
+between-chain scatter above is 0.312 pairs against a discrepancy of
+0.652 --- the right order, but only that. Repeating the
+same-sample estimates on several independent reference chains, and recomputing
+the effective size as $M/(2\tau_{\rm int})$, are the obvious next tests and
+neither was run. We record the item as unresolved rather than attribute it to
+the nearest plausible cause. It is not a general
 failure of either estimator: the measurements of
 Sec.~\ref{sec:counterexamples} used a different observable and twice as many
-frames and are calibrated at $1.01\sigma$ against the same prediction.
+frames and scatter about their prediction at $0.57\sigma$.
 
 \subsection{The first-order prediction breaks down at large
 \texorpdfstring{$\dU$}{dU}, as it must}
 \label{sec:breakdown}
 
 Linear response is a first-order truncation and must fail somewhere. A separate
-four-model arm, fitted at a training budget of 20 configurations and run in the
-reduced quick-run mode, puts the failure on the record
+four-model arm, fitted at a training budget of 20 configurations and run in
+quick-run mode, is where our evidence for that failure sits
 (Table~\ref{tab:breakdown}). Force RMSE there reaches $4.34\times10^{-2}~\eVA$
-and observable errors reach 126 pairs; the aggregate prediction residual is
+and observable errors 126 pairs; the aggregate prediction residual is
 $\mathbf{30.4\sigma}$, $n = 4$, against the $1.01\sigma$ and $1.06\sigma$ of the
 perturbative arms. The largest single residual is $60.5\sigma$, for the
-$E(3)$-equivariant model at $4.34\times10^{-2}~\eVA$, whose predicted shift of
-$-14.2 \pm 7.3$ pairs faces a measured $-126.16 \pm 1.85$. The most instructive
-row is the mildest: \texttt{spline\_k12}, at force RMSE
-$1.55\times10^{-3}~\eVA$, has a predicted shift of $0.026 \pm 0.251$ pairs,
-consistent with zero, against a measured $-5.173 \pm 1.863$ pairs. A small
-force error and a near-zero predicted response are together not a guarantee.
+$E(3)$-equivariant model, whose predicted shift of
+$-14.2 \pm 7.3$ pairs faces a measured $-126.2 \pm 1.8$; the mildest row is
+\texttt{spline\_k12}, at $1.55\times10^{-3}~\eVA$, predicted $0.03 \pm 0.25$
+pairs against a measured $-5.2 \pm 1.9$.
 
-This is the demonstrated boundary of validity of Eq.~\eqref{eq:linear}, reported
-as a result and not as a hidden failure. It carries a gap in our evidence that
-we state in those words: \textbf{the records from this arm do not contain the
-\texttt{second\_order\_ratio} or \texttt{linear\_trustworthy} fields, so the
-self-diagnostic of Sec.~\ref{sec:cumulant}(iii) cannot be checked against this
-arm.} The claim that the second-order term gives advance warning of exactly this
-breakdown is supported by the amplitude sweep of Fig.~\ref{fig:response}(a),
-where the diagnostic flags the two smallest amplitudes as trustworthy and the
-five larger ones as not, and by the fitted zoo of Sec.~\ref{sec:fitted}, where
-it flags the two EGNN seeds; it is not supported by the arm where the breakdown
-is largest, because the field was not recorded there.
+\textbf{Two fields are missing from these records and both weaken what the arm
+establishes.} The first we have reported from the start: the records carry
+neither \texttt{second\_order\_ratio} nor \texttt{linear\_trustworthy}, so the
+self-diagnostic of Sec.~\ref{sec:cumulant}(iii) cannot be checked here. The
+second is more consequential --- \textbf{the records also
+carry no \texttt{direct\_equilibrated} flag}, so the stationarity guard of
+Sec.~\ref{sec:equilibration} was either not run or not recorded for the one arm
+whose measured shifts are enormous. Set that beside
+Sec.~\ref{sec:fitted}: there the same \texttt{egnn\_c8}
+architecture, at a \emph{smaller} force error of $1.4\times10^{-2}~\eVA$,
+produced an apparent shift of $-95.5$ pairs and was discarded as unequilibrated,
+while here at $4.34\times10^{-2}~\eVA$ it produces $-126.2$ pairs and is
+retained. Internal evidence agrees: \texttt{linear\_l3}, at
+$5.08\times10^{-4}~\eVA$ the smallest force error anywhere in this study, shows
+$-6.1 \pm 2.4$ pairs, while in the equilibrated 400-configuration arm
+\texttt{linear\_l4} at a \emph{larger} $6.48\times10^{-4}~\eVA$ shows
+$-0.48 \pm 0.61$. A twelvefold larger observable error at a smaller force error,
+in the one arm without an equilibration record, is at least as well explained by
+an unrelaxed chain as by the failure of linear response. Linear
+response must break down at large $\dU$ and this arm is consistent with its
+doing so, but it is not a clean demonstration: the $30.4\sigma$ is an upper
+bound on the disagreement attributable to the truncation. Re-running the arm
+with the guard recorded is the fix, and nothing else in the paper depends on it.
 
-The amplitude sweep shows the two estimators failing in different directions. As
+Nor can we still offer the amplitude sweep in support of the warning light.
+It flags the two smallest amplitudes as trustworthy and the five larger
+ones as not; but of those two positives only one agrees with direct sampling,
+the other being the unresolved discrepancy of
+Sec.~\ref{sec:discrepancy}, and the deposited summary records exactly this under
+the key \texttt{flagged\_cases\_all\_agree: false}. A diagnostic returning a
+false positive on half its own positives is not evidence for itself. What
+remains in its favour is the partial performance of
+Sec.~\ref{sec:fitted}, and that is all we claim.
+
+The sweep does show the two estimators failing in different directions. As
 the shell amplitude rises from $5\times10^{-4}$ to $3.2\times10^{-2}$, the
 first-order estimate grows linearly to $-245.5 \pm 10.9$ pairs while the direct
 measurement saturates at $-144.1 \pm 0.6$, and the reweighting estimate
@@ -996,24 +1103,25 @@ which all three agree is 0.854.
 \subsection{The dilute-gas closed form disagrees}
 \label{sec:dilute}
 
-The sharpest available end-to-end test of the estimator is the dilute limit of a
+The sharpest end-to-end test of the estimator is the dilute limit of a
 pair fluid, where $g(r) = e^{-\beta u(r)} + O(\rho)$ exactly\cite{HansenMcDonald2013},
-so that a perturbation $\delta u$ of the pair potential shifts the bin counts by
+so a perturbation $\delta u$ shifts the bin counts by
 a quantity available in closed form. Run at $\rho^* = 0.079$ and $T^* = 2.510$
 on 64 atoms with 6000 reference frames, the sampled covariance estimator and the
-exact reweighting identity agree with each other to within 0.003 pairs in every
-bin, at most 1.5\% of the shift in any bin where the shift is resolved. Both
+exact reweighting identity agree to within 0.003 pairs in every
+bin, at most 1.5\% of the shift in any bin where it is resolved. Both
 disagree with our hand-derived closed form, by $4.7\sigma$ root-mean-square and
-$6.5\sigma$ at worst over seven bins.
+$6.5\sigma$ at worst over seven bins. (Our project notes quote $5.4\sigma$; the
+deposited output gives $4.68\sigma$ and $6.53\sigma$, and
+we follow the deposit.)
 
 One correction the hand calculation needed, and the estimator did not, is worth
-recording. Pair number is conserved, so a perturbation that depletes one shell
+recording. Pair number is conserved, so a perturbation depleting one shell
 must enrich others, and the pair-separation distribution is normalised. Dropping
-that normalisation term gives a closed form wrong by a factor of ten in the
+that term gives a closed form wrong by a factor of ten in the
 outer bins and wrong in sign in the tail. A covariance is mean-subtracted, and
-the subtraction \emph{is} the normalisation, so the estimator never had the
-problem --- a small illustration of why an estimator that computes the right
-object is safer than a derivation that reconstructs it.
+that subtraction \emph{is} the normalisation, so the estimator never had the
+problem.
 
 The residual disagreement is most likely the $O(\rho)$ correction to
 $g = e^{-\beta u}$, which at $\rho^* = 0.079$ is not negligible. \textbf{This is
@@ -1027,63 +1135,62 @@ and checking that the deviation falls --- was not run.
 
 \paragraph*{The empirical dissociation.} That force error and simulation quality
 come apart is an established empirical finding. Fu \emph{et al.}\cite{Fu2023}
-benchmarked machine-learned force fields on simulation tasks rather than on
-held-out forces and found the ranking by force error to be a poor guide to the
+benchmarked machine-learned force fields on simulation tasks rather than
+held-out forces and found the ranking by force error a poor guide to the
 ranking by simulation outcome; Stocker \emph{et al.}\cite{Stocker2022} found
-graph-network potentials with excellent test errors to be unreliable in long,
-hot molecular dynamics. This paper does not claim to have reproduced either
+graph-network potentials with excellent test errors unreliable in long,
+hot molecular dynamics. We do not claim to have reproduced either
 benchmark: no published potential and no dynamical metric was evaluated here.
-What it adds is threefold. \emph{(i) Confound removal.} In those comparisons
-models differ simultaneously in force error, architecture, training data and
---- decisively --- the \emph{magnitude} of their error, so shape and size cannot
-be separated. Here the magnitude is held fixed by construction, to 0.5\% in
-force RMSE, and only the shape varies. \emph{(ii) A mechanism.} Those studies
-offer an observation; Eq.~\eqref{eq:linear} supplies a mechanism and we validate
-it at $1.01\sigma$ ($n = 8$) and $1.06\sigma$ ($n = 10$). \emph{(iii) A
+What this paper adds is threefold. \emph{(i) Confound removal.} In those
+comparisons models differ simultaneously in force error, architecture, training
+data and --- decisively --- the \emph{magnitude} of their error, so shape and
+size cannot be separated; here the magnitude is held fixed by construction, to
+0.52\% in force RMSE, and only the shape varies. \emph{(ii) A mechanism.} Those
+studies offer an observation; Eq.~\eqref{eq:linear} supplies a mechanism,
+validated at $1.01\sigma$ ($n = 8$) and $1.06\sigma$ ($n = 10$). \emph{(iii) A
 different disease.} Their failure mode is dynamical instability: large $\dU$,
-out of distribution, non-perturbative, and visible --- simulations that melt,
+out of distribution, non-perturbative, visible --- simulations that melt,
 blow up or drift. The failure mode here is in-distribution, perturbative and
-silent. Nothing blows up, the trajectory is fine, the diagnostics are healthy,
-and the answer is wrong by $16\sigma$. These are different diseases with
-different remedies, and conflating them would understate both.
+silent: nothing blows up, the trajectory is fine, the diagnostics are healthy,
+and the answer is wrong by $16\sigma$. Conflating them would understate both.
 
-\paragraph*{The identity is not new.} We say this plainly because the
+\paragraph*{The identity is not new.} We say so plainly because the
 temptation to overclaim is real. Equation~\eqref{eq:linear} is standard
 thermodynamic perturbation theory: Zwanzig's free-energy-perturbation
 identity\cite{Zwanzig1954} expanded in cumulants, with Bennett's acceptance
 ratio\cite{Bennett1976} and its multistate successor\cite{ShirtsChodera2008} as
-the practical machinery around it. The same covariance is used as a parameter
+the machinery around it. The same covariance is a parameter
 gradient in differentiable trajectory reweighting, where Thaler and
 Zavadlav\cite{Thaler2021} differentiate reweighted ensemble averages with
-respect to potential parameters to train against experimental observables; and
+respect to potential parameters to train against experimental observables, and
 it is used by Imbalzano \emph{et al.}\cite{Imbalzano2021} to propagate committee
-uncertainty in the potential through to uncertainties in thermodynamic averages.
+uncertainty through to thermodynamic averages.
 Frederiksen \emph{et al.}\cite{Frederiksen2004} are the deep precedent for the
 conceptual claim, showing by Bayesian ensemble sampling of potential parameters
 that the uncertainty a potential induces is a property of the quantity being
-predicted and not a single number attached to the model. What is new here is the
+predicted, not a number attached to the model. What is new here is the
 four items listed in Sec.~\ref{sec:intro}: the reading of
 the identity as an audit of the reported evaluation metric, the analytic-oracle
 construction, the constructive falsification at matched force RMSE, and the
 across-decades/within-band decomposition. Nothing else.
 
 \paragraph*{Norm-based corrections and the dynamical case.} Wu \emph{et
-al.}\cite{Wu2024} derive a correction to lattice thermal conductivity computed
-with machine-learned potentials in which the force error enters through a norm,
-and correct a systematic underestimation with it. That is the expected structure
+al.}\cite{Wu2024} derive a correction to lattice thermal conductivity in which
+the force error enters through a norm, and correct a systematic underestimation
+with it. That is the expected structure
 for a transport coefficient: $\delta F$ enters the equations of motion directly,
-so the magnitude of the force error is the right variable, and no projection
+so the magnitude of the force error is the right variable and no projection
 onto an observable is involved. The contrast with the projection mechanism for
-static observables is exactly the asymmetry conjectured in
+static observables is the asymmetry conjectured in
 Sec.~\ref{sec:dynamics}, and Ref.~\onlinecite{Wu2024} is independent evidence
-for it --- not evidence produced by this work, which tested no dynamical
+for it --- not evidence produced here, since we tested no dynamical
 observable. Related work on transport with foundation models\cite{Pota2024}
 points the same way.
 
 \paragraph*{Validation practice.} Morrow, Gardner and
 Deringer\cite{Morrow2023} argue that machine-learned potentials should be
 validated on the physical properties they will be used to compute rather than on
-held-out errors alone. This paper supports that recommendation quantitatively
+held-out errors alone. This paper supports that quantitatively
 and explains why it is necessary rather than merely prudent: the held-out error
 is a norm and the property is a projection, and Sec.~\ref{sec:regimes} measures
 how much of the ordering the norm fails to capture where it matters. Reports
@@ -1092,19 +1199,33 @@ observations of systematic softening in universal potentials with good aggregate
 errors\cite{Deng2025}, are consistent with the same reading.
 
 \paragraph*{The practical consequence, and its untested part.} The estimator
-recommended by this work is a \emph{vector} of response scores --- one
-$-\beta\,\Cov_0(A_k,\dU)$ per observable of interest --- computed at one energy
+this work recommends is a \emph{vector} of response scores --- one
+$-\beta\,\Cov_0(A_k,\dU)$ per observable of interest --- at one energy
 evaluation per stored frame per model on an existing reference trajectory. The
-honest caveat is that a practitioner has no $U_0$, so $\dU$ is not available.
+honest caveat is that a practitioner has no $U_0$, so $\dU$ is unavailable.
 The usable substitute replaces the unknown truth with a committee mean over
 independently trained models\cite{Imbalzano2021}, giving a per-model deviation
-from consensus whose spread across the committee is an uncertainty on the
+from consensus whose spread is an uncertainty on the
 observable itself. Its failure mode is predictable and one-directional:
-homogeneous committees share systematic error, and shared error cancels exactly
+homogeneous committees share systematic error, which cancels exactly
 in a committee mean, so such a committee should under-report. \textbf{This was
 not tested.} The experiment designed to test it, with deliberately homogeneous
-and deliberately heterogeneous committee arms, was not run, and the committee
-predictor is a hypothesis in this paper and not a finding.
+and heterogeneous arms, was not run; the committee
+predictor is a hypothesis here, not a finding.
+
+\paragraph*{Possibility, not prevalence.} One boundary is worth drawing sharply,
+because it is where this paper is weakest. Everything demonstrated here works on
+error fields we built. They establish that force RMSE \emph{can} be blind to a
+large observable error --- an existence proof, and a constructive one --- and
+say nothing about how often a fitting procedure produces error with appreciable
+projection onto an observable anyone cares about. The one arm that could have
+spoken to prevalence, the fitted zoo of Sec.~\ref{sec:fitted}, returns a null,
+for a reason internal to our design: a two-parameter pair potential is easy
+enough that every architecture we tried fits it to $\sim 4\times10^{-4}~\eVA$,
+leaving no regime for fitted models to occupy. The seed pair is the one piece of
+evidence pointing the other way and it is $n = 2$. This paper is motivation for
+the experiment that would settle prevalence --- the same zoo against a many-body
+reference, where the fits will not be so easy --- and not an answer to it.
 
 %======================================================================
 \section{Scope and limitations}
@@ -1115,12 +1236,12 @@ We list the limitations without euphemism, separating those foreclosed by design
 from those foreclosed by resources.
 
 \emph{By design.} One reference potential, Lennard-Jones argon, and one state
-point, $N = 108$, $\rho^* = 0.790$, $T^* = 1.004$. The choice of an analytic
-reference is the methodological crux of the paper --- it is what makes $\dU$
-exactly known and error fields designable --- and it is simultaneously the
+point, $N = 108$, $\rho^* = 0.790$, $T^* = 1.004$. The analytic
+reference is the methodological crux --- it is what makes $\dU$
+exactly known and error fields designable --- and simultaneously the
 reason no result here is a claim about a chemically realistic system. No
-density-functional-theory reference was used and none was needed. No published
-machine-learned potential was evaluated; the ten fitted models are deliberately
+density-functional-theory reference was used and none was needed; no published
+machine-learned potential was evaluated, the ten fitted models being deliberately
 small surrogates of a classical potential. Stillinger--Weber
 silicon\cite{StillingerWeber1985} and an embedded-atom-method
 copper\cite{DawBaskes1984} with a second-moment tight-binding embedding
@@ -1129,32 +1250,47 @@ in the same codebase (Appendix~\ref{app:validation}), and \emph{no
 observable-error result was produced on either}. One observable class throughout:
 pair counts in radial bins, and for the headline demonstration a single bin.
 Error fields are pair-radial only --- no angular and no many-body error
-structure, which is precisely where real architectures differ from one another.
-No dynamical observable of any kind: no diffusivity, no vibrational spectrum, no
-melting point, no elastic constant of any surrogate model was measured, and no
-claim about any of them is made.
+structure, which is precisely where real architectures differ. No dynamical
+observable of any kind: no diffusivity, vibrational spectrum,
+melting point or elastic constant of any surrogate was measured, and no
+claim about any is made.
 
 \emph{By resources.} No finite-size study: every number is $N = 108$, and we do
-not assert that the covariance mechanism is size-independent. The check is
-outstanding, and it is not obviously trivial, since pair-count fluctuations in a
+not assert size-independence. The check is
+outstanding and not obviously trivial, since pair-count fluctuations in a
 closed $NVT$ cell carry a known ensemble dependence\cite{LebowitzPercusVerlet1967}
-that the covariance in Eq.~\eqref{eq:linear} inherits. The seed-pair observation
-of Sec.~\ref{sec:fitted} is $n = 2$ and does not generalise as stated; it is an
+that Eq.~\eqref{eq:linear} inherits --- and the quantity
+measured here \emph{is} a pair-count covariance in a closed cell. The seed-pair
+observation of Sec.~\ref{sec:fitted} is $n = 2$; it is an
 illustration, not a statistic. The band of Sec.~\ref{sec:regimes} is post hoc:
 the window $1.5$--$6.0\times10^{-3}~\eVA$ was chosen by the analyst after
-seeing the data and is hard-coded in the figure script, and the 15 members
-inside it were not pre-registered. The dynamical conjecture of
-Sec.~\ref{sec:dynamics} is untested here. The committee predictor of
-Sec.~\ref{sec:prior} is untested here. The remaining candidate explanation for
-the discrepancy of Sec.~\ref{sec:discrepancy} is untested. The quarter-density
-repeat that would confirm the reading of Sec.~\ref{sec:dilute} was not run. The
-large-$\dU$ arm of Sec.~\ref{sec:breakdown} lacks the second-order diagnostic
-field, so the warning-light claim cannot be checked where the breakdown is
-largest.
+seeing the data and is hard-coded in the figure script, its 15 members
+were not pre-registered, six share one force RMSE by
+construction, and two are fields we designed. Untested here: the dynamical
+conjecture of Sec.~\ref{sec:dynamics}, the committee predictor of
+Sec.~\ref{sec:prior}, the remaining candidate explanation for
+the discrepancy of Sec.~\ref{sec:discrepancy}, and the quarter-density
+repeat that would confirm the reading of Sec.~\ref{sec:dilute}.
 
-Finally, a limitation of the framing rather than of the data. Nothing here shows
-that force error is useless; Sec.~\ref{sec:regimes} shows the opposite across
-three decades. The claim is about resolution, not about information content.
+Four further limitations surfaced in preparing this manuscript. \emph{(i)} The
+refutation of P1 in Sec.~\ref{sec:regimes} is demonstrated on designed error
+fields, not on the architecture-diverse zoo of fitted models the pre-registered
+criterion named; the fitted arm cannot decide it. \emph{(ii)} The large-$\dU$
+arm of Sec.~\ref{sec:breakdown} lacks not only the second-order diagnostic but
+the stationarity flag, so its $30.4\sigma$ cannot be separated from unrelaxed
+surrogate chains. \emph{(iii)} Within each arm every surrogate is
+measured against one shared reference chain, so the root-mean-square prediction
+residuals are not calibration statistics and a common offset of about
+$-0.86\sigma$ sits under the two eight-member arms
+(Sec.~\ref{sec:prediction}). \emph{(iv)} All six runs came from dirty
+working trees at five different commits, so no number here can be regenerated
+from a named revision.
+
+Finally, two limitations of framing. Nothing here shows
+that force error is useless; Sec.~\ref{sec:regimes} shows the opposite across a
+361-fold range, and the claim is about resolution, not information content.
+And nothing establishes prevalence: the designed fields prove the
+pathology can exist, and the fitted arm did not detect it on this reference.
 
 %======================================================================
 \section{Conclusion}
@@ -1163,37 +1299,41 @@ three decades. The claim is about resolution, not about information content.
 
 Force error is a coarse filter, not a selector. That is the corrected form of a
 prediction this study made and refuted: we expected force RMSE to rank models
-weakly against downstream physics, and instead it ranks them well across three
-decades, $\rho = 0.83$ [0.67, 0.93], $n = 34$, and is not resolved from zero
-inside a factor-2.6 band where the physics still varies by $30\times$,
-$\rho = 0.34$ [$-0.26$, 0.77], $n = 15$. The response prediction is resolved
-there, $\rho = 0.94$ [0.76, 1.00], $n = 15$. Two further predictions of ours
-failed outright: a smoothness-ratio metric we proposed carries no information,
-$\rho = -0.02$ [$-0.37$, 0.35], $n = 34$, and a $w^{3/2}$ scaling we derived has
-a measured exponent of 0.56.
+weakly against downstream physics, and instead it ranks 34 designed surrogates
+well across a 361-fold range, $\rho = 0.83$ [0.67, 0.93], $n = 34$, and is not
+resolved from zero inside a factor-2.6 band where the physics still varies by
+$30\times$ on the noise-subtracted series and $6.5\times$ without the designed
+fields, $\rho = 0.34$ [$-0.26$, 0.77], $n = 15$. The response prediction is
+resolved there, $\rho = 0.94$ [0.76, 1.00], $n = 15$. Two further predictions of
+ours failed outright: a smoothness-ratio metric we proposed carries no
+information, $\rho = -0.02$ [$-0.37$, 0.35], $n = 34$, and a $w^{3/2}$ scaling
+we derived has a measured exponent of 0.56 [0.09, 1.34].
 
 The mechanism behind the corrected claim is that the error in a static
 observable is a covariance between the observable and the potential's error
 field, while force RMSE is a norm of that field's gradient. A covariance is a
-projection; a norm is not. At force RMSE matched to 0.5\% we moved a target pair
-count from $-0.220 \pm 0.640$ to $+9.891 \pm 0.611$ pairs by changing only the
+projection; a norm is not. At force RMSE matched to 0.52\% we separated a target
+pair count by $10.11$ pairs, at least $11.4\sigma$, by changing only the
 correlation between the error field and the observable, and the null-space
-construction that achieves the first of those survives out of sample with a
-$400\times$ suppression relative to its aligned counterpart. The same field
-moves a non-target bin by $11.36 \pm 0.95$ pairs, so harmlessness is a relation
-between an error and a question, not a property of a model.
+construction that achieves the quiet end survives out of sample with a
+$360\times$ suppression relative to its aligned counterpart. The same field
+moves a non-target bin by $11.36 \pm 0.95$ pairs, so harmlessness is relative to
+the set of questions the field was built against, not a property of a model.
 
-The estimator that follows is cheap and was validated here: predicted from
+The estimator that follows is cheap: predicted from
 reference-ensemble samples alone, the shift in an observable agrees with direct
 measurement at $1.01\sigma$ over eight designed error fields and $1.06\sigma$
-over ten fitted models, at one energy evaluation per stored frame per model, and
-its own second-order term gives advance warning where it fails. What we
-recommend reporting is therefore not a better scalar but a vector: one response
+over ten fitted models, at one energy evaluation per stored frame per model ---
+figures that decompose into a scatter of $0.57\sigma$ about a common offset from
+the shared reference chain. Whether the estimator's own second-order term gives
+advance warning where it fails is a hypothesis our tests leave open. What we
+recommend reporting is not a better scalar but a vector: one response
 score per observable anyone intends to compute.
 
 The scope is one Lennard-Jones state point, $N = 108$, pair-radial error fields
 and a pair-count observable, with no dynamical observable and no chemically
-realistic system. Whether the same decomposition holds for angular and many-body
+realistic system, and the demonstration is of possibility rather than
+prevalence. Whether the same decomposition holds for angular and many-body
 error structures, and whether the conjectured reversal for transport observables
 is real, are open.
 
