@@ -191,7 +191,9 @@ def amplitude_sweep(ctx, cfg, potential, observable, ref, frames,
             "direct": float(measured[peak]),
             "direct_error": float(measured_err[peak]),
             "second_order_ratio": float(np.asarray(prediction.second_order_ratio)[peak]),
-            "linear_trustworthy": bool(prediction.is_trustworthy),
+            "passes_unvalidated_linearity_screen": bool(
+                prediction.passes_unvalidated_linearity_screen
+            ),
             "direct_acceptance": direct_report.acceptance,
             "linear_curve": predicted.tolist(),
             "direct_curve": measured.tolist(),
@@ -245,23 +247,27 @@ def width_sweep(ctx, cfg, potential, observable, frames,
 
 
 def summarise_amplitudes(records) -> dict:
-    """Where does linear response stop working, and does its own flag catch it?"""
+    """Describe where response agrees and audit the unvalidated legacy screen."""
     linear = np.array([r["linear"] for r in records])
     direct = np.array([r["direct"] for r in records])
     error = np.array([r["direct_error"] for r in records])
     reweighted = np.array([r["reweighted"] for r in records])
-    trustworthy = np.array([r["linear_trustworthy"] for r in records])
+    screen_passed = np.array([
+        r["passes_unvalidated_linearity_screen"] for r in records
+    ])
 
     within = np.abs(linear - direct) < 2.0 * error
     return {
         "n_amplitudes": len(records),
         "linear_agrees_with_direct": within.tolist(),
         "reweighted_agrees_with_direct": (np.abs(reweighted - direct) < 2.0 * error).tolist(),
-        "self_flagged_trustworthy": trustworthy.tolist(),
-        # The claim worth making is not "the formula always works" but "it works
-        # where it says it does": every case it flags trustworthy should agree.
-        "flagged_cases_all_agree": bool(np.all(within[trustworthy])) if trustworthy.any() else None,
-        "n_flagged": int(trustworthy.sum()),
+        "passes_unvalidated_linearity_screen": screen_passed.tolist(),
+        # A false pass is evidence that this historical threshold cannot be a
+        # scientific validity gate; the field is retained as an audit outcome.
+        "screen_passed_cases_all_agree": (
+            bool(np.all(within[screen_passed])) if screen_passed.any() else None
+        ),
+        "n_screen_passed": int(screen_passed.sum()),
         "largest_agreeing_beta_sigma": float(
             max([r["beta_sigma_dU"] for r, ok in zip(records, within) if ok], default=float("nan"))
         ),
@@ -341,8 +347,10 @@ def make_figures(ctx, amplitude_records, width_records):
 def report(summary):
     a, w = summary["amplitude_sweep"], summary["width_sweep"]
     print("\n  --- P2: does the first-order formula predict the shift? ---")
-    print(f"  cases the formula flagged as trustworthy: {a['n_flagged']}/{a['n_amplitudes']}")
-    print(f"  every flagged case agrees with direct sampling: {a['flagged_cases_all_agree']}")
+    print(f"  cases passing the unvalidated linearity screen: "
+          f"{a['n_screen_passed']}/{a['n_amplitudes']}")
+    print(f"  every screen-passing case agrees with direct sampling: "
+          f"{a['screen_passed_cases_all_agree']} (audit only, not a gate)")
     print(f"  largest beta*sd(dU) at which it still agrees:   {a['largest_agreeing_beta_sigma']:.3f}")
     print("\n  --- the frequency argument ---")
     print(f"  measured exponent (direct):     {w['measured_exponent_direct']:.2f}")

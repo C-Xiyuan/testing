@@ -1,0 +1,70 @@
+{
+  "protocol": "exp11_counterexample_replication_v2",
+  "schema_version": 1,
+  "protocol_version": 2,
+  "status": "frozen_before_production",
+  "master_seed": 20260812,
+  "executable_config_contract": "executable_config below is canonical; experiments/exp11_counterexample_replication/run.py DEFAULTS must match it exactly, and production CLI/config overrides require a new protocol version",
+  "executable_config": {
+    "system": {
+      "lattice_constant": 5.4,
+      "reps": [3, 3, 3],
+      "density": 0.02,
+      "temperature": 120.0
+    },
+    "potential": {
+      "epsilon": 0.0103,
+      "sigma": 3.405,
+      "cutoff": 7.0,
+      "mode": "shifted_force"
+    },
+    "observable": {
+      "target_bin": [3.4, 3.9]
+    },
+    "sampling": {
+      "n_construction": 1500,
+      "n_evaluation": 1500,
+      "n_direct": 900,
+      "n_leapfrog": 8,
+      "step_size": 0.002,
+      "burn_in": 300,
+      "n_melt": 400,
+      "n_anneal": 1000
+    },
+    "replication": {
+      "n_clusters": 8,
+      "n_direct_chains": 4
+    },
+    "perturbations": {
+      "basis_r_min": 3.0,
+      "basis_r_max": 6.6,
+      "n_basis": 14,
+      "force_rms": 0.004
+    },
+    "analysis": {
+      "match_tolerance": 0.02,
+      "minimum_effect_pairs": 1.0,
+      "max_null_to_aligned_covariance_ratio": 0.2
+    }
+  },
+  "scope": "one fixed LJ state, N=108, one target, one radial basis",
+  "n_construction_clusters": 8,
+  "n_paired_direct_chains_per_cluster": 4,
+  "force_rmse_ratio_tolerance": 0.02,
+  "minimum_effect_pairs": 1.0,
+  "max_null_to_aligned_covariance_ratio": 0.2,
+  "primary_estimand": "cluster mean of paired aligned-minus-null direct shifts",
+  "decision": "replicates in this fixed cell only if every force-match and held-out covariance-null interval passes and the cluster t interval lower bound exceeds 1 pair; practically absent only if the complete interval lies inside +/-1 pair; directionally contradicted only if its upper bound is below zero; otherwise inconclusive",
+  "fail_closed": [
+    "any force-match interval failure",
+    "any held-out null/aligned covariance-ratio interval whose upper limit exceeds 0.2",
+    "energy, target-observable, delta-U, or force-MSE stationarity failure",
+    "dirty, changed, or unidentifiable numerical source"
+  ],
+  "not_claimed": [
+    "cross-target stability",
+    "cross-basis stability",
+    "finite-size stability",
+    "Gate A many-body generalisation"
+  ]
+}

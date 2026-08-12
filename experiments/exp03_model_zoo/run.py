@@ -224,7 +224,9 @@ def run(ctx: ExperimentContext) -> dict:
     summary = analyse(ctx, usable)
     summary["n_dropped_not_equilibrated"] = len(dropped)
     summary["dropped"] = [r["name"] for r in dropped]
-    summary["n_linear_trustworthy"] = sum(1 for r in usable if r.get("linear_trustworthy"))
+    summary["n_passing_unvalidated_linearity_screen"] = sum(
+        1 for r in usable if r.get("passes_unvalidated_linearity_screen")
+    )
     ctx.save_json("records", records)
     ctx.save_json("summary", summary)
     report_summary(summary, records)
@@ -281,7 +283,9 @@ def evaluate_model(ctx, name, factory, train, val, test, cfg, potential,
         "direct_equilibrated": equilibrated,
         "drift_note": drift_note,
         "second_order_ratio": float(np.asarray(prediction.second_order_ratio)),
-        "linear_trustworthy": bool(prediction.is_trustworthy),
+        "passes_unvalidated_linearity_screen": bool(
+            prediction.passes_unvalidated_linearity_screen
+        ),
     }
 
 
@@ -323,8 +327,9 @@ def report_summary(summary, records):
           f"{f', {dropped} excluded (chain not equilibrated)' if dropped else ''} ---")
     if dropped:
         print(f"  excluded: {', '.join(summary.get('dropped', []))}")
-    print(f"  linear response self-flagged trustworthy for "
-          f"{summary.get('n_linear_trustworthy', 0)} of {summary.get('n_models', 0)}")
+    print(f"  unvalidated linearity screen passed for "
+          f"{summary.get('n_passing_unvalidated_linearity_screen', 0)} of "
+          f"{summary.get('n_models', 0)} models; this is descriptive, not a gate")
     if summary.get("insufficient"):
         print("  too few models fitted to correlate anything")
         return

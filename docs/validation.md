@@ -6,9 +6,11 @@ the ones they cannot. This file records checks run **separately from the test
 suite**, against values that come from outside the codebase: closed-form
 results, published lattice sums, and physical measurements.
 
-Every number below was produced by running the code in this repository, not
-copied from a report. Where the code disagrees with a target, the disagreement
-is stated rather than resolved by adjusting the target.
+The entries below are a historical validation log. Most were produced by this
+repository, but older entries predate launch-time source capture and cannot all
+be tied to an immutable executed tree. Where the code disagrees with a target,
+the disagreement is retained. Current release status is governed by
+`reviews/CURRENT_CLAIM_LEDGER.md`, not by this log.
 
 ---
 
@@ -192,7 +194,9 @@ meaningless number. The test asserts that non-response, not just an error.
 
 ## 7. Whole-suite status
 
-`pytest tests/` at the commit that introduced `analysis/fep.py`: **793 tests,
-0 failures, 0 errors, 13 skipped**, in roughly 25 minutes on four cores while
-three experiments were running. The skips are the optional-dependency
-cross-checks against `ase`.
+Historical self-report at the commit that introduced `analysis/fep.py`:
+**793 tests, 0 failures, 0 errors, 13 skipped**, in roughly 25 minutes. No CI log
+or immutable environment artifact was deposited for that run, and experiments
+were modifying the working environment concurrently; it must not be treated as
+independent release verification. The corrective branch reports its own tested
+commands in `reviews/CODEX_CORRECTION_REPORT.md` once that report is generated.

@@ -580,19 +580,16 @@ class RadialShellPerturbation(PairPerturbation):
 
 
 class HighFrequencyPerturbation(PairPerturbation):
-    r"""An oscillatory pair error: large gradient, negligible coupling.
+    r"""An oscillatory pair error for testing gradient/projection mismatch.
 
     .. math::  \delta u(r) = a \, \sin(2\pi r / \lambda) \, S(r)
 
-    This is the concrete realisation of the "false alarm" of
-    ``docs/theory.md`` section 4.  Force error weights the error spectrum by
-    ``k^2``, so shrinking ``lambda`` at fixed ``a`` inflates ``RMSE_F`` as
-    ``1/lambda`` without bound.  The coupling to a smooth observable is an
-    integral of the oscillation against a slowly varying weight, which cancels
-    to leading order and leaves a residue of order ``lambda`` -- so at fixed
-    amplitude the coupling *falls* as ``lambda`` while the force error rises as
-    ``1/lambda``.  A model whose error is of this kind is reported as bad by
-    the standard metric and is in fact harmless.
+    Force error weights a radial oscillation's gradient, so shrinking
+    ``lambda`` at fixed ``a`` can inflate ``RMSE_F``. Under additional
+    smooth-coupling assumptions a declared observable may average over those
+    oscillations. This class constructs that hypothesis for a bounded test; it
+    does not imply that high-frequency errors are generally harmless or that
+    fitted MLIPs occupy this direction.
 
     Parameters
     ----------

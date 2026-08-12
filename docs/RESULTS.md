@@ -1,16 +1,19 @@
 # Results
 
-Every number here was produced by code in this repository on an equilibrated
-reference ensemble whose stationarity was verified. Methods are in
-`docs/methods.md`, the argument being tested in `docs/theory.md`, and the raw
-outputs in `results/` with a manifest recording the git commit that produced
-them.
+This document contains both historical results and their current audit status.
+Methods are in `docs/methods.md`, the argument being tested in
+`docs/theory.md`, and outputs in `results/`.  The exp09/exp10/exp11 production
+artefacts are **legacy exploratory evidence**: their manifests captured
+repository state at run completion rather than start, so they do not prove
+which source was executed.  They must not be used as release evidence.  The
+authoritative dispositions and claim ceilings are in
+`reviews/CURRENT_CLAIM_LEDGER.md`.
 
 Negative results and things that did not work are in §5 and §6, not buried.
 
 ---
 
-## 1. The headline
+## 1. Legacy fixed-cell construction
 
 Liquid argon, 108 atoms, T = 120 K, ρ\* = 0.790. Four error fields were added to
 the reference potential, each scaled so that its **force RMSE on the reference
@@ -27,21 +30,25 @@ At force RMSE = 4.0 × 10⁻³ eV/Å:
 | random (seed 0) | −0.430 | +5.778 | +5.320 ± 0.589 | 9.0 σ |
 | aligned | −0.582 | +10.206 | **+9.891 ± 0.611** | 16.2 σ |
 
-The same pattern holds at 1.0 × 10⁻³ eV/Å with all shifts scaled down by four.
+At 1.0 × 10⁻³ eV/Å the **first-order predictions** scale down by four; the
+noisier measured shifts do not.  The legacy table above is retained as an
+observation, subject to the provenance and replication limits below.
 
-Two things follow, and neither is an interpretation:
+Two bounded observations follow:
 
-**The reported metric cannot distinguish these models.** Their force RMSE agrees
-to 0.5 %. Any procedure that selects a model by force error would rank them as
-equivalent. One of them leaves the observable untouched and another moves it by
-sixteen standard errors.
+**A small force-RMSE separation coexists with a large target-point contrast.**
+The extreme fields differ by 0.52% in force RMSE and 10.11 pairs in their legacy
+target-bin point estimates. No practical RMSE-equivalence tolerance was frozen,
+and paired contrast uncertainty was not retained, so this is a provisional
+fixed-cell observation rather than exact equivalence, formal sufficiency, fitted-
+model prevalence, or selection-policy evidence.
 
-**The quantity that does distinguish them is the correlation.** The measured
+**Their ordering is associated with the constructed correlation.** The measured
 shift is a monotone, near-linear function of ρ(A, δU) at fixed force error —
 `figures/headline_mechanism.png`, panel (a) — which is what
 `Δ⟨A⟩ = −β σ_A σ_δU ρ` says it should be.
 
-## 2. The prediction works
+## 2. Legacy prediction points and unresolved calibration
 
 The "predicted" column above is `−β Cov₀(A, δU)` computed from the reference
 trajectory alone. **No molecular dynamics or Monte Carlo with the surrogate was
@@ -58,53 +65,51 @@ about that offset is 0.571 σ. An rms near one is therefore a systematic
 displacement plus a spread *smaller* than the quoted error bars — not eight
 independent predictions landing where they should. The eight are also not
 independent: every measured shift is (surrogate chain mean − reference chain
-mean) and all eight share one reference chain, so a single reference realisation
-displaces all of them together.
+mean) and all eight share one reference chain, which induces a common component
+that the rms summary does not model.
 
-`exp09` measures the size of that effect directly, with eight independent
-reference chains and four independent direct chains per field, decomposing the
-residual table into a reference-chain contribution, a field contribution, and
-the rest. The corrected statement is §5.5, and it is
-not the one this section made.
+Legacy `exp09` explores the size of that effect with eight reference chains and
+four direct-chain indices per field.  The direct random streams were reused
+across fields, so the 64 cells are not independent.  Its decomposition is
+descriptive evidence only; §5.5 states the remaining design and provenance
+limits.
 
-The practical payoff is unaffected by that distinction, and is the reason the
-prediction is worth calibrating: evaluating a model's effect on an observable
-costs one energy evaluation per stored frame instead of a full simulation.
+The computational-cost hypothesis remains worth testing: evaluating a model's
+effect on a stored observable costs one energy evaluation per stored frame
+instead of a full simulation.  No decision-utility or cost-matched selection
+experiment (Gate C) has yet shown a practical payoff.
 
-### 2.1 The second-order term works as a correction and fails as a gate
+### 2.1 The second-order term is an exploratory correction and fails as a gate
 
 These are different claims about the same quantity and the difference is the
 whole of §5.4 and §5.5. Stated together so neither is read as the other:
 
-**As a correction, added to the prediction, the second-order term does its job.**
-Across `exp09`'s 64 cells it takes the systematic offset from **+0.781 σ to
-+0.089 σ** and removes the field-dependent structure entirely — the spread of
-field effects falls from 0.698 to 0.422 against a direct-chain noise floor of
-0.435, so what looked like a real per-field bias at first order is exactly the
-truncation. The largest first-order field effect belongs to the `aligned` field
-(+1.36 σ), which is the field with the largest |ρ(A, δU)| and therefore the one
-where a second-order correction should bite hardest. That is the mechanism
-predicting where it is needed and then supplying it.
+**As an exploratory correction in legacy exp09, the second-order term changes
+the decomposition.** Across its 64 non-independent cells it takes the grand
+mean from +0.781 σ to +0.089 σ and the apparent field-effect spread from 0.698
+to 0.422 against a nominal direct-chain noise floor of 0.435.  This is
+consistent with truncation contributing, but the non-IID streams and incomplete
+joint uncertainty propagation prevent a mechanism or calibration claim.
 
-For a null-space field the first-order term vanishes by construction, so any
-residual effect must be second order; at both force levels the measured residual
-agrees with the second-order estimate (−0.540 and −0.439 pairs, both within the
-error bar). That case is a weaker test than it looks — there is nothing for the
-correction to be added to — but it points the same way.
+For a null-space field the first-order term vanishes by construction, so a
+resolved physical residual would begin at higher order.  The two legacy
+measurements are not precise enough to validate that residual or its coverage;
+agreement “within an error bar” is a non-rejection, not confirmation.
 
 **As a gate, thresholding on the ratio of second to first order, it does not
-work at all.** Over 89 cases with an independent direct measurement its
+work at all.** Over 89 recorded cases with a direct comparator (not 89
+independent experimental units) its
 false-trust rate is 19 % and its AUC is 0.556 (§5.4). A correction that improves
 the average is not the same thing as a statistic whose size tells you which
-individual case will disagree, and the second-order term is the first without
-being the second.
+individual case will disagree.  Whether it is a reliable correction requires
+the v2 independent-unit rerun; it is already unsuitable as a gate.
 
-> **A correction to this document.** An earlier version of this section said the
-> opposite — that adding the second-order term makes the residuals worse on
-> every measure. That came from `exp09` run under `--quick`, at 5 % of
-> production chain length, where the second-order estimate is noise. The
-> manifest recorded `quick_mode: true` and the figure script refuses to read
-> such a run, but the number reached prose anyway. The production run is above.
+> **Historical correction, not a validation.** An earlier version said the
+> opposite because it promoted an `exp09 --quick` result into prose.  The later
+> legacy production artefact gives the decomposition above, but its shared
+> streams and invalid start-of-run provenance prevent either run from settling
+> calibration.  The v2 implementation repairs those design/provenance defects;
+> production has not been rerun.
 
 ### 2.2 How much data the construction needs
 
@@ -121,15 +126,16 @@ evaluating on the other:
 | 2000 | 0.028 ± 0.078 |
 
 Against the aligned field's 10.2 pairs at the same force error, that is a
-suppression of roughly 400× **on this construction chain**. Across six
-independent construction chains the same ratio has a median of 26× and a range
-of 16–467× (§5.6), so this chain was a favourable draw and the figure to carry
-forward is the median, not this one.
+suppression of roughly 400× **on this construction chain**. Across six legacy
+fixed-cell construction clusters the same unstable ratio has a median of 26×
+and a range of 16–467× (§5.6).  Because its denominator is near zero and the
+run lacks valid start-of-run provenance, neither 400× nor 26× is a release
+estimate; the cluster-level aligned-minus-null contrast is the safer readout.
 
 An earlier attempt at 30 construction frames gave 1.2–1.6 pairs — the null space
-of a covariance estimated from 30 samples is the null space of the noise. The
-construction is only as good as the covariance estimate, and the table above is
-where that stops mattering.
+of a covariance estimated from 30 samples is strongly affected by sampling
+noise.  The tested counts above show no monotone degradation, but they do not
+identify a general sample-size threshold.
 
 ## 3. Orthogonality is specific to the observable it was built for
 
@@ -152,7 +158,7 @@ computed before anyone says what the model is for, that ranks models correctly
 for whatever comes next. What can be computed is a *vector* of response scores,
 one per observable anyone cares about, and a scalar built from it afterwards.
 
-## 3a. Force error works across decades and fails within a band
+## 3a. A legacy two-regime pattern in one fixed, clustered zoo
 
 This is the result that refuted the project's own prediction, and it is more
 useful than the prediction was.
@@ -161,12 +167,12 @@ useful than the prediction was.
 downstream physics — is not supported.** Over a zoo of 34 surrogates spanning
 three decades of force RMSE (5 × 10⁻⁴ to 1.8 × 10⁻¹ eV/Å), the rank correlation
 between force RMSE and measured observable error is **ρ = 0.83 [0.68, 0.92]**.
-That is strong. A model a hundred times worse in force error really is worse,
-and no theory was needed to say so.
+Within this fixed zoo that is a strong descriptive association: widely separated
+members tend to have the same ordering under the two quantities.
 
-What force RMSE cannot do is choose among models of *comparable* force error —
-which is the only situation a practitioner is ever in. Restricting to the 15
-members whose force RMSE differs by a factor of 2.6:
+Within this constructed zoo, force RMSE resolves less among members of
+comparable force error.  Restricting descriptively to the 15 members whose force
+RMSE differs by a factor of 2.6:
 
 | | across the zoo | within the band |
 |---|---|---|
@@ -187,13 +193,16 @@ the raw spread is **12.1×**, and excluding the two members that were
 are the answer rather than evidence for it) the spread among the remaining 13 is
 **6.5×**. Sixfold is the number to quote.
 
-Inside the band the physics still varies by roughly a factor of six, force error
-explains almost none of it, and the response prediction explains nearly all of
-it. See `figures/headline_regimes.png`.
+Inside this selected band the observable-error point estimates vary by roughly a
+factor of six; the corresponding rank correlations are 0.343 for force RMSE and
+0.943 for the response prediction.  These are fixed-zoo descriptions, not
+population-level explained variance or model-selection performance.  See
+`figures/headline_regimes.png`.
 
 **That window was chosen after looking at the data, so it does not stand on its
-own.** `scripts/band_robustness.py` removes the choice by sweeping every
-multiplicative window of every width across the whole force-RMSE range:
+own.** `scripts/band_robustness.py` reduces dependence on that single window by
+sweeping every multiplicative window of every width across the same force-RMSE
+range.  It does not remove clustering or create independent model draws:
 
 | window width | placements | median ρ (force) | median ρ (prediction) |
 |---|---|---|---|
@@ -211,16 +220,17 @@ gives ρ = 0.58, not 0.34. The reported value sits at the **16th percentile** of
 same-width placements. It was a favourable window, and quoting it alone
 overstated the effect.
 
-The result that survives without any window selection: at widths of 3× or below,
-the median ρ(force) over all placements is **0.32–0.34** and never exceeds 0.90,
-while the median ρ(prediction) is **0.90–0.94**. Across all 286 windows of all
-widths, the prediction is above 0.8 in **100 %** of them; force error is below
-0.5 in 43 %. The narrower the comparison — that is, the closer to the situation
-of choosing between comparable models — the less force error resolves and the
-more the prediction does.
+The descriptive pattern that survives the window sweep in this fixed zoo: at
+widths of 3× or below, the median ρ(force) over all placements is **0.32–0.34**
+and never exceeds 0.90, while the median ρ(prediction) is **0.90–0.94**. Across
+all 286 overlapping windows of the same clustered points, the prediction is
+above 0.8 in **100 %** of them; force error is below 0.5 in 43 %.  Those repeated
+windows are sensitivity calculations, not 286 independent replications and not
+a test of candidate-selection utility.
 
 This check was run before any external review, and it found against the way the
-result had been presented. The window-free statement is the one to quote.
+result had been presented.  The full window-sweep description, with its
+clustered-unit caveat, is the one to quote.
 
 **What this does and does not license.** "Force error is a coarse filter, not a
 selector" is how this was written, and as a general statement about model
@@ -237,11 +247,11 @@ The supported form, which is narrower and is what §3a should be read as
 claiming:
 
 > Within this fixed zoo of designed error fields, and at every window width of
-> 3× or below, force RMSE fails to resolve the ordering of observable error
-> (median ρ 0.32–0.34) while the response prediction resolves it (median ρ
-> 0.90–0.94). Whether this holds among *fitted* models of comparable force error
-> is a separate question, and requires a pre-registered selection experiment on
-> models this study did not produce.
+> 3× or below, the median rank correlation with observable error is 0.32–0.34
+> for force RMSE and 0.90–0.94 for the response prediction.  These overlapping
+> windows reuse a clustered, designed set.  Whether the contrast recurs among
+> *fitted* models of comparable force error is a separate question requiring a
+> pre-registered selection experiment on models this study did not produce.
 
 Independent evidence bears on the wider claim in both directions and should be
 read alongside it. Gawkowski *et al.*'s finite-temperature benchmark of 15
@@ -286,12 +296,12 @@ at it:
 | 0.71 × noise | 0.83 [0.64, 0.91] | 0.34 [−0.23, 0.80] | 0.94 [0.62, 0.97] |
 | 1.41 × noise | 0.83 [0.55, 0.88] | 0.34 [−0.20, 0.80] | 0.94 [0.40, 0.95] |
 
-**The two-regime description survives, and this one goes in the study's
-favour.** Even at a deliberately excessive 1.41 × noise redraw — well above the
+**The two-regime description survives this uncertainty sensitivity analysis
+within the fixed zoo.** Even at a deliberately excessive 1.41 × noise redraw — well above the
 `noise/√8` the norm of an eight-component vector actually carries — the
 across-decades correlation still excludes zero, the within-band one still
-contains it, and the prediction still excludes it inside the band. The omitted
-term was real and it was not load-bearing.
+contains it, and the prediction still excludes it inside the band.  This does
+not repair the clustered sampling frame or support fitted-model prevalence.
 
 The same calculation says something sharper about which points in
 `figures/headline_regimes.png` are measurements. Redrawing each member's norm at
@@ -306,11 +316,11 @@ The same calculation says something sharper about which points in
 
 These are upper limits drawn as points. `null_f4e-03` is the one that matters:
 it was the denominator of the 30× spread struck above, and its observable error
-is unresolved from zero on nearly half of all redraws. Striking that ratio was
-not a concession to the review's argument; it is what this calculation says
-independently.
+is unresolved from zero on nearly half of all redraws. Striking that ratio
+follows from this sensitivity calculation; it is not an independent
+experimental replication.
 
-## 3b. The same thing happens to models that were actually fitted
+## 3b. A same-system fitted-model feasibility arm
 
 Ten models — a pair spline, a linear ACE-style basis, Behler-Parrinello networks
 and E(3)-equivariant networks — fitted to 400 configurations of Lennard-Jones
@@ -333,16 +343,15 @@ observable, the reference chain, the training pool and the code path; the two
 neural-network families have two seeds each. And the decomposition on the right
 of the table shows the same signature in two of the three arms as in §2: a
 common negative offset with a scatter smaller than the quoted errors. The
-400-configuration arm, which is the one whose residuals do change sign, has a
-scatter of a full standard error and no significant offset — so it is the only
-one of the three that looks like a calibration result, and it is the one with
-the fewest usable models.
+400-configuration arm, whose residuals change sign, has a scatter of about one
+quoted standard error and no resolved common offset.  It is closest to the
+nominal pattern, but has the fewest usable models and does not by itself validate
+calibration.
 
-What this arm does establish is narrower and still worth having: **the response
-calculation can be applied to training-induced error fields, not only to
-designed ones, and produces predictions of the right size.** It is a feasibility
-result. It is not an external-validity check, because nothing about it is
-external.
+The retained observation is narrower: **the response calculation can be
+applied to these training-induced error fields, not only to designed ones.** It
+is a same-system feasibility result.  The residual decomposition above does not
+validate calibration, and nothing about this arm is external.
 
 The low-budget arm also produced the guard's best moment. Two E(3)-equivariant
 networks fitted to 40 configurations gave apparent observable shifts of **−95.5
@@ -353,16 +362,14 @@ way to the models' own equilibria rather than differences between ensembles.
 That is the second time the same check has caught a result that would have been
 reported (§4 of `docs/methods.md` is the first).
 
-Most of the zoo is uninformative for a different reason than expected: on this
-reference potential, at this data budget, nearly every architecture is good
-enough that its observable error is indistinguishable from zero. Force RMSE
-spans 0.0004–0.0061 eV/Å and buys almost no measurable difference. **The rank
-correlations from this arm are therefore not reportable** — with ten models whose
-observable errors are mostly at the noise floor, every confidence interval spans
-zero (force RMSE: ρ = 0.43 [−0.35, 0.96]). Nothing about ranking can be
-concluded from it, and nothing is.
+Most of the arm is uninformative for ranking: its legacy observable-error
+estimates are largely unresolved from zero at the available precision. Force
+RMSE spans 0.0004–0.0061 eV/Å, but **the rank correlations from this arm are not
+reportable** — with ten models whose observable errors are mostly at the noise
+floor, every confidence interval spans zero (force RMSE: ρ = 0.43 [−0.35,
+0.96]). Nothing about ranking can be concluded from it.
 
-But one pair in the zoo is worth the whole arm:
+One pair in the zoo is a hypothesis-generating observation:
 
 | model | difference | force RMSE | predicted | measured |
 |---|---|---|---|---|
@@ -370,152 +377,93 @@ But one pair in the zoo is worth the whole arm:
 | `egnn_c8_s1` | **initialisation seed only** | 0.0061 | −3.03 | **−4.10 ± 0.69 (6.0 σ)** |
 
 Same architecture, same training data, same hyperparameters. Their force errors
-differ by 36 %; their observable errors differ by a factor of 27, one
-indistinguishable from zero and the other significant at six standard errors.
-Anyone selecting between these two on force RMSE would see a 36 % difference and
-reasonably call them equivalent.
+differ by 36 %; their legacy observable-error point estimates differ by a factor
+of 27, with one unresolved from zero and the other reported at six standard
+errors.  With only two initialisation seeds this is not a selection experiment
+and does not estimate a seed-to-seed distribution.  The response calculation's
+larger predicted magnitude coincided with the larger measured magnitude in this
+pair.
 
-The response formula predicted both, from the reference trajectory alone.
+This is compatible with the band pattern of §3a appearing in fitted models, but
+**it is n = 2 and should be read as an observation that generates a hypothesis,
+not as a regularity.** Two seeds cannot establish that seed-to-seed observable
+variance generally exceeds what force error anticipates, nor validate the
+response calculation as a selector.  Whether the pattern recurs is what Gate B
+would test.
 
-This looks like the band effect of §3a appearing in fitted models rather than
-designed ones, between two runs of the *same* model — as narrow a band as it is
-possible to construct. **It is n = 2, and should be read as an observation that
-generates a hypothesis rather than as a regularity.** Two seeds cannot establish
-that seed-to-seed observable variance generally exceeds what force error
-anticipates; they can establish that it happened once, here, and that the
-response calculation saw it coming. Whether it is typical is exactly what the
-larger seed sweeps in the Gate B plan (`reviews/CLAUDE_RESPONSE.md`) are for.
-
-## 4. At fixed force error, the damage still varies fivefold
+## 4. A legacy fixed-zoo width sweep gives a fivefold range
 
 Holding force RMSE constant to 0.0 % and varying only the **width** of the error
 field in `r` (`figures/headline_mechanism.png`, panel b), the measured
 observable error spans a factor of five, from 2.1 to 10.0 pairs.
 
-The first-order prediction tracks this across the whole range.
+The first-order point prediction follows the ordering across the tested width
+range; this remains a descriptive result for the fixed constructed fields.
 
 ## 5. What did not work
 
 ### 5.1 The width^{3/2} scaling is wrong
 
 `docs/theory.md` originally offered a scaling estimate predicting that at fixed
-force error the observable damage grows as `width^{3/2}`. Measured on a verified
-ensemble, the exponent is **0.56** (direct) and **0.45** (first-order
-prediction). The estimate is off by a factor of three in the exponent.
+force error the observable damage grows as `width^{3/2}`.  In the legacy
+fixed-zoo output, the fitted exponent is **0.56** (direct) and **0.45**
+(first-order prediction). The estimate misses that legacy pattern by about a
+factor of three in the exponent.
 
 The retraction was made in the theory document before this measurement, on
 analytic grounds: both inputs to the estimate have regimes of validity that a
-real system leaves quickly. The measurement confirms it was right to retract.
+real system leaves quickly. The legacy pattern is consistent with that analytic
+retraction.
 What survives is the weaker and still sufficient statement that force error and
 observable error depend differently on the shape of the error field, so their
 ratio is not a constant — §4 measures that ratio varying by five.
 
-### 5.2 An open discrepancy, with three explanations ruled out
+### 5.2 The exp06 discrepancy was not reproduced, but remains unresolved
 
-In the amplitude sweep, at the smallest perturbation, the three estimates
-disagreed: first order −3.835, exact reweighting −3.884, direct sampling
-−1.948 ± 0.821. The two sharing the reference samples agreed to 1.3 %; the one
-requiring an independent chain disagreed with both by a factor of two.
+In the legacy exp06 amplitude sweep, at the smallest perturbation, first order
+(−3.835), exact reweighting (−3.884) and direct sampling (−1.948 ± 0.821) did
+not coincide.  A later six-seed check at a **different bin** gave a direct mean
+of +2.377 ± 0.144 against same-sample estimates +1.725 ± 0.101 and +1.757.  That
+different-bin check cannot identify the cause of the original discrepancy or
+validate its uncertainty model.
 
-The obvious diagnosis was that the direct estimate's error bar was too small:
-blocking measures error *within* a chain, and a difference between two chains
-also carries the offset between their slow modes, which no within-chain
-estimator can see. `scripts/check_between_chain_scatter.py` measured that offset
-by sampling both potentials from six independent seeds each.
+Legacy exp10 then evaluated both bins with multiple reference and surrogate
+chains.  Its point estimates did not reproduce the old gaps: direct minus MBAR
+was +0.047 pairs at 4.25 Å and +0.160 at 5.25 Å.  This is evidence of **point
+non-recurrence**, not evidence of equivalence and not a causal diagnosis of the
+old observations.
 
-**The diagnosis was wrong.** Measured on the same perturbation and a single bin:
+The prospectively recorded legacy equivalence result is inconclusive: every comparison was
+reported `underpowered`, with intervals wider than the ±0.5-pair equivalence
+margin.  More seriously, the legacy relaxation gate subtracted uncertainty
+from the observed arm gap instead of adding it.  Under the corrected direction
+the gate fails, so incomplete relaxation is **not excluded** and the primary
+end-to-end endpoint is not evaluable from that run.  The primary direct estimate
+also used the final 10 % of each chain, only 150 frames, and the reweighting/MBAR
+bootstrap concatenated chains instead of preserving chain-level units.
 
-| quantity | value |
-|---|---|
-| within-chain blocking error | 0.589 pairs |
-| between-chain scatter | 0.312 pairs |
-| ratio | **0.53** |
+No result identifies the exp06 values as single-chain excursions, proves an
+estimator bias, or proves the absence of one.  The v2 implementation corrects
+the gate, chain-level uncertainty propagation, fixed-discard analysis and
+start-of-run provenance. A quick end-to-end smoke completed and was correctly
+marked `smoke_only`; its failed gates are not scientific results. The production
+experiment has **not** been rerun;
+until then P0-1 remains partially resolved and release-blocking.
 
-Blocking is *conservative* by about a factor of two, not optimistic. The
-measured shift across the six independent chain pairs is
-`[2.553, 2.773, 2.349, 2.611, 1.788, 2.188]` — mean **+2.377 ± 0.144**, single
-pair spread 0.354, against the ±0.832 the sweep had quoted.
+### 5.3 The dilute-gas residual and an unmatched N=2 sanity check
 
-So the direct measurement is reliable and the discrepancy is real. On a fresh
-3000-frame reference chain the same-sample estimators give **+1.725 ± 0.101**
-(first order) and **+1.757** (exact reweighting, ESS fraction 0.83) — a 35 %
-systematic difference from the +2.377 that direct sampling measures.
+The legacy low-density calculation at ρ\* = 0.079 gives a 4.7 σ rms / 6.5 σ
+worst disagreement between the sampled estimators and a hand-derived
+`g(r) = exp(−βu) + O(ρ)` approximation
+(`results/validation/low_density_limit.txt`).  That disagreement remains
+unexplained.  Finite-density corrections are one live explanation, not an
+established cause.
 
-Three explanations are excluded by measurement:
-
-- **Not the error bars.** Between-chain scatter is half the quoted error.
-- **Not the second-order truncation.** First-order and the all-orders
-  reweighting identity agree with each other to 2 %.
-- **Not incomplete relaxation of the perturbed chain.** That would bias the
-  measured shift *toward* the reference and make it smaller in magnitude; it is
-  larger.
-
-Two things about that third bullet, both of which the external review pressed on
-and both of which turned out to matter.
-
-**The exclusion of incomplete relaxation was an argument, not a measurement.**
-It is also incomplete on its own terms: it explains why bin 5.25 Å cannot be a
-relaxation artefact, and says nothing about bin 4.25 Å, where the same
-perturbation gives a direct shift *smaller* in magnitude than the prediction at
-every one of exp06's seven amplitudes. Those are opposite signs in two bins of
-one experiment. `exp10` measures both, with surrogate chains started from
-configurations equilibrated under the reference *and* under the surrogate, so
-relaxation is bracketed rather than argued about.
-
-**The prediction's error bar was the wrong one.** The ±0.101 quoted on the
-+1.725 is a within-chain blocking error from a *single* reference chain. It
-describes how well that chain determines its own covariance and says nothing
-about how much the covariance moves between chains — which is exactly what a
-comparison against an independently sampled ensemble needs. If the between-chain
-scatter of the prediction is comparable to 0.1 pairs, the 3.7 σ is arithmetic.
-`exp10` computes the prediction separately from each of eight reference chains
-and reports that scatter.
-
-**The results are in §5.7 and the question is closed.** With eight reference
-chains and sixteen surrogate chains, direct sampling and the reference-based
-estimators agree to +0.047 pairs at 4.25 Å and +0.160 at 5.25 Å; the linear
-prediction reproduces exp06's own −3.835 to 0.4 %, and it is exp06's direct
-value of −1.948 that fails to reproduce, at 2.7 σ on its own error bar. The
-bracketing arms exclude incomplete relaxation by measurement. The 35 % and the
-factor-of-two were single-chain excursions in opposite directions.
-
-Note also that §5.7 refutes the second of the two objections raised here — the
-prediction's between-chain SEM is *smaller* than its blocking error, not larger,
-so the significance was never inflated by that.
-
-### 5.3 The dilute-gas closed form
-
-The estimator was checked against the exact `g(r) = exp(−βu)` limit at ρ\* =
-0.079. The estimator and the exact reweighting identity agree to under 2 % in
-every bin. Both disagree with a hand-derived closed form by **4.7 σ rms, 6.5 σ
-at worst** over seven bins (`results/validation/low_density_limit.txt`). An
-earlier version of this section quoted 5.4 σ, which had no deposited
-computation behind it; the numbers here are from a re-run whose log is in the
-repository.
-
-The hand calculation needed one correction along the way that is worth recording
-because the estimator gets it right automatically: the number of pairs is
-conserved, so a perturbation that depletes one shell must enrich others, and the
-pair-separation distribution is *normalised*. Dropping the normalisation term
-gives a prediction wrong by a factor of ten in the outer bins and wrong in sign
-in the tail. A covariance is mean-subtracted, and that subtraction *is* the
-normalisation, so the estimator never had the problem.
-
-The residual 4.7 σ is most likely the `O(ρ)` correction to `g = exp(−βu)`, which
-at ρ\* = 0.079 is not negligible. What is being compared is an approximation
-valid to `O(ρ)` against an estimator that makes no such approximation, so the
-disagreement is as easily the benchmark's as the estimator's — and a test whose
-reference is approximate cannot certify one that is not.
-
-**The review asked for a density series or an exact `N = 2` calculation. Here is
-the second** (`scripts/validate_two_particle_exact.py`,
-`results/validation/two_particle_exact.json`). At two particles the pair
-distribution is not a series but a one-dimensional integral: with minimum image
-and a potential of range below half the box, the separation density is exactly
-`∝ 4πr² exp(−βu)` inside the minimum-image sphere, and the normalisation is
-`L³` plus a cutoff-sphere correction because the Boltzmann factor is one outside
-the range. Both are quadratures good to 10⁻¹⁴. There is no `O(ρ)` term left to
-blame anything on.
+`scripts/validate_two_particle_exact.py` supplies a useful exact-quadrature
+sanity check, but it is **not a matched test of the low-density run**.  It uses
+N=2 and different temperature, cutoff, bin-range and perturbation settings.
+The amplitude sweep also reuses one reference chain, so its six rows are
+correlated transformations rather than six independent coverage tests.
 
 | βσ(δU) | 2nd/1st | ESS | \|exact shift\| | linear error | reweighting error | reweighting, in σ |
 |---|---|---|---|---|---|---|
@@ -526,29 +474,13 @@ blame anything on.
 | 1.306 | 3.775 | 0.857 | 0.07978 | **+275 %** | −1.8 % | 0.97 |
 | 2.612 | 7.549 | 0.830 | 0.08138 | **+636 %** | −1.8 % | 0.82 |
 
-Three results, and the middle one is the answer to §5.3's opening.
-
-**The sampler reproduces an exactly known ensemble** — 0.66 σ rms over four
-bins. Without that nothing below would be interpretable.
-
-**The estimator machinery is exact.** Exponential reweighting reproduces the
-exact shift to 1.5–1.8 % at every amplitude, across a 200-fold range of
-perturbation strength, at 0.82–0.97 σ throughout. That residual 1.7 % is the
-reference chain's own sampling error propagating, and the error bars cover it.
-**So the 4.7 σ of the dilute-gas check is a property of that check's `O(ρ)`
-reference, not a defect in the estimator.**
-
-**Linear response has a measurable breakdown point.** Its bias crosses 10 % at
-βσ(δU) ≈ 0.21, where the second-order ratio reads 0.604, and reaches 636 % by
-βσ = 2.6. This is the first quantitative statement in this repository about
-*where* the truncation fails rather than the assertion that it must somewhere.
-
-One caveat bounds all three. With a single pair, βσ(δU) at a given amplitude is
-far below its value in the 108-atom system, so this sweep reaches the breakdown
-regime only through amplitudes no fitted model would have. It establishes that
-the machinery is correct and that the truncation degrades in an orderly way; it
-does not transfer a breakdown threshold to a many-body system, where δU is a sum
-over many pairs and its distribution has a different shape.
+The N=2 sampler lies 0.66 σ rms from its exact quadrature over four bins and the
+reweighted point estimates lie 1.5–1.8 % from it in this setup.  This is a V1
+implementation sanity check only.  It cannot attribute the legacy 4.7 σ
+residual to `O(ρ)`, validate many-body uncertainty, or transfer a threshold to
+N=108.  The grid shows less than 10 % linear bias at βσ=0.052 and more than 10 %
+at βσ=0.209; it therefore **brackets** a crossing and does not locate a
+pre-registered “breakdown point” at 0.21.
 
 #### The benchmark found a bug in a claim-bearing module
 
@@ -565,12 +497,11 @@ the shift the bootstrap error of the *reweighted mean alone*. As βδU grows the
 weights approach a hard 0/1 exclusion; the reweighted mean of a depleted bin
 becomes the same number in every resample and its error genuinely does go to
 zero. The shift does not — it still carries all of the reference mean's
-uncertainty, and none of it was being reported. Fixed by resampling the
-difference as one statistic, which also handles the correlation between the two
-terms by construction. `tests/test_response.py` now asserts the monotone rise
-and the hard-exclusion limit, and asserts that the diagnostics stay healthy,
-because that is what makes the failure worth a test. The σ column above is from
-the corrected code.
+uncertainty, and none of it was being reported.  The implementation was changed
+to resample the difference as one statistic, which handles the within-chain
+correlation between its two terms.  The bug fix and its unit tests are valuable,
+but claim-bearing legacy experiments that used old code or invalid provenance
+require clean reruns; prose cannot retroactively repair their uncertainty.
 
 ### 5.4 The second-order warning light does not work
 
@@ -579,9 +510,9 @@ of the second-order cumulant term to the first is a self-diagnostic: below a
 threshold the linear prediction can be trusted, above it not.
 
 That is a screening test, and a screening test is judged by its error rates on
-cases where the truth is known some other way. Those are computable from every
-case in this repository where both the diagnostic and an independent direct
-measurement exist — 89 of them, across `exp06`, two `exp03` arms and `exp09`
+cases where the truth is known some other way. Those were computed over 89
+recorded cases with a direct comparator — **not 89 independent units** — across
+`exp06`, two `exp03` arms and legacy `exp09`
 (`scripts/warning_light_calibration.py`, output in
 `results/validation/warning_light_calibration.json`):
 
@@ -609,20 +540,20 @@ binomial interval is optimistically narrow.
 **The claim is withdrawn.** The ratio is reported alongside every prediction as
 a descriptive statistic and is not used to certify anything.
 
-This is *not* a finding that the second-order term is useless. Added to the
-prediction it removes a real systematic offset and a real field-dependent bias
-(§2.1, §5.5). What it cannot do is tell you in advance which case will be wrong,
-and those are different jobs: an AUC of 0.556 says the ratio's size carries
-almost no information about whether that particular prediction will disagree,
-however useful the term itself is when added.
+This is *not* a finding that the second-order term is useless.  Legacy exp09
+suggests that adding it changes the average residual decomposition, but the
+non-IID field streams and invalid provenance prevent a confirmatory claim.  In
+any event, the ratio's size has not been shown to identify which individual
+prediction will disagree and is not a certification gate.
 
-### 5.5 What the "1.01 σ" actually was
+### 5.5 What legacy exp09 suggests about the "1.01 σ"
 
-`exp09`, 8 independent reference chains × 8 designed error fields × 4
-independent direct chains per field = 64 residuals, 80 minutes,
-`results/exp09_calibration_replication/`. Its manifest records
-`dirty_paths: ['results/exp09_calibration_replication/']` — the only difference
-between the working tree and commit `9ffab92` was the experiment's own output.
+Legacy `exp09` contains 8 reference chains × 8 designed error fields × 4 direct
+chain indices = 64 residual cells (`results/exp09_calibration_replication/`).
+Those cells are **not IID**: each chain index reuses its direct random stream
+across all fields.  Its manifest also captured repository state at run end and
+cannot prove which source was executed.  The numbers below are therefore an
+exploratory decomposition, not a calibration result.
 
 The residual table decomposes because the three error sources have different
 footprints: a reference chain's error in ⟨A⟩ is constant down a row, a field's
@@ -639,54 +570,51 @@ test is a ratio rather than a threshold.
 | **column (field) spread** | **0.698 σ** | **0.422 σ** | 0.435 |
 | interaction rms | 0.997 σ | 1.267 σ | — |
 
-Four things follow, and the first is the answer to the review's question.
+Four patterns appear in this legacy table; none identifies a unique mechanism.
 
-**The offset is a property of the reference draw.** The eight row effects are
+**The offset is compatible with a reference-draw contribution.** The eight row effects are
 [+1.69, +1.83, −2.54, −0.28, +0.47, +0.59, −1.34, −0.41] σ and they track their
 own chains' means: the two lowest reference chains (⟨A⟩ = 209.66) give the two
 most positive rows, the highest (211.38) gives the most negative. exp07's eight
 residuals were all *negative*; exp09's are 42/64 *positive*. A quantity whose
-sign flips with the reference draw is a realisation, not a bias. The review's
-P0-2 is confirmed and its mechanism identified.
+sign changes across reference draws, which is evidence against treating the
+original all-negative pattern as eight independent calibration successes.  It
+does not by itself prove an unbiased estimator or identify the whole offset.
 
-**Most of the remaining offset is the truncation, and the second-order term
-removes it.** Adding that term takes the grand mean from +0.781 σ to +0.089 σ
+**Adding the second-order term changes the legacy decomposition.** It takes the
+grand mean from +0.781 σ to +0.089 σ
 and the field-effect spread from 0.698 to 0.422 against a noise floor of 0.435 —
 a variance ratio of 2.58 falling to 0.94. The largest first-order field effect
 is the `aligned` field's +1.36 σ, and `aligned` is the field with the largest
 |ρ(A, δU)|, which is exactly where a second-order correction should be largest.
-This was pre-registered in the experiment's docstring as the test of whether the
-column structure is the truncation showing itself, and it is.
+This pattern is consistent with truncation contributing, but shared streams and
+the missing joint chain-level uncertainty prevent a confirmatory attribution.
 
-**The prediction's own error was missing from the denominator, and it is the
-whole of the interaction.** The residuals were normalised by
+**The prediction's own error was missing from the denominator and is of the
+same order as the interaction.** The residuals were normalised by
 `sqrt(direct_sem² + reference_error²)`, which describes the *measurement* and
 omits the prediction's Monte Carlo error — a per-cell quantity, the only one with
 an interaction footprint. `scripts/residual_variance_budget.py` finds the
 observed interaction (0.997 σ) is 1.19 × the omitted term (0.840 σ), and
-restoring it takes the rms from 1.985 σ to 1.434 σ. The review's complaint that
-prediction uncertainty was never propagated is correct and this is its size.
+restoring it takes the rms from 1.985 σ to 1.434 σ.  This post-hoc variance
+budget does not replace joint chain-level propagation in a confirmatory run.
 
-**What is left over is the error bar on the reference chain.** The row spread is
+**The reference-chain error model is also unstable.** The row spread is
 1.477 σ against 0.898 predicted, a factor 1.64; and directly, the scatter of the
 eight reference means (0.591 pairs) exceeds their mean blocking error (0.456) by
-1.30. Both say the same thing: blocking underestimates how much ⟨A⟩ moves
-between independent chains here. Note that this contradicts
+1.30.  This legacy cell suggests blocking underestimates scatter across these
+reference chains.  It contradicts
 `scripts/check_between_chain_scatter.py`, which measured the ratio at **0.53**
 — blocking conservative by a factor of two — on a different bin of the same
 system (§5.2). Two measurements of the same kind of quantity, giving opposite
 answers, mean the blocking error's reliability is itself variable and should not
 be assumed in either direction.
 
-**So the corrected claim.** Predicted and measured observable shifts agree with
-no detectable systematic bias once the second-order term is included
-(+0.089 σ over 64 cells) and no field-dependent structure beyond direct-chain
-noise. The residuals are wider than the quoted errors by roughly 1.4 ×, and that
-excess is accounted for: the prediction's own error was omitted from the
-denominator, and the reference chain's blocking error understates its
-between-chain scatter. Neither is a defect in the response formula. **What was
-wrong was the error bar, not the estimator** — and the "1.01 σ rms" was never
-evidence either way.
+**Current ceiling.** The table suggests that reference-draw variation,
+truncation and omitted prediction uncertainty can all matter.  It cannot show
+that there is no systematic bias, that direct-chain noise explains all field
+structure, or that “only the error bar” was wrong.  The original 1.01 σ was not
+a calibration statistic, and P0-2 remains only partially resolved.
 
 #### A design flaw in exp09, found in its own output
 
@@ -695,29 +623,26 @@ no dependence on the field. All eight fields therefore share four random
 streams — the same common-random-number entanglement the review criticised in
 exp07, reproduced in the experiment written to fix a different problem.
 
-Its size is measurable from the deposited chain means. The component shared
-across fields at fixed chain index is 0.134 pairs against a per-field
-chain-to-chain sd of 0.401, so about 11 % of the direct-chain variance. The
-consequence is one-directional: shared streams make the per-field direct errors
-more alike, which *lowers* the column-effect noise floor and so makes the test
-for field structure conservative rather than permissive. It does confound the
-grand mean with a common direct-chain draw, which is why the grand mean is
-reported alongside the row and column structure rather than on its own.
+The component shared across fields at fixed chain index is 0.134 pairs against
+a per-field chain-to-chain sd of 0.401, about 11 % of the legacy direct-chain
+variance.  This invalidates an IID reading of the 64 cells and confounds field
+comparisons with chain-index effects.  The direction and magnitude of the
+resulting error must be propagated from a declared paired design; aggregate
+post-hoc arguments do not establish that it is necessarily conservative.
 
-The seeds are left as they were run. Editing them now would break the match
-between the deposited numbers and the source digest the manifest records, which
-is the thing this repository has just finished building.
+The legacy artefacts are retained unchanged as an audit record.  The
+`exp09_calibration_replication_v2` code is repaired to use field-specific
+streams and start-of-run provenance; production has not been rerun.
 
-### 5.6 The counterexample replicates; its headline suppression does not
+### 5.6 A fixed-cell legacy counterexample replication
 
 `exp11`, review item P0-3. exp07 established the aligned-minus-null contrast
 once, from one construction trajectory, with two force levels that are the same
-field rescaled and two direct runs sharing a random stream. This repeats it with
-the **construction cluster as the experimental unit**: six clusters, each with
-its own construction trajectory, its own disjoint evaluation trajectory and its
-own direct chains, sharing nothing but the potential, the target and the basis
-geometry. Estimand, matching tolerance, minimum meaningful effect and decision
-rule were fixed in the module docstring before the run.
+field rescaled and two direct runs sharing a random stream. Legacy exp11 repeats
+the construction in six fixed-cell clusters. Construction and evaluation
+trajectories differ by cluster, but direct random streams were reused across
+fields inside each cluster and the manifest has invalid start-of-run
+provenance. The cluster is the only defensible top-level unit.
 
 | cluster | 0 | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|---|
@@ -727,56 +652,60 @@ rule were fixed in the module docstring before the run.
 **Mean +10.671 pairs, 95 % CI [+10.105, +11.238]** with the cluster as the unit,
 against a pre-registered minimum meaningful effect of 1.0 pairs. All six
 clusters passed the 2 % force-matching tolerance out of sample, worst deviation
-0.86 %. **The contrast replicates.**
+0.86 %.  Thus the **fixed-cell cluster-level aligned-minus-null contrast is
+stable in this legacy run**.  It does not complete Gate A, which also requires
+predeclared targets, bases, sizes and states.
 
-Two things make this stronger than a repeated measurement. The between-cluster
-spread is 0.540 pairs against a within-cluster 0.490, a ratio of **1.10** — so
-choosing a different construction trajectory moves the answer barely more than
-re-running the direct chains does. The effect is a property of the construction
-*method*, not of a lucky chain. And exp07's single-cluster 10.111 sits near the
-bottom of the six, so that number was if anything conservative.
+The published within-cluster uncertainty (0.490) and between/within ratio (1.10)
+treated field means as independent despite their shared streams and are
+withdrawn.  The predeclared random control was expected to lie between null and
+aligned, but clusters 4 and 5 did not; describing those controls as having
+“behaved as designed” was a post-hoc reinterpretation.  These defects do not
+erase the top-level six-cluster contrast, but they block stronger mechanism,
+control and within/between-variance claims.
 
-The null and random controls behave as designed. Null-field shifts across the
-six are [−0.57, +0.60, +0.29, −0.21, −0.34, +0.23] pairs, straddling zero;
-random fields at the same force RMSE give [+2.24, +4.46, +1.28, +1.04, −3.92,
-+0.03], scattered as an arbitrary direction should be; aligned fields give
-[+10.31, +11.29, +11.30, +11.07, +10.10, +9.96].
+The `exp11_counterexample_replication_v2` code repairs field seed/start pairing,
+paired uncertainty, intention-to-test force gates, control reporting and
+provenance and adds a held-out covariance-null manipulation gate plus tri-state
+effect interpretation. A quick smoke completed, failed closed and is not
+evidence. Production has not been rerun.
 
-#### The 360× suppression was a favourable construction chain
+#### The suppression ratio is unstable and not release evidence
 
 This is the number that does not survive, and it is one of ours.
-`docs/RESULTS.md` §2.2 and the manuscript both quote a **≈360×** suppression of
+Earlier prose quoted a **≈360×** suppression of
 the null field's predicted shift relative to the aligned field's, measured on
-one construction chain. Across six independent clusters that ratio is:
+one construction chain. Across the six legacy fixed-cell clusters that ratio is:
 
 | cluster | 0 | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|---|---|
 | aligned / null predicted shift | 21× | 19× | 16× | 30× | 467× | 44× |
 
-**Median 26×, range 16–467×.** exp07's 360× sits in the extreme upper tail. The
+**Median 26×, range 16–467×.** exp07's 360× sits in the upper tail. The
 distribution is heavy-tailed for an understandable reason — the denominator is a
 near-cancelling quantity, so one cluster in six lands near zero and produces an
 enormous ratio — which is exactly why a single draw of it should never have been
 quoted as a property of the method.
 
-The underlying construction is sound and the in-sample orthogonality is exact:
+The algebraic in-sample orthogonality is exact:
 the null field's covariance with the target is ~10⁻¹⁶ on its construction frames
 and 10⁻³ on held-out frames, a degradation of thirteen orders of magnitude. That
 is not a defect — it is the statement that a null space estimated from finite
-samples is only null on those samples, which §2.2 already says. What is wrong is
-the size of the surviving suppression. **The defensible figure is a median of
-26× with a factor-of-thirty spread across construction chains, not 360×.**
+samples is only null on those samples, which §2.2 already says.  Because this
+near-zero-denominator ratio is unstable and the legacy run lacks valid
+provenance, neither 360× nor median 26× is a release estimate.  The cluster-level
+aligned-minus-null contrast above is the defensible legacy result.
 
-### 5.7 The release blocker: the discrepancy does not reproduce
+### 5.7 Legacy exp10: point non-recurrence, formal question unresolved
 
 `exp10`, review item P0-1 and the one the review calls a release blocker.
-`exp06`'s smallest amplitude had two reference-based estimators agreeing with
-each other to 1.3 % — linear −3.835, reweighted −3.884 pairs — and direct
+`exp06`'s smallest amplitude had two reference-based point estimates within
+1.3 % of each other — linear −3.835, reweighted −3.884 pairs — and direct
 sampling saying −1.948 ± 0.821. Either the prediction was wrong, in which case
 the central claim of this repository fails, or the direct measurement was, in
 which case every "measured" column is suspect.
 
-Eight independent reference chains, sixteen surrogate chains in two bracketing
+Eight reference chains, sixteen surrogate chains in two bracketing
 arms, two bins of opposite discrepancy sign, two samplers sharing no propagation
 machinery, and six estimators of the same two numbers:
 
@@ -789,60 +718,43 @@ machinery, and six estimators of the same two numbers:
 | direct, HMC (8+8 chains) | −3.78 ± 0.67 | +1.97 ± 0.78 |
 | direct, Metropolis (4+4 chains) | −3.01 ± 1.48 | +1.68 ± 2.10 |
 
-**The discrepancy does not reproduce.** Direct minus MBAR is **+0.047** pairs at
+**The old discrepancy does not recur in these point estimates.** Direct minus MBAR is **+0.047** pairs at
 4.25 Å and **+0.160** at 5.25 Å, against exp06's apparent 1.9-pair gap. The
 linear prediction of −3.82 reproduces exp06's own −3.835 to 0.4 %; what does not
 reproduce is exp06's direct measurement of −1.948, which sits 2.7 σ from this
-one on its own quoted error. **It was a single-chain realisation.**
+one on its own quoted error.  These observations do not identify why either
+legacy run differed.
 
-**Incomplete relaxation is excluded by measurement rather than by argument.**
-Chains started from reference-equilibrated configurations and chains started
-from surrogate-equilibrated ones agree from the first recorded frame — gap
-[−0.31, +0.10] pairs at zero discard — and meet exactly at 50 %. The ladder
-widens at 75–90 % only because 150 frames remain there. §5.2 asserted this
-exclusion; it is now a measurement.
+**Incomplete relaxation is not excluded.** The legacy gate used
+`gap − 1.96×SE ≤ bound`, so greater uncertainty made passing easier; the correct
+upper-confidence gate adds uncertainty.  With that direction corrected, the two
+bin upper bounds are about 2.07 and 3.39 pairs against a 0.5-pair bound, so the
+gate fails.  The primary 90 % discard also retains only 150 frames per chain.
 
-**The pre-registered rule nonetheless returns "underpowered", and that is the
-honest verdict.** Every interval contains zero, but the direct arm's error is
+**The estimator comparison is underpowered and, because the prerequisite
+relaxation gate fails, not evaluable as a confirmatory endpoint.** Every interval contains zero, but the direct arm's error is
 0.67–0.78 pairs from eight chain pairs, so the 95 % intervals are ±1.3, wider
 than the ±0.5 equivalence bound fixed in advance. Point agreement at 0.05 and
 0.16 pairs is not the same as having established equivalence to 0.5, and the
 decision rule does not let the first be reported as the second. Reaching the
-bound needs roughly 8× the chains.
+bound would need substantially more independent chains after a valid
+stationarity/relaxation design.
 
-Diagnostics, all healthy: work overlap 0.991, Kish 0.833 forward and 0.820
-reverse, maximum weight 0.0004 and 0.0026, τ_int 1.7 and 1.6, second-order ratio
-0.010 and 0.005, MBAR free energy 0.1555 eV.
+Weight-overlap diagnostics were numerically benign, but they do not repair the
+failed relaxation gate, chain-concatenated bootstrap, invalid provenance or the
+incorrect covariance correction.  “All diagnostics healthy” is therefore not a
+defensible summary.
 
-#### Where I was wrong about the review
+#### What the legacy run can and cannot say
 
-In `reviews/CLAUDE_RESPONSE.md` I partially disagreed with P0-1 on two grounds.
-One survives and one does not.
-
-*Survives.* The review treats exp06's disagreement and the six-chain 35 %/3.7 σ
-result as a single failure, and they have opposite signs — at 4.25 Å the direct
-value is smaller in magnitude than the prediction, at 5.25 Å larger. exp10
-measures both bins and finds neither: +0.047 and +0.160 pairs. Two
-single-realisation excursions in opposite directions is what that pattern was,
-and treating them as one estimator bias was the wrong model of it.
-
-*Does not survive.* I also argued that the 3.7 σ was inflated because the
-prediction's quoted error is a within-chain blocking error from one chain,
-which cannot know how much the prediction moves between chains. exp10 measures
-that directly: **the between-chain SEM of the prediction is 0.042 and 0.069
-pairs against blocking errors of 0.069 and 0.056** — the prediction is *more*
-stable across chains than its own bootstrap error suggests, not less. My
-proposed mechanism was backwards. The conclusion it was offered in support of
-happens to hold, for the different reason above, but the argument was wrong and
-the experiment I designed to test it is what says so.
-
-The prediction/direct correlation the review asked for is also measured, at
-−0.116 and −0.086. It is small and negative, so adding the two errors in
-quadrature is very slightly anti-conservative rather than conservative; the
-covariance-corrected intervals (0.683 and 0.785 against 0.674 and 0.779) are
-reported beside the quadrature ones, and the decision rule uses the quadrature
-version so that the correction can never be read as narrowing an interval after
-the fact.
+The opposite signs at the two bins argue against collapsing all legacy
+differences into one simple directional bias, but they do not prove
+single-realisation causation.  The published covariance correction also used
+the wrong sign/scale for the shared reference term and applied one correlation
+to estimators with different dependence structures; those corrected intervals
+are withdrawn.  The v2 repair implementation addresses these analyses and
+provenance capture but remains pending final code review and a clean commit;
+production has not been rerun.  P0-1 therefore remains a release blocker.
 
 ## 6. What is not here
 
@@ -856,15 +768,14 @@ the fact.
   reaches training-induced error fields. It does not show that fitted models
   occupy the regime the designed fields explore, and the difference matters for
   every conclusion phrased as advice.
-- **Nothing was run on a clean commit.** `exp03`, `exp05`, `exp06` and `exp07`
-  all have `git_dirty: true` in their manifests and cannot be reconstructed
-  exactly. Manifests now also record which paths were dirty and a content digest
-  over all source files (`experiments/common.py`), so future runs are traceable;
-  the existing ones are not, and must be re-run on a tagged commit before their
-  numbers appear in a submitted document.
-- **Raw trajectories are not stored**, only per-frame observable values and
-  energies. Re-running reproduces the numbers from the same seed; it does not
-  let a reader re-analyse the original configurations.
+- **No legacy manifest proves the executed source.** Several older runs record
+  dirty trees; exp09/exp10/exp11 additionally read commit/digest state at run
+  completion.  Start-of-run and end-of-run provenance, source-change detection
+  and artefact hashes are implemented on the repair branch, but become evidence
+  only after clean v2 production reruns.
+- **Raw trajectories are not stored** for the legacy runs, only selected
+  aggregates or per-frame values.  Deterministic seeds do not guarantee
+  reproduction without the executed source and environment.
 - **Dynamical observables.** Diffusion and vibrational spectra need real time
   evolution, which Monte Carlo cannot provide. The molecular dynamics layer
   exists and is tested; the experiments using it were not reached.

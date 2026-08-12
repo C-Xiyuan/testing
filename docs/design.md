@@ -1,9 +1,18 @@
-# `atomlab` — design contract
+# `atomlab` — historical design contract
 
-This document is the **interface contract**. Every module is implemented against
-it, so that independently written pieces compose without negotiation. If you are
-implementing a module listed here, treat the signatures below as fixed: other
-modules are being written against them right now.
+> **Status (2026-08-12): historical architecture/design record, not scientific
+> evidence or an implementation inventory.** This document predates the
+> adversarial audit and contains planned modules, experiments and hypotheses that
+> were never implemented or were refuted. The current evidence ceiling is
+> [`../reviews/CURRENT_CLAIM_LEDGER.md`](../reviews/CURRENT_CLAIM_LEDGER.md), the
+> actual experiment inventory is in [`../README.md`](../README.md), and the
+> forward plan is [`../reviews/CORRECTIVE_RESEARCH_ROADMAP.md`](../reviews/CORRECTIVE_RESEARCH_ROADMAP.md).
+> In particular, force RMSE is not “close to uninformative” in general; the
+> second-order term and ESS are unvalidated screens; exp01/02/04/08 remain design
+> placeholders; and no practical selector has been demonstrated.
+
+This document was the original **interface contract**. Signatures below may
+describe intended rather than current code and must be checked against the tree.
 
 ---
 

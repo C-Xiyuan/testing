@@ -26,6 +26,7 @@ import pytest
 
 from atomlab.analysis.response import (
     predict_shift,
+    predict_shift_from_surrogate_samples,
     response_diagnostics,
     reweight,
     spectral_decomposition,
@@ -67,6 +68,17 @@ class TestFirstOrderExact:
         # should sit within a few sigma of the prediction.
         assert abs(pred.first_order.value - exact) < 4.0 * pred.first_order.error
 
+    def test_surrogate_ensemble_endpoint_has_same_first_order_sign(self):
+        """Backward-endpoint expansion estimates U minus U0, not its negative."""
+        k, eps, n = 1.0, 0.01, 400_000
+        sigma = np.sqrt(1.0 / (BETA * k))
+        x_u = np.random.default_rng(111).normal(-eps / k, sigma, size=n)
+        pred = predict_shift_from_surrogate_samples(
+            x_u, eps * x_u, TEMPERATURE, n_resamples=200, seed=8
+        )
+        assert pred.first_order.value == pytest.approx(-eps / k, rel=0.02)
+        assert pred.correlation > 0.99
+
     def test_second_order_term_vanishes_by_symmetry(self):
         k, eps, n = 1.0, 0.01, 400_000
         x = harmonic_samples(k, n, seed=2)
@@ -75,7 +87,7 @@ class TestFirstOrderExact:
         # correction must be zero up to sampling noise -- and therefore tiny
         # compared with the first-order term.
         assert pred.second_order_ratio < 0.05
-        assert pred.is_trustworthy
+        assert pred.passes_unvalidated_linearity_screen
 
     def test_scales_linearly_in_perturbation_amplitude(self):
         k, n = 1.0, 200_000
@@ -118,7 +130,7 @@ class TestSecondOrderExact:
         x = harmonic_samples(k, n, seed=7)
         rw = reweight(x**2, eps * x, TEMPERATURE, n_resamples=100)
         assert rw.shift.value == pytest.approx(eps**2 / k**2, rel=0.10)
-        assert rw.is_trustworthy
+        assert rw.passes_weight_concentration_screen
 
 
 class TestReweighting:
@@ -143,7 +155,7 @@ class TestReweighting:
         huge = reweight(x, 2.0 * x, TEMPERATURE, n_resamples=20)
         assert small.ess_fraction > 0.9
         assert huge.ess_fraction < 0.1
-        assert not huge.is_trustworthy
+        assert not huge.passes_weight_concentration_screen
 
     def test_no_overflow_for_large_negative_du(self):
         x = harmonic_samples(1.0, 5_000, seed=11)
@@ -203,18 +215,18 @@ class TestOrthogonality:
 
 
 class TestDiagnostics:
-    def test_linear_and_reweighted_agree_when_flagged_trustworthy(self):
+    def test_linear_and_reweighted_agree_in_small_analytic_case(self):
         x = harmonic_samples(1.0, 200_000, seed=19)
         diag = response_diagnostics(x, 0.005 * x, TEMPERATURE, n_resamples=100)
-        assert diag["linear"]["trustworthy"]
-        assert diag["reweighted_trustworthy"]
+        assert diag["linear"]["passes_unvalidated_linearity_screen"]
+        assert diag["reweighted_weight_screen_passed"]
         assert diag["linear_vs_reweighted_relative_gap"] < 0.1
 
     def test_disagreement_is_flagged_for_large_perturbations(self):
         """Where linear response breaks, the diagnostics must say so."""
         x = harmonic_samples(1.0, 100_000, seed=20)
         pred = predict_shift(x**2, 1.5 * x, TEMPERATURE, n_resamples=50)
-        assert not pred.is_trustworthy
+        assert not pred.passes_unvalidated_linearity_screen
 
     def test_mismatched_sample_counts_raise(self):
         with pytest.raises(ValueError, match="same frames"):
@@ -350,3 +362,34 @@ def test_reweight_shift_error_does_not_collapse_as_weights_harden():
     plain = block_bootstrap(a, lambda x: x.mean(axis=0), n_resamples=200, seed=1)
     plain_error = float(np.asarray(plain.error)[0])
     assert abs(errors[-1] - plain_error) < 0.25 * plain_error, (errors[-1], plain_error)
+
+
+def test_reweight_blocking_follows_weighted_influence_not_raw_marginals():
+    rng = np.random.default_rng(92)
+    n = 3000
+    a = rng.choice([-1.0, 1.0], size=n)
+    slow = np.empty(n)
+    slow[0] = rng.normal()
+    for index in range(1, n):
+        slow[index] = 0.995 * slow[index - 1] + rng.normal(
+            scale=np.sqrt(1.0 - 0.995**2)
+        )
+    du = a * slow * (0.6 / BETA)
+    marginal_tau = integrated_autocorrelation_time(np.column_stack([a, du]))
+    automatic = reweight(a, du, TEMPERATURE, n_resamples=250, seed=4)
+    short = reweight(a, du, TEMPERATURE, n_resamples=250, block_length=3, seed=4)
+    assert marginal_tau < 2.0
+    assert automatic.meta["maximum_influence_tau"] > 5.0
+    assert automatic.meta["block_length"] >= 20
+    assert automatic.shift.error > 1.5 * short.shift.error
+
+
+def test_legacy_trustworthy_aliases_cannot_succeed_silently():
+    x = harmonic_samples(1.0, 2000, seed=91)
+    prediction = predict_shift(x, 0.01 * x, TEMPERATURE, n_resamples=50, seed=2)
+    reweighted = reweight(x, 0.01 * x, TEMPERATURE, n_resamples=50, seed=2)
+    with pytest.warns(FutureWarning, match="unvalidated legacy screen"):
+        _ = prediction.is_trustworthy
+    with pytest.warns(FutureWarning, match="not a trustworthiness certificate"):
+        _ = reweighted.is_trustworthy
+    assert "is_trustworthy" not in prediction.summary()

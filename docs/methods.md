@@ -141,11 +141,12 @@ Three quantities are computed on identical samples wherever a comparison is
 made (`atomlab/analysis/response.py`):
 
 - **first order**: −β Cov₀(A, δU), with a block-bootstrap interval;
-- **second order**: (β²/2)⟨Ã δŨ²⟩₀, reported but not added, as a
-  self-diagnostic on the truncation;
-- **reweighted**: ⟨A e^{−βδU}⟩₀ / ⟨e^{−βδU}⟩₀, exact to all orders, with the
-  Kish effective sample size and the largest single-frame weight fraction, since
-  an exponential average can be precise-looking and meaningless.
+- **second order**: (β²/2)⟨Ã δŨ²⟩₀, reported descriptively as
+  an unvalidated truncation-magnitude screen, never as a trust certificate;
+- **reweighted**: ⟨A e^{−βδU}⟩₀ / ⟨e^{−βδU}⟩₀, an exact
+  population identity estimated by a finite-sample self-normalised ratio. Kish
+  weight concentration and the largest-frame fraction are descriptive screens,
+  not autocorrelation-adjusted overlap certificates.
 
 Validated against closed forms on a harmonic reference perturbed by a linear
 field, where the expansion terminates and each order can be isolated:
@@ -182,19 +183,17 @@ null space of the noise.
 
 ## 8. Reproducibility
 
-Each experiment writes a manifest recording the git commit, whether the tree was
-dirty, the full configuration, per-stage wall times, library versions and the
-seed. Seeds are derived from a single experiment seed through named
-`SeedSequence` sub-streams, so inserting a stage does not perturb every result
-after it. Stages are cached, so an interrupted campaign resumes rather than
-restarts, and the manifest records which stages were reused.
+The v2 experiments use an explicit, tested seed map from one frozen master seed;
+independent upstream, production, field and chain streams occupy disjoint ranges.
+Each run writes a launch manifest, full configuration, per-stage wall times,
+library versions, artifact hashes and the seed map needed to identify every
+chain. Production requires a fresh locked output directory rather than silently
+resuming a stale partial run.
 
-`--quick` shrinks every size parameter for a smoke test — except equilibration,
-which is deliberately never shortened. An unequilibrated reference does not test
-the pipeline faster; it produces numbers from the wrong distribution, which is
-the failure the guard exists for. Quick-mode runs are flagged in the manifest so
-they cannot be mistaken for production numbers; where one has been used in an
-analysis anyway, `docs/RESULTS.md` says so at the point of use.
+`--quick` shrinks sampling and equilibration for a plumbing smoke test. It also
+sets `smoke_only`, cannot satisfy production provenance, and cannot become
+scientific evidence even if its numerical gates happen to pass. Production uses
+the complete frozen protocol and fail-closed equilibration/stationarity gates.
 
 ### 8.1 What the provenance record does and does not support
 
@@ -203,25 +202,30 @@ provenance record: it says the tree differed from the commit and not how, so a
 reader cannot distinguish an edited sampler from an edited README. Two things
 changed and one limitation remains.
 
-**Manifests record what was dirty.** Alongside `git_commit` and `git_dirty`,
-every manifest now carries `code.dirty_paths` — the `git status --porcelain`
-listing — and `code.sha256`, a digest over the content of every tracked Python
-file under `atomlab/`, `experiments/` and `scripts/`, taken in sorted path
-order. The digest changes if and only if code that can affect a number changed.
-Two runs with the same digest ran the same code whatever the commit said.
+**Corrected manifests freeze launch provenance.** The v2 harness records a
+NUL-safe Git status (including both sides of renames), launch and completion
+commit/tree identifiers, and a digest over tracked numerical source and frozen
+protocols. Production compares every numerical file's bytes and mode directly
+with the HEAD blob (so index flags cannot hide changes), and refuses dirty,
+untracked or mismatched-symlink numerical source,
+requires a fresh output directory, locks it against concurrent writers, and
+invalidates a run if source or the HEAD tree changes before completion. This
+design has regression tests; it has not yet produced a v2 production result.
 
-**The confirmatory runs were launched from a committed tree.** `exp09`, `exp10`
-and `exp11` were all started after committing.
+**The legacy confirmatory labels were false.** Although exp09--11 were started
+around commits, their manifests sampled HEAD only at completion; commits landed
+while the processes were running. Those manifests therefore do not identify
+the code loaded at process start and are not valid production provenance.
 
 **The earlier runs cannot be repaired.** `exp03`, `exp05`, `exp06` and `exp07`
 were run on dirty trees with no record of the diff, so they cannot be
 reconstructed exactly. They must be re-run on a tagged commit before their
 numbers appear in a submitted document, and `docs/RESULTS.md` §6 says so.
 
-**Raw trajectories are not stored.** What is written is per-frame observable
-values and energies, not configurations. Re-running from the same seed
-reproduces the numbers exactly — the samplers take an explicit
-`numpy.random.Generator` and there is no module-level RNG anywhere in the
-package — but a reader cannot re-analyse the original frames for a quantity
-nobody thought to record. Storing them would be roughly 200 MB per
-claim-bearing experiment, which is affordable and was simply not done.
+**Legacy raw trajectories are not stored.** The deposited historical artifacts
+contain aggregates or derived endpoint series, so their covariance,
+stationarity, and alternative observables cannot be independently recomputed.
+The v2 exp09--11 code writes positions, cells, species/PBC, field labels, seeds,
+and the derived A/U/dU/force series needed to verify summaries. Because no v2
+production run exists yet, this is a data contract rather than deposited new
+evidence.

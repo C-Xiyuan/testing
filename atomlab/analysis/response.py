@@ -20,10 +20,10 @@ consequences shape the API:
    exact-but-noisy reweighted answer (:func:`reweight`).  Disagreement between
    the three is informative rather than embarrassing: it localises where linear
    response stops being a valid way to think about model error.
-3. A practitioner has no ``U0``.  :func:`committee_response` replaces the
-   unknown truth with a committee mean, which is the usable form of the idea --
-   and the one whose failure mode (shared systematic error cancels) the
-   experiments are built to expose.
+3. A practitioner has no ``U0``. :func:`committee_response` computes a
+   descriptive committee-disagreement proxy by replacing truth with a committee
+   mean. It is uncalibrated, can over- or under-state truth, and has not been
+   evaluated as a decision rule (the planned exp08 was never implemented).
 
 All expectations use block-resampled error bars from
 :mod:`atomlab.analysis.statistics`, because MD frames are correlated and this
@@ -33,6 +33,7 @@ module's entire output is a set of comparisons between numbers.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import warnings
 from typing import Callable, Iterable, Sequence
 
 import numpy as np
@@ -66,7 +67,7 @@ __all__ = [
 
 @dataclass
 class ResponsePrediction:
-    """Predicted shift in an observable, with its trustworthiness diagnostics.
+    """Predicted shift in an observable, with descriptive diagnostics.
 
     Attributes
     ----------
@@ -75,8 +76,8 @@ class ResponsePrediction:
         for a vector one such as ``g(r)``.  Carries a block-bootstrap error bar.
     second_order:
         ``(beta^2/2) <A~ dU~^2>_0``, the next term in the cumulant expansion.
-        Not added to the prediction -- it is reported so that its size relative
-        to ``first_order`` can be used as a validity check.
+        Not added to the prediction. Its size relative to ``first_order`` is a
+        descriptive truncation diagnostic, not a calibrated validity check.
     beta_sigma_dU:
         ``beta * std(dU)``.  The natural dimensionless measure of how large the
         perturbation is.  Linear response is safe when this is well below one;
@@ -84,8 +85,8 @@ class ResponsePrediction:
     correlation:
         Pearson correlation between ``A`` and ``dU`` under the reference
         ensemble.  This is the quantity that distinguishes a harmful error field
-        from a harmless one of the same magnitude, and it is the number this
-        project argues should be reported in place of force RMSE.
+        from a harmless one of the same magnitude for this observable and
+        reference ensemble. It complements rather than replaces validation.
     sigma_A, sigma_dU:
         Reference-ensemble standard deviations, so a caller can reconstruct the
         Cauchy-Schwarz decomposition ``shift = -beta * sigma_A * sigma_dU * rho``.
@@ -115,12 +116,12 @@ class ResponsePrediction:
 
     @property
     def second_order_ratio(self) -> np.ndarray | float:
-        """``|second_order / first_order|``.
+        """``|second_order / first_order|``, reported descriptively.
 
-        The single most useful number here.  Below ~0.1 the linear prediction is
-        quantitative.  Above ~1 the series is not usefully truncated and any
-        conclusion phrased as "reducing the error by half would halve the
-        observable error" is unfounded.
+        This ratio measures the size of one omitted term.  The repository's own
+        calibration exercise found that a fixed threshold did not reliably
+        identify direct-sampling failures, so it must not be read as a
+        calibrated probability of correctness or a certificate of linearity.
         """
         first = np.abs(np.asarray(self.first_order.value, dtype=float))
         second = np.abs(np.asarray(self.second_order.value, dtype=float))
@@ -129,18 +130,28 @@ class ResponsePrediction:
         return float(ratio) if ratio.ndim == 0 else ratio
 
     @property
-    def is_trustworthy(self) -> bool:
-        """Heuristic gate combining the two validity checks.
+    def passes_unvalidated_linearity_screen(self) -> bool:
+        """Legacy exploratory screen; never a confirmatory validity gate.
 
-        Requires the second-order ratio below 0.25 (in the median over
-        components, so one noisy RDF bin cannot veto an otherwise clean curve)
-        and ``beta*std(dU) < 1``.  Deliberately conservative: the cost of
-        trusting a broken linear prediction in this study is a wrong scientific
-        conclusion, while the cost of falling back to direct MD is compute.
+        The historical thresholds are retained for descriptive continuity only.
+        They have a measured false-trust rate and must not authorize a scientific
+        claim, select a model, or suppress direct validation.
         """
         ratio = np.asarray(self.second_order_ratio, dtype=float)
         median_ratio = float(np.median(ratio[np.isfinite(ratio)])) if ratio.size else np.inf
         return bool(median_ratio < 0.25 and self.beta_sigma_dU < 1.0)
+
+    @property
+    def is_trustworthy(self) -> bool:
+        """Deprecated compatibility alias for the unvalidated legacy screen."""
+        warnings.warn(
+            "is_trustworthy is an unvalidated legacy screen; use "
+            "passes_unvalidated_linearity_screen and do not treat it as a "
+            "scientific validity certificate",
+            FutureWarning,
+            stacklevel=2,
+        )
+        return self.passes_unvalidated_linearity_screen
 
     def summary(self) -> dict:
         """Flat dictionary suitable for a results table."""
@@ -152,7 +163,9 @@ class ResponsePrediction:
             "correlation": np.asarray(self.correlation).tolist(),
             "n_samples": self.n_samples,
             "tau": self.tau,
-            "trustworthy": self.is_trustworthy,
+            "passes_unvalidated_linearity_screen": (
+                self.passes_unvalidated_linearity_screen
+            ),
         }
 
 
@@ -160,9 +173,10 @@ class ResponsePrediction:
 class ReweightResult:
     """Exponentially reweighted estimate of an observable under the surrogate.
 
-    Exact to all orders in ``dU``, and therefore the arbiter when the
-    perturbative prediction is in doubt -- but only to the extent that the
-    effective sample size says the reweighting is supported by the data.
+    Based on an identity exact to all orders in ``dU``. Its finite-sample,
+    self-normalised estimate is not automatically an arbiter: overlap,
+    autocorrelation, independent-chain replication and ratio-estimator bias
+    still determine whether the numerical answer is usable.
 
     Attributes
     ----------
@@ -194,7 +208,23 @@ class ReweightResult:
 
     @property
     def is_trustworthy(self) -> bool:
-        """Whether the reweighting is supported by enough distinct samples."""
+        """Deprecated alias for :attr:`passes_weight_concentration_screen`.
+
+        Kish ESS here measures concentration of frame weights, not the number of
+        autocorrelation-adjusted independent trajectory units.  Passing it is
+        necessary in this workflow but is not sufficient for trustworthiness.
+        """
+        warnings.warn(
+            "is_trustworthy only checks frame-weight concentration and is not a "
+            "trustworthiness certificate; use passes_weight_concentration_screen",
+            FutureWarning,
+            stacklevel=2,
+        )
+        return self.passes_weight_concentration_screen
+
+    @property
+    def passes_weight_concentration_screen(self) -> bool:
+        """Whether importance weights avoid the predeclared concentration tail."""
         return bool(self.ess_fraction > 0.1 and self.max_weight_fraction < 0.1)
 
 
@@ -341,7 +371,7 @@ def predict_shift_from_surrogate_samples(
     """Mirror estimator expanding around the surrogate instead of the reference.
 
     Expanding the same identity around ``U`` rather than ``U0`` gives
-    ``<A>_U - <A>_0 = +beta Cov_U(A, dU) + O(dU^2)``, requiring samples from the
+    ``<A>_U - <A>_0 = -beta Cov_U(A, dU) + O(dU^2)``, requiring samples from the
     *surrogate* ensemble.  The two estimates use disjoint data and agree only to
     the extent that linear response holds, so their difference is an
     assumption-light diagnostic for its breakdown -- the same logic that
@@ -358,9 +388,10 @@ def predict_shift_from_surrogate_samples(
         method=e.method,
         extra=e.extra,
     )
-    pred.first_order = flip(pred.first_order)
+    # Reversing the perturbation to -dU and then negating the reverse shift
+    # leaves the odd (first) order unchanged and flips the even (second) order.
+    # Correlation remains Corr_U(A, dU); it is not itself a response sign.
     pred.second_order = flip(pred.second_order)
-    pred.correlation = -np.asarray(pred.correlation) if np.ndim(pred.correlation) else -pred.correlation
     pred.meta["direction"] = "reverse"
     return pred
 
@@ -377,11 +408,12 @@ def reweight(
     """Exact reweighted estimate ``<A>_U = <A e^{-beta dU}>_0 / <e^{-beta dU}>_0``.
 
     This is the free-energy-perturbation identity and it is exact for any ``dU``.
-    Its weakness is variance, not bias: the weights are exponential in ``dU`` and
-    can concentrate on a handful of frames, at which point the estimate is
-    precise-looking and meaningless.  The returned diagnostics exist to catch
-    that, and callers should check :attr:`ReweightResult.is_trustworthy` before
-    using the number as ground truth.
+    The population identity is exact, but its finite-sample self-normalised
+    importance estimate can have both variance and ratio-estimator bias. The
+    weights are exponential in ``dU`` and can concentrate on a handful of
+    correlated frames. The returned concentration diagnostic is necessary, but
+    it is not autocorrelation-adjusted and is therefore not sufficient to use
+    the number as ground truth without chain-level validation.
 
     The weights are computed as ``exp(-beta (dU - min dU))`` and normalised,
     which is algebraically identical to the definition but avoids overflow when
@@ -400,6 +432,29 @@ def reweight(
     shift = mean - ref_mean
 
     joint = np.concatenate([a, du[:, None]], axis=1)
+    if block_length is None:
+        mean_weight = float(weights.mean())
+        ratio_influence = (
+            weights[:, None] / max(mean_weight, 1e-300) * (a - mean)
+        )
+        shift_influence = ratio_influence - (a - ref_mean)
+        # The nonlinear ratio is carried by w*A and its influence series. Raw
+        # A/dU marginals can look uncorrelated even when these products retain a
+        # very slow mode, so marginal-only automatic blocking is unsafe.
+        block_coordinates = np.column_stack([
+            joint,
+            weights,
+            weights[:, None] * a,
+            ratio_influence,
+            shift_influence,
+        ])
+        block_tau = integrated_autocorrelation_time(block_coordinates)
+        block_length = int(np.clip(
+            np.ceil(4.0 * block_tau), 1, max(1, m // 4)
+        ))
+    else:
+        block_length = int(block_length)
+        block_tau = None
 
     def reweighted_stat(block: np.ndarray) -> np.ndarray:
         aa, dd = block[:, :k], block[:, k]
@@ -453,7 +508,11 @@ def reweight(
         max_weight_fraction=stats["max_weight_fraction"],
         free_energy_shift=free_energy_shift,
         n_samples=m,
-        meta={"temperature": temperature},
+        meta={
+            "temperature": temperature,
+            "block_length": int(block_length),
+            "maximum_influence_tau": block_tau,
+        },
     )
 
 
@@ -461,8 +520,8 @@ def response_diagnostics(a_samples, du_samples, temperature: float, **kwargs) ->
     """Run both estimators and return a comparison table.
 
     Convenience wrapper used by the experiments: it produces the first-order
-    prediction, the exact reweighted value, their difference, and every validity
-    flag, in one dictionary suitable for direct serialisation.
+    prediction, the finite-sample full-order reweighted estimate, their
+    difference, and explicitly limited screening diagnostics in one dictionary.
     """
     pred = predict_shift(a_samples, du_samples, temperature, **kwargs)
     rw = reweight(a_samples, du_samples, temperature)
@@ -475,7 +534,7 @@ def response_diagnostics(a_samples, du_samples, temperature: float, **kwargs) ->
         "reweighted_shift": exact.tolist(),
         "reweighted_ess_fraction": rw.ess_fraction,
         "reweighted_max_weight_fraction": rw.max_weight_fraction,
-        "reweighted_trustworthy": rw.is_trustworthy,
+        "reweighted_weight_screen_passed": rw.passes_weight_concentration_screen,
         "linear_vs_reweighted_relative_gap": rel.tolist() if rel.ndim else float(rel),
         "free_energy_shift": rw.free_energy_shift,
     }
@@ -532,13 +591,11 @@ def committee_delta_u(trajectory, models: Sequence) -> np.ndarray:
 
     Notes
     -----
-    The substitution is exact only if the committee mean equals the truth.  It
-    fails in one specific and predictable direction: error shared by every member
-    -- from a common architecture, training set, or inductive bias -- cancels in
-    the mean and is invisible here.  The committee predictor therefore
-    *under-reports*, never over-reports, and the size of the gap is what
-    ``experiments/exp08`` measures with deliberately homogeneous and
-    heterogeneous committees.
+    The substitution is exact only if the committee mean equals the truth.
+    Shared error can cancel and cause under-reporting, but finite committees,
+    outliers and mismatch between the sampled and target ensembles can also
+    overstate disagreement. There is no one-sided guarantee. The planned exp08
+    calibration experiment was never implemented, so Gate C remains unanswered.
     """
     if len(models) < 2:
         raise ValueError("a committee needs at least two models")
@@ -558,11 +615,11 @@ def committee_response(
     *,
     seed: int = 0,
 ) -> dict:
-    """Ground-truth-free estimate of observable uncertainty across a committee.
+    """Ground-truth-free descriptive disagreement proxy for a committee.
 
     For each model, predicts how far its ``<A>`` sits from the committee
     consensus using ``-beta Cov(A, U_i - mean_j U_j)``.  The spread of those
-    predictions is an uncertainty estimate for the observable itself, obtained
+    predictions is an uncalibrated proxy for observable disagreement, obtained
     from single-point energy evaluations on an existing reference trajectory and
     **no molecular dynamics per model**.
 
@@ -583,8 +640,8 @@ def committee_response(
     -------
     dict
         ``per_model`` maps model name to its predicted shift and correlation;
-        ``spread`` is the standard deviation of predicted shifts across the
-        committee, the headline uncertainty number; ``max_pairwise_gap`` is the
+        ``spread`` is the descriptive standard deviation across the committee;
+        it is not a coverage-calibrated uncertainty. ``max_pairwise_gap`` is the
         largest disagreement between any two members, which is the quantity
         relevant to "could my conclusion have gone the other way".
     """

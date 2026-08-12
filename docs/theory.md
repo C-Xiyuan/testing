@@ -2,6 +2,15 @@
 
 *A linear-response account of how machine-learned potential error reaches physical observables.*
 
+> **Status (2026-08-12): historical theory/design notebook.** Standard response
+> identities remain useful, but the empirical interpretations below predate the
+> audit. The binding claim status is
+> [`../reviews/CURRENT_CLAIM_LEDGER.md`](../reviews/CURRENT_CLAIM_LEDGER.md).
+> Read any statement that the second-order term “corrects” results, ESS proves
+> trustworthiness, exp09 supplies independent calibration, exp08 exists, or every
+> prediction was explicitly checked as a superseded hypothesis/plan. The current
+> manuscript source is `paper/main.tex`.
+
 ---
 
 ## 0. The question
@@ -256,25 +265,24 @@ Cov₀(A, δU) = Σ_k c_k Cov₀(A, φ_k)                                     (4
 ‖δF‖²      = ⟨‖∇δU‖²⟩ = Σ_{k,k'} c_k c_{k'} ⟨∇φ_k · ∇φ_{k'}⟩ ~ Σ_k k² |c_k|²   (4.2)
 ```
 
-The gradient in (4.2) contributes a factor of `k²`: **force error weights the
-error field by the square of its spatial frequency.** The covariance in (4.1)
-applies no such weight; worse, physical observables `A` are smooth, low-frequency
-functions of configuration, so `Cov₀(A, φ_k)` typically *decays* with `k`.
-
-The two functionals therefore weight the error spectrum in opposite directions.
-This yields two failure modes, and they are not symmetric in their consequences:
+The following is a heuristic under a chosen configuration-space basis, not an
+empirical result about fitted MLIP spectra. The gradient in (4.2) contributes a
+factor of `k²`, while the covariance in (4.1) applies no such explicit weight.
+If a declared observable has sufficiently regular mode couplings,
+`Cov₀(A, φ_k)` may decay with `k`; only under those additional assumptions can
+the functionals weight the spectrum in opposite directions. This suggests two
+possible failure modes:
 
 - **False alarm.** High-frequency error — wiggly, rapidly-oscillating
   interpolation error of the kind neural networks produce between training
-  points — inflates force RMSE by `k²` while contributing almost nothing to any
-  observable. Such a model is *reported* as bad and *is* fine.
+  points — can inflate force RMSE while coupling weakly to a stated smooth
+  observable. It is not generally harmless.
 - **False confidence.** Low-frequency, systematic error — a slightly wrong
   long-range tail, a slightly wrong well depth, a smooth bias from an
   under-covered region of the training distribution — contributes almost nothing
-  to force RMSE and can shift observables substantially. Such a model is
-  *reported* as good and *is not*. This is the dangerous direction, and it is
-  precisely the error structure that regularised fits and smooth kernels prefer
-  to produce.
+  to a gradient norm and can shift a stated observable substantially. The
+  repository has not measured whether regularised fits preferentially produce
+  this direction; that prevalence question is Gate B.
 
 ### 4.1 A concrete scaling — and the limits of the estimate
 
@@ -438,9 +446,10 @@ Equation (2.1) evaluated on the same samples gives the reweighted estimate
 ⟨A⟩_U ≈ Σ_m A_m w_m / Σ_m w_m ,     w_m = e^{−βδU_m}                   (7.2)
 ```
 
-exact to all orders but with variance that grows with `Var(βδU)`. Its
-trustworthiness is quantified by the effective sample size
-`ESS = (Σw)² / Σw²`. Comparing three numbers on identical samples —
+exact to all orders but with variance that grows with `Var(βδU)`. The
+weight-concentration quantity `ESS = (Σw)² / Σw²` is descriptive and is not
+an autocorrelation-adjusted trust certificate. Comparing three numbers on
+identical samples —
 first-order (7.1), reweighted (7.2), and direct MD with the surrogate —
 is the cleanest available validation: they must agree in the small-`δU` limit
 and must diverge in an understood order as `δU` grows. `experiments/exp06` runs
@@ -452,7 +461,7 @@ Result 1a expands around `U₀`, so its expectations are under `⟨·⟩₀`. Ex
 instead around `U` gives the mirror statement
 
 ```
-Δ⟨A⟩ = +β Cov_U(A, δU) + O(δU²)                                        (7.3)
+Δ⟨A⟩ = −β Cov_U(A, δU) + O(δU²)                                        (7.3)
 ```
 
 The two estimates use different samples and agree only to the extent that linear
@@ -464,7 +473,7 @@ report both.
 ### 7.4 The practical estimator, without an oracle
 
 The oracle estimator needs `δU = U − U₀`, and a practitioner has no `U₀`. The
-usable substitute replaces the unknown truth with a **committee mean** over `M`
+descriptive substitute replaces the unknown truth with a **committee mean** over `M`
 independently trained models:
 
 ```
@@ -472,19 +481,18 @@ independently trained models:
 ```
 
 Then `−β Cov(A, δU_i)` estimates how far model `i`'s prediction of `⟨A⟩` sits
-from the committee consensus, and the spread across `i` is an **uncertainty
-estimate for the observable itself** — obtained from single-point energy
+from the committee consensus, and the spread across `i` is an **uncalibrated
+committee-disagreement proxy** — obtained from single-point energy
 evaluations on an existing trajectory, with no MD per model.
 
 This is the practical payoff and simultaneously the claim most worth being
 sceptical of. Committee spread estimates *disagreement*, not *error*; models
 sharing an architecture, a training set and an inductive bias share their
 systematic error, and shared error cancels exactly in (7.4). The failure mode is
-therefore predictable and one-directional: the committee predictor should track
-the oracle for architecture-diverse committees and under-report for homogeneous
-ones. `experiments/exp08` is built to detect this, with deliberately homogeneous
-and deliberately heterogeneous committees as the two arms, and it is designed so
-that a negative result is reportable rather than absorbed.
+therefore includes under-reporting when members share bias, but no one-sided
+guarantee follows: finite panels, outliers and ensemble mismatch may also
+overstate disagreement. The planned `experiments/exp08` was never implemented;
+no calibration or decision-utility result exists (Gate C is unanswered).
 
 ---
 

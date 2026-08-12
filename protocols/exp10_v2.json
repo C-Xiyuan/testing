@@ -1,0 +1,86 @@
+{
+  "protocol": "exp10_endtoend_consistency_v2",
+  "schema_version": 1,
+  "protocol_version": 2,
+  "status": "frozen_before_production",
+  "master_seed": 20260812,
+  "executable_config_contract": "executable_config below is canonical; experiments/exp10_endtoend_consistency/run.py DEFAULTS must match it exactly, and production CLI/config overrides require a new protocol version",
+  "executable_config": {
+    "system": {
+      "lattice_constant": 5.4,
+      "reps": [3, 3, 3],
+      "density": 0.02,
+      "temperature": 120.0
+    },
+    "potential": {
+      "epsilon": 0.0103,
+      "sigma": 3.405,
+      "cutoff": 7.0,
+      "mode": "shifted_force"
+    },
+    "observable": {
+      "r_min": 3.0,
+      "r_max": 7.0,
+      "n_bins": 8,
+      "report_bins": [2, 4]
+    },
+    "field": {
+      "r0": 4.2,
+      "width": 0.35,
+      "amplitude": 0.0005
+    },
+    "sampling": {
+      "n_reference": 1500,
+      "n_surrogate": 1500,
+      "n_presoak": 2000,
+      "n_leapfrog": 8,
+      "step_size": 0.002,
+      "burn_in": 300,
+      "n_melt": 400,
+      "n_anneal": 1000
+    },
+    "replication": {
+      "n_reference_chains": 8,
+      "n_surrogate_chains": 8
+    },
+    "metropolis": {
+      "n_chains": 4,
+      "n_sweeps": 350,
+      "burn_in": 150,
+      "max_displacement": 0.12
+    },
+    "relaxation": {
+      "discard_fractions": [0.0, 0.1, 0.25, 0.5, 0.75, 0.9]
+    },
+    "analysis": {
+      "equivalence_bound_pairs": 0.5,
+      "familywise_alpha": 0.05,
+      "primary_discard_fraction": 0.5,
+      "n_resamples": 5000,
+      "min_work_overlap": 0.1,
+      "min_kish_fraction": 0.1,
+      "max_weight_fraction": 0.1,
+      "min_autocorrelation_adjusted_ess_fraction": 0.02,
+      "max_chain_weight_fraction": 0.35,
+      "min_central_work_overlap": 0.1,
+      "min_chain_pair_overlap_fraction": 0.5
+    }
+  },
+  "endpoints_angstrom": [4.25, 5.25],
+  "primary_discard_fraction": 0.5,
+  "equivalence_bound_pairs": 0.5,
+  "familywise_alpha": 0.05,
+  "chain_bootstrap_resamples": 5000,
+  "primary_comparison": "direct HMC minus two-state MBAR",
+  "decision": {
+    "equivalent": "all familywise TOST intervals lie inside +/-0.5 pairs",
+    "meaningfully_different": "a simultaneous two-sided interval lies wholly outside +/-0.5 pairs",
+    "otherwise": "inconclusive"
+  },
+  "fail_closed": [
+    "reference or surrogate stationarity failure",
+    "initialisation arms not equivalent at the primary discard",
+    "range, central-mass, chain-pair, frame, autocorrelation-adjusted, or chain-concentration overlap failure",
+    "dirty, changed, or unidentifiable numerical source"
+  ]
+}
