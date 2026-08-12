@@ -77,21 +77,32 @@ def panel_components(ax, s):
 
 
 def panel_second_order(ax, s):
-    """(b) Does adding the second-order term help?"""
+    """(b) Does adding the second-order term help?
+
+    Each metric is drawn next to the value it should take if the prediction were
+    unbiased and the error bars right, because "1" is the target for the rms and
+    for nothing else on this axis -- a single reference line across all three
+    would be wrong for two of them.
+    """
     keys = ["first_order", "second_order_corrected"]
     names = ["linear\nprediction", "+ second-order\nterm"]
-    metrics = [("residual_rms", "residual rms"),
-               ("col_spread_observed", "field-effect spread"),
-               ("interaction_rms", "interaction rms")]
+    metrics = [("grand_mean", "systematic\noffset", lambda d: 0.0),
+               ("residual_rms", "residual\nrms", lambda d: 1.0),
+               ("col_spread_observed", "field-effect\nspread",
+                lambda d: d["col_spread_predicted"])]
     x = np.arange(len(metrics))
     for j, key in enumerate(keys):
-        vals = [s[key][m] for m, _ in metrics]
-        ax.bar(x + (j - 0.5) * 0.36, vals, 0.34, label=names[j],
+        vals = [s[key][m] for m, _, _ in metrics]
+        ax.bar(x + (j - 0.5) * 0.34, vals, 0.32, label=names[j],
                color=series_color(j), alpha=0.9)
-    ax.axhline(1.0, color="0.4", lw=0.8, ls=":")
-    ax.text(len(metrics) - 0.5, 1.02, "calibrated", fontsize=7, color="0.4", ha="right")
+    for i, (_, _, target) in enumerate(metrics):
+        t = target(s["first_order"])
+        ax.plot([i - 0.52, i + 0.52], [t, t], color="0.35", lw=1.1, ls=":",
+                zorder=5)
+    ax.plot([], [], color="0.35", lw=1.1, ls=":", label="value if unbiased")
+    ax.axhline(0.0, color="0.7", lw=0.6)
     ax.set_xticks(x)
-    ax.set_xticklabels([n for _, n in metrics], fontsize=7)
+    ax.set_xticklabels([n for _, n, _ in metrics], fontsize=7)
     ax.set_ylabel(r"$\sigma$")
     ax.set_title("(b) the second-order correction", fontsize=9, loc="left")
     ax.legend(fontsize=7, frameon=False)
