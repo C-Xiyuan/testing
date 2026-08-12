@@ -22,11 +22,16 @@ Six blocks:
    uncertainty is the quadrature sum of the two tabulated errors, which
    double-counts the shared term and is therefore an upper bound.
 
-3. **Band robustness.** Spearman rho inside the analyst-chosen band on three
-   nested subsets: all 15 members, the 13 with the two designed fields removed,
-   and the 9 shell-family members, whose force RMSE values are all distinct.
-   Also the observable-error spread on the noise-subtracted and raw series, and
-   with the designed fields removed.
+3. **Band robustness.** Spearman rho, with 95% percentile bootstrap intervals
+   over members, inside the analyst-chosen band on three nested subsets: all 15
+   members, the 13 with the two designed fields removed, and the 9 shell-family
+   members, whose force RMSE values are all distinct. The estimator is the one
+   in ``scripts/compute_band_correlations.py`` (2000 resamples, seed 20240517,
+   resamples with fewer than three distinct values on an axis discarded), but
+   each subset is given its own generator, so the intervals do not depend on
+   evaluation order; the full band as deposited in ``band_correlations.json``
+   is copied in alongside for comparison. Also the observable-error spread on
+   the noise-subtracted and raw series, and with the designed fields removed.
 
 4. **Width exponent.** A bootstrap interval on the fitted log-log exponent of the
    direct-sampling width sweep, propagating the per-point blocking errors, plus
@@ -148,18 +153,59 @@ def main():
         "band_minus_designed": band & ~designed,
         "band_shell_family": band & shells,
     }
-    out["band_robustness"] = {
-        k: {
+    # Same estimator as scripts/compute_band_correlations.py: 95% percentile
+    # bootstrap over members, 2000 resamples, resamples with fewer than three
+    # distinct values on either axis discarded. Each call is given its own
+    # generator seeded with SEED, so a subset's interval does not depend on
+    # which other subsets were computed before it.
+    def rho_ci(x, y, n_boot=2000):
+        point = float(spearmanr(x, y).statistic)
+        rng = np.random.default_rng(SEED)
+        draws = []
+        for _ in range(n_boot):
+            idx = rng.integers(0, len(x), len(x))
+            if len(np.unique(x[idx])) < 3 or len(np.unique(y[idx])) < 3:
+                continue
+            d = spearmanr(x[idx], y[idx]).statistic
+            if np.isfinite(d):
+                draws.append(d)
+        lo, hi = np.percentile(draws, [2.5, 97.5])
+        return point, float(lo), float(hi)
+
+    out["band_robustness"] = {}
+    for k, m in subsets.items():
+        pf, lf, hf = rho_ci(force[m], truth[m])
+        pp, lp, hp = rho_ci(pred[m], truth[m])
+        out["band_robustness"][k] = {
             "n": int(m.sum()),
-            "rho_force_rmse": float(spearmanr(force[m], truth[m]).statistic),
-            "rho_response_prediction": float(spearmanr(pred[m], truth[m]).statistic),
+            "rho_force_rmse": pf,
+            "rho_force_rmse_ci95": [lf, hf],
+            "rho_response_prediction": pp,
+            "rho_response_prediction_ci95": [lp, hp],
             "observable_error_spread_noise_subtracted": float(truth[m].max() / truth[m].min()),
         }
-        for k, m in subsets.items()
-    }
     out["band_robustness"]["band_all"]["observable_error_spread_raw"] = float(
         raw[band].max() / raw[band].min()
     )
+
+    # The manuscript quotes the full band from the deposited
+    # band_correlations.json, whose bootstrap draws all five proxies from one
+    # generator stream; the interval below is the same estimator on an
+    # independent stream, and the two are recorded together so the difference
+    # between them is visible rather than silent.
+    dep = load("results/exp05_proxy_correlation/band_correlations.json")
+    out["band_robustness"]["band_all"]["as_deposited_band_correlations"] = {
+        "rho_force_rmse": dep["band"]["force_rmse"]["rho"],
+        "rho_force_rmse_ci95": [
+            dep["band"]["force_rmse"]["ci_low"],
+            dep["band"]["force_rmse"]["ci_high"],
+        ],
+        "rho_response_prediction": dep["band"]["predicted_norm"]["rho"],
+        "rho_response_prediction_ci95": [
+            dep["band"]["predicted_norm"]["ci_low"],
+            dep["band"]["predicted_norm"]["ci_high"],
+        ],
+    }
     out["band_robustness"]["ties"] = {
         "n_band": int(band.sum()),
         "n_sharing_the_modal_force_rmse": int(
