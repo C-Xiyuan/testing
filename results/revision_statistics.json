@@ -85,14 +85,18 @@
   {
    "force_rms_level": 0.001,
    "aligned_minus_null_pairs": 2.382000000000005,
-   "upper_bound_error_pairs": 0.819024335878761,
-   "lower_bound_sigma": 2.908338489654609
+   "legacy_marginal_quadrature_error_pairs": 0.819024335878761,
+   "legacy_quadrature_signal_ratio": 2.908338489654609,
+   "contrast_uncertainty_auditable": false,
+   "reason": "aligned/null direct-chain covariance was not deposited; marginal quadrature is not known to be conservative"
   },
   {
    "force_rms_level": 0.004,
    "aligned_minus_null_pairs": 10.11099999999999,
-   "upper_bound_error_pairs": 0.8845220040230868,
-   "lower_bound_sigma": 11.431032754427763
+   "legacy_marginal_quadrature_error_pairs": 0.8845220040230868,
+   "legacy_quadrature_signal_ratio": 11.431032754427763,
+   "contrast_uncertainty_auditable": false,
+   "reason": "aligned/null direct-chain covariance was not deposited; marginal quadrature is not known to be conservative"
   }
  ],
  "band_robustness": {
@@ -181,16 +185,39 @@
   "noise_pairs": 2.427759826074548
  },
  "width_exponent": {
-  "direct": 0.5592618823864405,
-  "direct_ci95": [
-   0.09026635775267357,
-   1.3376837962748704
+  "primary_interpretation": "inconclusive on the unswitched compliant subset",
+  "unswitched_condition": "r0 + 3*w < r_on",
+  "r0_angstrom": 4.2,
+  "r_on_angstrom": 5.95,
+  "compliant_widths_angstrom": [
+   0.1,
+   0.15,
+   0.25,
+   0.4
   ],
-  "direct_ci_n_valid_resamples": 16335,
-  "fraction_of_resamples_reaching_1.5": 0.013835322926232017,
-  "first_order": 0.45200183271582295,
+  "switch_truncated_widths_angstrom": [
+   0.65,
+   1.0
+  ],
+  "compliant_direct": 0.7869332981826194,
+  "compliant_legacy_independent_marginal_sensitivity_95pct_range": [
+   -0.2361339939712787,
+   2.3813951213094224
+  ],
+  "compliant_legacy_sensitivity_n_valid_draws": 16336,
+  "compliant_legacy_sensitivity_fraction_reaching_1.5": 0.12163320274240941,
+  "compliant_first_order": 0.7236085718152645,
+  "legacy_all_six_direct": 0.5592618823864418,
+  "legacy_all_six_independent_marginal_sensitivity_95pct_range": [
+   0.09026635775267386,
+   1.3376837962748707
+  ],
+  "legacy_all_six_sensitivity_n_valid_draws": 16335,
+  "legacy_all_six_sensitivity_fraction_reaching_1.5": 0.013835322926232017,
+  "legacy_all_six_first_order": 0.4520018327158233,
   "first_order_has_no_deposited_per_point_error": true,
-  "direct_dropping_largest_width": 0.7207715109294052,
+  "sensitivity_is_not_an_inferential_interval": true,
+  "sensitivity_limitations": "shared reference/random streams and missing cross-width covariance; the stored component-SE norm is not the sampling SE of the curve norm",
   "direct_norms_pairs": [
    2.132488967015873,
    5.280917205162158,

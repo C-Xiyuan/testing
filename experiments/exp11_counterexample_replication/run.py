@@ -28,7 +28,7 @@ reporting the match is circular, so the match is verified out of sample too, and
 a cluster whose out-of-sample match falls outside the prospectively specified
 tolerance fails the primary cell. It is retained rather than selected away.
 
-Prospectively specified for the corrected v2 run
+Prospectively specified for the corrected v3 run
 -------------------------------------------------
 *Estimand.* Per cluster c, the paired contrast
 D_c = (measured shift of the aligned field) - (measured shift of the null
@@ -42,7 +42,7 @@ of its construction rather than a declared tolerance, and out of sample the
 match is looser than in sample by construction.
 
 *Minimum meaningful effect.* 1.0 pairs, fixed as a practical margin before the
-v2 rerun. The legacy exp10 run did not establish resolution at this margin, so
+v3 rerun. The legacy exp10 run did not establish resolution at this margin, so
 this threshold defines scientific relevance but does not by itself establish
 measurement power; an interval wider than it remains underpowered.
 
@@ -52,6 +52,12 @@ between-cluster component is unmeasured -- it is what this experiment is for --
 so eight was chosen to give seven degrees of freedom on it. If the observed
 interval is wider than the minimum meaningful effect, the result is reported as
 underpowered rather than as a replication.
+
+*Aligned direction.* For this scalar target, orient the leading singular
+direction so Cov(A, delta_U_aligned) <= 0 and its first-order shift is
+non-negative. This prevents a BLAS/LAPACK sign convention from changing the
+one-sided decision. A vector target with a degenerate leading singular subspace
+would require a new orientation protocol.
 
 *Decision rule.* The counterexample replicates if the 95% interval on the mean
 of D_c, computed from the between-cluster scatter with t_(C-1), excludes the
@@ -102,8 +108,8 @@ from experiments.common import (
 from experiments.equilibrate import check_equilibrated, equilibrated_configuration
 from experiments.observables_lib import PairBinObservable
 
-EXPERIMENT_NAME = "exp11_counterexample_replication_v2"
-PROTOCOL_PATH = Path(__file__).resolve().parents[2] / "protocols" / "exp11_v2.json"
+EXPERIMENT_NAME = "exp11_counterexample_replication_v3"
+PROTOCOL_PATH = Path(__file__).resolve().parents[2] / "protocols" / "exp11_v3.json"
 
 DEFAULTS = {
     "system": {"lattice_constant": 5.4, "reps": [3, 3, 3],
@@ -319,7 +325,7 @@ def run(ctx: ExperimentContext) -> dict:
     require_fresh_production_seed(ctx, expected=20260812)
     require_frozen_protocol(
         ctx, protocol_path=PROTOCOL_PATH,
-        expected_protocol=EXPERIMENT_NAME, expected_version=2,
+        expected_protocol=EXPERIMENT_NAME, expected_version=3,
     )
     initial_cfg, potential = build_system(ctx)
     temperature = ctx.config["system"]["temperature"]
@@ -716,5 +722,5 @@ if __name__ == "__main__":
         run, default_config=DEFAULTS, name=EXPERIMENT_NAME,
         description="Replicate the designed counterexample across construction clusters",
         protocol_path=PROTOCOL_PATH, protocol_name=EXPERIMENT_NAME,
-        protocol_version=2,
+        protocol_version=3,
     )

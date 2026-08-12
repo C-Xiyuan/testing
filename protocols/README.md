@@ -1,13 +1,20 @@
 # Frozen corrective protocols
 
 The JSON files in this directory are machine-enforced protocol contracts for
-the v2 corrective experiments. Each file owns a complete canonical
+versioned corrective experiments. Each file owns a complete canonical
 `executable_config` plus an integer `protocol_version`; the Python module's
 `DEFAULTS` is an implementation copy, not the source of truth. Production
 launch loads the protocol artifact and rejects any extra key, missing key, type
 change, list change, or value change. Changing a frozen value requires a new
 protocol version and experiment name. CLI overrides are allowed only for quick
 smoke runs, whose manifests are `smoke_only`.
+
+`exp09_v2.json` and `exp11_v2.json` are retained as never-run, superseded
+contracts. Before any production launch, the round-2 audit exposed the
+arbitrary sign of the leading SVD vector used by both experiments.
+`exp09_v3.json` and `exp11_v3.json` freeze the scalar aligned-direction
+convention and use new experiment/output names; no v2 result is silently
+reinterpreted.
 
 Every manifest records the protocol path, the SHA-256 digest of the exact JSON
 bytes, the protocol name/version, and the canonical executable-config digest.

@@ -238,9 +238,9 @@ def test_quick_protocol_override_is_smoke_only_and_allowed(tmp_path, monkeypatch
 @pytest.mark.parametrize(
     "run_path, protocol_path",
     [
-        ("experiments/exp09_calibration_replication/run.py", "protocols/exp09_v2.json"),
+        ("experiments/exp09_calibration_replication/run.py", "protocols/exp09_v3.json"),
         ("experiments/exp10_endtoend_consistency/run.py", "protocols/exp10_v2.json"),
-        ("experiments/exp11_counterexample_replication/run.py", "protocols/exp11_v2.json"),
+        ("experiments/exp11_counterexample_replication/run.py", "protocols/exp11_v3.json"),
     ],
 )
 def test_code_defaults_have_not_drifted_from_canonical_protocol(run_path, protocol_path):

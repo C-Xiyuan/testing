@@ -14,7 +14,7 @@ evidence remains a provisional fixed-cell Lennard-Jones construction. P0-1 is
 still release-blocking, P0-2/P0-3 are partial, and Gates A/B/C are unanswered.
 The binding dispositions are in [`CURRENT_CLAIM_LEDGER.md`](CURRENT_CLAIM_LEDGER.md).
 
-No v2 production result was generated in this pass. Quick runs were plumbing
+No corrected production result was generated in this pass. Quick runs were plumbing
 checks in temporary directories, were labelled `smoke_only`, and are not stored
 or cited as evidence. Corrected production campaigns must run from the clean,
 committed protocol below before any status can advance.
@@ -33,13 +33,15 @@ committed protocol below before any status can advance.
 - `raw.npz` is written atomically; launch and final manifests are separate; quick
   output is permanently non-evidential.
 - Independent protocol JSON artifacts own the complete canonical executable
-  configuration and master seed `20260812` for exp09/10/11 v2; runtime defaults
+  configuration and master seed `20260812` for exp09/exp11 v3 and exp10 v2;
+  the never-run exp09/exp11 v2 protocols were superseded after the round-2
+  audit exposed the arbitrary aligned SVD sign. Runtime defaults
   are checked against them. A CLI/config override requires a new protocol and
   result name rather than silently changing a confirmatory design.
 
 ### Statistical design
 
-- **exp09 v2:** separates construction, reference-start, reference-production,
+- **exp09 v3:** pins the scalar aligned-field direction and separates construction, reference-start, reference-production,
   field-start and field-production streams; preserves the crossed chain units;
   performs complete-chain joint-reference and field-specific direct resampling;
   avoids pooled heteroskedastic error; and reports only fixed-panel conditional
@@ -51,13 +53,13 @@ committed protocol below before any status can advance.
   inconclusive decisions; and gates on independent starting arms, stationarity,
   chain-aware overlap and concentration. Underpowered or failed prerequisites
   yield `not_evaluable`, not agreement.
-- **exp11 v2:** treats construction cluster as the inferential unit; uses declared
+- **exp11 v3:** pins the scalar aligned-field direction, treats construction cluster as the inferential unit, and uses declared
   paired seed/start blocks without claiming exact common-random-number synchrony;
   propagates paired-chain contrasts; and requires both a force-match interval and
   a held-out covariance-null manipulation interval. Direct-chain energy,
   observable and perturbation-coordinate stationarity are fail-closed.
 
-All three v2 pipelines retain coordinates, cells, species/PBC, seeds, field
+All three corrected pipelines retain coordinates, cells, species/PBC, seeds, field
 labels and the derived endpoint/energy/perturbation series needed to recompute
 their summaries.
 
@@ -86,20 +88,20 @@ bootstrap units and influence-series autocorrelation, public response API signs,
 claim wording and TeX/Markdown synchronisation. This is not a scientific-result
 pass; its limits are the unrun production campaigns and unanswered Gates A/B/C.
 
-- `pytest -q -m 'not slow and not physics'`: **878 selected; 877 passed, 1
-  skipped, 0 failed** in 206.52 s in the final run. The skip and four warnings are pre-existing
-  dependency/platform items, not v2 failures.
+- `pytest -q -m 'not slow and not physics'`: **889 selected; 888 passed, 1
+  skipped, 0 failed** in 92.09 s in the final run. The skip and four warnings are pre-existing
+  dependency/platform items, not corrective-pipeline failures.
 - Corrective targeted suite plus perturbation regressions
   (`test_experiment_common.py`, `test_exp09_design.py`,
   `test_exp10_analysis.py`, `test_exp11_design.py`, `test_response.py`,
   `test_perturbations.py`): **135 passed, 0 failed**.
-- Python compilation passed for the common harness, all three v2 experiment
+- Python compilation passed for the common harness, all three corrected experiment
   modules and manuscript generator.
 - All frozen protocol JSON files parse; `git diff --check` passes.
 - TeX-to-Markdown generation is idempotent. A TeX compiler is not installed in
   the audit environment, so no typeset-PDF claim is made.
 
-The slow/physics-marked tests and v2 production campaigns were not run in this
+The slow/physics-marked tests and corrected production campaigns were not run in this
 pass. Their absence is explicit rather than silently converted into a pass.
 
 ## Scientific disposition after repair
@@ -107,12 +109,12 @@ pass. Their absence is explicit rather than silently converted into a pass.
 | Item | Disposition after this pass |
 |---|---|
 | P0-1 | Partially resolved; release-blocking; corrected production unrun |
-| P0-2 | Partially resolved; fixed-panel v2 code ready; production unrun |
-| P0-3 | Partially resolved; fixed-cell v2 code ready; production unrun |
+| P0-2 | Partially resolved; fixed-panel v3 code ready; production unrun |
+| P0-3 | Partially resolved; fixed-cell v3 code ready; production unrun |
 | P0-4 | Partially resolved by restricting inference to the fixed zoo |
 | P0-5 | Resolved by withdrawal of the trust/warning claim |
 | P1-1 | Partially resolved by restricting to same-system feasibility |
-| P1-2 | Resolved on the corrective branch, subject to future drift checks |
+| P1-2 | Partially resolved; current truth surfaces repaired, clean legacy reruns or removal still required |
 | Gate A | Unanswered |
 | Gate B | Unanswered |
 | Gate C | Unanswered |
@@ -122,8 +124,10 @@ pass. Their absence is explicit rather than silently converted into a pass.
 1. Commit this branch so the protocols and source digest are immutable.
 2. Run exp10 v2 first. If its prerequisite gates fail or its primary family is
    inconclusive, P0-1 remains open; do not tune the bound after seeing results.
-3. Run exp09 and exp11 v2 from the same clean commit and publish their raw
+3. Run exp09 and exp11 v3 from the same clean commit and publish their raw
    artifacts/manifests without deleting failed outcomes.
 4. Audit those artifacts independently before changing any manuscript claim.
-5. Only then start Gate A; Gate B and Gate C remain necessary for fitted-model
+5. Reimplement and cleanly rerun claim-bearing exp03/05/06/07 variants, or
+   remove their numerical tables/figures from the release manuscript.
+6. Only then start Gate A; Gate B and Gate C remain necessary for fitted-model
    prevalence and selection-utility claims respectively.

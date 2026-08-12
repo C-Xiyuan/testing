@@ -68,7 +68,7 @@ bond-order parameter Q₆ fell monotonically from 0.5745 (perfect fcc) to 0.43
 over 600 proposals and was still falling, while the potential energy climbed
 monotonically and was still climbing. The equilibrated liquid sits at
 −0.0311 eV/atom; those runs were sampling −0.036 to −0.043, so the reference
-ensemble was wrong by 30–40 % in energy.
+ensemble was wrong by 16–38 % in energy relative to the equilibrated value.
 
 No sampler diagnostic caught this. Acceptance rate and integration error were
 healthy throughout, because they measure whether the Markov chain is being
@@ -183,7 +183,7 @@ null space of the noise.
 
 ## 8. Reproducibility
 
-The v2 experiments use an explicit, tested seed map from one frozen master seed;
+The corrected experiments use an explicit, tested seed map from one frozen master seed;
 independent upstream, production, field and chain streams occupy disjoint ranges.
 Each run writes a launch manifest, full configuration, per-stage wall times,
 library versions, artifact hashes and the seed map needed to identify every
@@ -202,7 +202,7 @@ provenance record: it says the tree differed from the commit and not how, so a
 reader cannot distinguish an edited sampler from an edited README. Two things
 changed and one limitation remains.
 
-**Corrected manifests freeze launch provenance.** The v2 harness records a
+**Corrected manifests freeze launch provenance.** The harness records a
 NUL-safe Git status (including both sides of renames), launch and completion
 commit/tree identifiers, and a digest over tracked numerical source and frozen
 protocols. Production compares every numerical file's bytes and mode directly
@@ -210,7 +210,7 @@ with the HEAD blob (so index flags cannot hide changes), and refuses dirty,
 untracked or mismatched-symlink numerical source,
 requires a fresh output directory, locks it against concurrent writers, and
 invalidates a run if source or the HEAD tree changes before completion. This
-design has regression tests; it has not yet produced a v2 production result.
+design has regression tests; it has not yet produced a corrected production result.
 
 **The legacy confirmatory labels were false.** Although exp09--11 were started
 around commits, their manifests sampled HEAD only at completion; commits landed
@@ -225,7 +225,8 @@ numbers appear in a submitted document, and `docs/RESULTS.md` §6 says so.
 **Legacy raw trajectories are not stored.** The deposited historical artifacts
 contain aggregates or derived endpoint series, so their covariance,
 stationarity, and alternative observables cannot be independently recomputed.
-The v2 exp09--11 code writes positions, cells, species/PBC, field labels, seeds,
-and the derived A/U/dU/force series needed to verify summaries. Because no v2
-production run exists yet, this is a data contract rather than deposited new
-evidence.
+The exp09/exp11 v3 and exp10 v2 code writes positions, cells, species/PBC, field
+labels, seeds and the derived A/U/dU/force series needed to verify summaries.
+Exp09 and exp11 v2 were superseded before production after the aligned-field SVD
+sign ambiguity was found. Because no corrected production run exists, this is a
+data contract rather than deposited new evidence.

@@ -79,10 +79,11 @@ REF = {
     "fig:mechanism": "Figure 1", "fig:prediction": "Figure 2",
     "fig:counterexamples": "Figure 3", "fig:regimes": "Figure 4",
     "fig:proxies": "Figure 5", "fig:response": "Figure 6",
-    "tab:counterexamples": "Table I", "tab:budget": "Table II",
-    "tab:regimes": "Table III", "tab:zoo": "Table IV",
-    "tab:breakdown": "Table V", "tab:discrepancy": "Table VI",
-    "tab:cutoff": "Table VII", "tab:validation": "Table VIII",
+    "tab:clusters": "Table I", "tab:warning": "Table II",
+    "tab:counterexamples": "Table III", "tab:budget": "Table IV",
+    "tab:regimes": "Table V", "tab:zoo": "Table VI",
+    "tab:breakdown": "Table VII", "tab:discrepancy": "Table VIII",
+    "tab:cutoff": "Table IX", "tab:validation": "Table X",
     "eq:frmse": "Eq. (2)", "eq:fep": "Eq. (3)", "eq:cumulants": "Eq. (4)",
     "eq:linear": "Eq. (6)", "eq:cs": "Eq. (7)", "eq:modecov": "Eq. (8)",
     "eq:modeforce": "Eq. (9)", "eq:w32": "Eq. (11)",
@@ -388,7 +389,7 @@ def main() -> None:
         "",
         "## Abstract",
         "",
-        "*(250 words.)*",
+        "*(246 words.)*",
         "",
         wrap(inline(abstract)),
         "",
@@ -409,7 +410,8 @@ def main() -> None:
         parts.append(wrap(inline(cap)) + "\n")
 
     parts.append("\n---\n\n## Tables\n")
-    for lab in ["tab:counterexamples", "tab:budget", "tab:regimes", "tab:zoo",
+    for lab in ["tab:clusters", "tab:warning",
+                "tab:counterexamples", "tab:budget", "tab:regimes", "tab:zoo",
                 "tab:breakdown", "tab:discrepancy", "tab:cutoff", "tab:validation"]:
         blk = floats[lab]
         cap = re.search(r"\\caption\{(.*)\}\s*\\begin\{ruledtabular\}", blk, re.S).group(1)

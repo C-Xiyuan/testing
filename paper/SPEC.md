@@ -24,7 +24,7 @@ The current repository has not solved that problem. Its strongest numerical
 artifact is a provisional legacy observation in one LJ liquid cell: within a
 fixed pair-radial basis and one target pair-count bin, fields separated by 0.52%
 in force RMSE have different reported direct observable shifts. Its paired
-uncertainty is unavailable and clean v2 replication is pending. This does not establish the
+uncertainty is unavailable and clean v3 replication is pending. This does not establish the
 frequency of such fields among fitted MLIPs, a general selector, or transfer to
 other systems, observables, sizes, phases, or dynamics.
 
@@ -70,13 +70,13 @@ other systems, observables, sizes, phases, or dynamics.
 
 ## Corrective experiments
 
-- **exp09 v2:** fixed-panel conditional calibration with independent starts,
+- **exp09 v3:** fixed-panel conditional calibration with independent starts,
   field-specific streams, complete-chain crossed bootstrap, stationarity checks, raw
   coordinates, and no field-population claim.
 - **exp10 v2:** HMC-direct minus MBAR at two endpoints is the sole primary
   family; Metropolis/linear comparisons are sensitivity analyses. Complete-chain
   percentile bootstrap, relaxation, stationarity, and overlap gates fail closed.
-- **exp11 v2:** construction cluster is the unit; force matching and held-out
+- **exp11 v3:** construction cluster is the unit; force matching and held-out
   covariance-nullness are manipulation gates; direct chains use declared
   paired seed/start blocks; the conclusion is limited to the fixed cell.
 

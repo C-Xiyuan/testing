@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""exp09 v2 -- conditional calibration on one frozen designed-field panel.
+"""exp09 v3 -- conditional calibration on one frozen designed-field panel.
 
 The legacy exp09 crossed eight reference chains with one set of direct chains
 for eight fields, but then described the resulting 64 cells as though they were
@@ -45,11 +45,11 @@ from atomlab.units import beta as inverse_temperature
 from experiments.common import ExperimentContext, main, require_frozen_protocol
 
 
-EXPERIMENT_NAME = "exp09_calibration_replication_v2"
-FIELD_PANEL_ID = "single-construction-panel-v2"
+EXPERIMENT_NAME = "exp09_calibration_replication_v3"
+FIELD_PANEL_ID = "single-construction-panel-v3"
 PRODUCTION_MASTER_SEED = 20260812
 ACTUAL_CONSTRUCTION_PANELS = 1
-PROTOCOL_PATH = Path(__file__).resolve().parents[2] / "protocols" / "exp09_v2.json"
+PROTOCOL_PATH = Path(__file__).resolve().parents[2] / "protocols" / "exp09_v3.json"
 
 DEFAULTS = {
     "system": {
@@ -120,7 +120,7 @@ def field_specific_start_seed(master_seed: int, field_index: int, chain_index: i
 
 
 def validate_master_seed(seed: int, *, quick_mode: bool) -> None:
-    """Prevent the v2 production run from masquerading as a legacy-seed rerun.
+    """Prevent the v3 production run from masquerading as a legacy-seed rerun.
 
     The legacy outputs used master seed 0.  The corrected design changes both the
     units and randomisation schedule, so its confirmatory candidate run is
@@ -131,7 +131,7 @@ def validate_master_seed(seed: int, *, quick_mode: bool) -> None:
         return
     if int(seed) != PRODUCTION_MASTER_SEED:
         raise RuntimeError(
-            "exp09 v2 production is frozen at master seed "
+            "exp09 v3 production is frozen at master seed "
             f"{PRODUCTION_MASTER_SEED}; received {seed}. Legacy seed 0 is not an "
             "independent rerun (use --quick for smoke testing only)."
         )
@@ -493,7 +493,7 @@ def run(ctx: ExperimentContext) -> dict:
     validate_master_seed(ctx.seed, quick_mode=ctx.quick)
     require_frozen_protocol(
         ctx, protocol_path=PROTOCOL_PATH,
-        expected_protocol=EXPERIMENT_NAME, expected_version=2,
+        expected_protocol=EXPERIMENT_NAME, expected_version=3,
     )
     initial_cfg, potential = build_system(ctx)
     temperature = float(ctx.config["system"]["temperature"])
@@ -837,7 +837,7 @@ def run(ctx: ExperimentContext) -> dict:
         quick_mode=ctx.quick, fixed_field_panel=True,
     )
     summary = {
-        "experiment_version": 2,
+        "experiment_version": 3,
         "field_panel_id": FIELD_PANEL_ID,
         "scope": "conditional on one frozen constructed-field panel",
         "independent_units": {
@@ -866,7 +866,7 @@ def run(ctx: ExperimentContext) -> dict:
 
 
 def report_summary(summary, records):
-    print("\n  --- P0-2 exp09 v2: fixed-panel conditional analysis ---")
+    print("\n  --- P0-2 exp09 v3: fixed-panel conditional analysis ---")
     print(
         f"  units: {summary['n_reference_chains']} reference chains; "
         f"{summary['n_direct_chains_per_field']} direct chains within each of "
@@ -907,5 +907,5 @@ if __name__ == "__main__":
         name=EXPERIMENT_NAME,
         protocol_path=PROTOCOL_PATH,
         protocol_name=EXPERIMENT_NAME,
-        protocol_version=2,
+        protocol_version=3,
     )

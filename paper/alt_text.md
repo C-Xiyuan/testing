@@ -3,48 +3,46 @@
 One plain-language sentence per figure, as required for accessibility. Figure
 numbers match `main.tex`; source files are the `.pdf` versions in `../figures/`.
 
-**Figure 1** (`headline_mechanism.pdf`) — Two scatter panels: on the left, the
-measured shift in a target pair count rises monotonically and almost linearly as
-the correlation between the observable and the error field goes from positive to
-negative, with all four points at the same force RMSE; on the right, the size of
-the measured change in the pair-distribution curve rises by a factor of 4.66 as
-the width of the error field grows from 0.1 to 0.65 angstroms and then falls
-back at the largest width, again at a force RMSE held exactly fixed. The right
-panel's printed title rounds the rise to five.
+**Figure 1** (`headline_mechanism.pdf`) — Two descriptive legacy panels: the
+left shows target-bin shifts for four constructed fields at each of two nearly
+matched force-error levels, with marginal standard errors and a warning that
+streams are shared; the right shows direct and first-order point estimates over
+six widths, separating the four unswitched widths from two whose Gaussian tails
+enter the cutoff switch and explicitly stating that joint norm uncertainty is
+unavailable.
 
-**Figure 2** (`headline_prediction.pdf`) — A scatter plot of the measured shift
-in the target pair count against the shift predicted from reference-ensemble
-samples alone, for eight designed error fields; the points, with error bars,
-scatter tightly about the diagonal identity line over a range from about minus
-two to plus ten pairs.
+**Figure 2** (`headline_prediction.pdf`) — A legacy shared-stream tracking plot
+of direct target-bin estimates against first-order point predictions for eight
+constructed fields, with marginal horizontal and vertical errors, field/force
+level markers and an explicit warning that shared-offset covariance is missing
+and the panel is not an independent calibration test.
 
-**Figure 3** (`exp07_designed_counterexamples_counterexamples.pdf`) — Two panels,
-one per force level, each plotting the change in pair count against pair
-separation for the scalar-null, aligned and random error fields on an eight-bin
-grid; the scalar-null field's own target bin (3.4 to 3.9 angstroms) lies between
-the plotted bins and is not shown, and what the panels do show is that this
-field still moves the curve by about eleven pairs elsewhere, as large as the
-aligned field's largest excursion.
+**Figure 3** (`exp07_designed_counterexamples_counterexamples.pdf`) — Two legacy
+single-construction panels, one per force level, showing aligned, null and both
+random fields on an eight-bin radial grid; a shaded 3.4–3.9 angstrom target
+region and separate diamond markers expose the independently deposited target
+measurement, while the footer labels shared streams and invalid launch
+provenance and denies confirmatory replication.
 
-**Figure 4** (`headline_regimes.pdf`) — On the left, a log–log scatter of
-observable error against force RMSE for 34 surrogates showing a clear rising
-trend across a 361-fold range, with a narrow vertical band shaded; on the right,
-a bar chart of the observable error for the fifteen surrogates inside that band,
-ordered by increasing force RMSE, whose bar heights vary by a factor of thirty
-with no visible trend. Neither panel draws error bars on the plotted points.
+**Figure 4** (`headline_regimes.pdf`) — A fixed, clustered 34-member legacy zoo:
+the left plots raw observable-error norms against force RMSE, flags six
+noise-dominated rows and shades the analyst-chosen window; the right orders its
+15 members by force RMSE, shows deposited noise-scale whiskers, reports a raw
+12.1-fold range and labels all rank intervals as row-resampling sensitivities
+rather than population inference.
 
 **Figure 5** (`exp05_proxy_correlation_proxy_correlation.pdf`) — Three panels,
 drawn on the raw rather than the noise-subtracted observable-error series:
 observable error against force RMSE with error bars; measured against predicted
-observable error falling close to a line; and a horizontal bar chart of Spearman
-rank correlations with confidence intervals for each proxy metric, in which the
-per-atom energy spread and the response prediction sit near the top and the
-smoothness ratio sits at zero with an interval spanning both signs.
+observable error falling close to a line; and a horizontal chart of Spearman
+rank correlations with 2.5–97.5% row-resampling sensitivity ranges for the fixed,
+clustered 34-member zoo, explicitly labelled as descriptive rather than
+population confidence intervals; the per-atom energy spread and response
+prediction sit near the top, while the smoothness-ratio range spans both signs.
 
-**Figure 6** (`exp06_response_validation_response_validation.pdf`) — On the left,
-three curves of estimated shift against perturbation amplitude that coincide at
-small amplitude and then separate, the first-order estimate continuing to grow
-linearly while the direct measurement bends over and the reweighted estimate
-flattens; on the right, a log–log plot of the measured shift size against error-field
-width, with a dashed reference line of slope 1.5; the plotted points rise far
-more shallowly than that line, and no fitted line is drawn.
+**Figure 6** (`exp06_response_validation_response_validation.pdf`) — The left
+legacy amplitude sweep separates direct and first-order marginal errors from
+reweighted point estimates and shades the region with reweighting ESS below
+0.05; the right shows only width-sweep point estimates, distinguishes four
+unswitched from two switch-affected widths, and states that no joint norm
+uncertainty or confirmatory exponent inference is available.

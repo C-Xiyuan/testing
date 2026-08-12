@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""exp07 -- designed counterexamples: prediction P3.
+"""exp07 -- legacy single-construction designed fields.
+
+This module produced the original exploratory panel. Its deposited execution
+does not have reconstructable launch provenance and contains one construction
+cluster with shared reference and direct random streams. It is therefore a
+descriptive constructive example, not a confirmatory replication or evidence
+for the frequency of the effect. The separately protocolled exp11 series is
+the route to replication.
 
 The sharpest test in the programme.  Three error fields are built with
 **identical force RMSE** on the same reference ensemble:
@@ -14,7 +21,8 @@ If force RMSE were an adequate summary of model quality the three would damage
 the observable equally.  The theory says one will do essentially nothing and
 another a great deal.  Direct simulation with each perturbed potential decides.
 
-Two disciplines make this a test rather than a demonstration:
+Two diagnostics reduce leakage, but do not turn one construction into an
+independent replication:
 
 **Out of sample.**  The null-space construction makes the covariance vanish on
 the frames it was built from, which is in-sample by definition.  The reference
@@ -24,10 +32,10 @@ on the other.  A construction that only worked in-sample would show up here as a
 predicted shift that is small on the construction half and not on the evaluation
 half.
 
-**Direct measurement.**  The predicted shifts are first-order theory.  They are
-checked against explicit Monte Carlo sampling of each perturbed potential, with
-block-bootstrap error bars, so the claim rests on a measurement rather than on
-the formula being tested.
+**Direct measurement.** The predicted shifts are first-order theory. They are
+compared with explicit Monte Carlo sampling of each perturbed potential and
+blocking error bars. Those marginal errors do not account for the shared
+construction/reference streams or supply a paired construction-level contrast.
 """
 
 from __future__ import annotations
@@ -225,15 +233,19 @@ def run(ctx: ExperimentContext) -> dict:
                 )
             r = records[-1]
             print(f"    {label:20s} F_rms(out) = {r['force_rms_out_of_sample']:.3e}  "
-                  f"predicted = {r['predicted_max']:7.3f}  "
-                  f"measured = {r['measured_max']:7.3f} +/- {r['measured_max_error']:.3f}")
+                  f"predicted max = {r['predicted_max']:7.3f}  "
+                  f"post-selected measured max (descriptive) = "
+                  f"{r['legacy_postselected_max_descriptive']:7.3f}")
 
     summary = summarise(records)
     summary["null_space_generalisation"] = generalisation
     ctx.save_json("generalisation", generalisation)
     ctx.save_json("records", records)
     ctx.save_json("summary", summary)
-    make_figure(ctx, records, observable)
+    make_figure(
+        ctx, records, observable,
+        target_bin=np.asarray(o["target_bin"], dtype=float),
+    )
     report(summary)
     return summary
 
@@ -334,8 +346,8 @@ def evaluate_one(ctx, cfg, potential, perturbation, observable, target, evaluate
         "reweighted_ess_fraction": rw.ess_fraction,
         "measured": measured.tolist(),
         "measured_error": err.tolist(),
-        "measured_max": float(np.abs(measured).max()),
-        "measured_max_error": float(err[peak]),
+        "legacy_postselected_max_descriptive": float(np.abs(measured).max()),
+        "postselected_max_uncertainty_valid": False,
         "measured_at_predicted_peak": float(measured[peak]),
         "peak_bin": peak,
         "direct_acceptance": direct_report.acceptance,
@@ -358,7 +370,9 @@ def summarise(records) -> dict:
         if not (null and aligned):
             continue
         n, a = null[0], aligned[0]
-        random_mean = float(np.mean([r["measured_max"] for r in randoms])) if randoms else float("nan")
+        random_mean = float(np.mean([
+            r["legacy_postselected_max_descriptive"] for r in randoms
+        ])) if randoms else float("nan")
         out["levels"][level] = {
             "target": {
                 "null_predicted": n["target_predicted"],
@@ -384,53 +398,111 @@ def summarise(records) -> dict:
                 "null": n["force_rms_out_of_sample"],
                 "aligned": a["force_rms_out_of_sample"],
             },
-            "measured_max": {
-                "null": n["measured_max"],
-                "null_error": n["measured_max_error"],
-                "aligned": a["measured_max"],
-                "aligned_error": a["measured_max_error"],
+            "curve_max_descriptive": {
+                "null": n["legacy_postselected_max_descriptive"],
+                "aligned": a["legacy_postselected_max_descriptive"],
                 "random_mean": random_mean,
+                "selection_adjusted_uncertainty_available": False,
             },
             "predicted_max": {"null": n["predicted_max"], "aligned": a["predicted_max"]},
-            "aligned_over_null_measured": (
-                a["measured_max"] / n["measured_max"] if n["measured_max"] > 0 else float("inf")
-            ),
-            "null_measured_within_error": abs(n["measured_max"]) < 2.0 * n["measured_max_error"],
         }
     return out
 
 
-def make_figure(ctx, records, observable):
+def make_figure(ctx, records, observable, *, target_bin):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
 
     from atomlab.utils import plotting as P
 
-    P.use_style()
+    P.use_style(fontsize=9.0)
+    matplotlib.rcParams.update({
+        "font.family": "sans-serif",
+        "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
+        "svg.fonttype": "none",
+        "pdf.fonttype": 42,
+    })
     levels = sorted({r["force_rms_level"] for r in records})
-    fig, axes = plt.subplots(1, len(levels), figsize=(3.2 * len(levels), 2.8), sharey=True)
+    fig, axes = plt.subplots(
+        1, len(levels), figsize=(4.0 * len(levels), 3.7), sharey=True
+    )
+    fig.subplots_adjust(wspace=0.16, top=0.80, bottom=0.22)
     axes = np.atleast_1d(axes)
+    target_x = float(np.mean(target_bin))
 
     for ax, level in zip(axes, levels):
         group = [r for r in records if r["force_rms_level"] == level]
-        for idx, name in enumerate(["aligned", "random0", "null"]):
+        for idx, name in enumerate(["aligned", "random0", "random1", "null"]):
             match = [r for r in group if r["name"] == name]
             if not match:
                 continue
             r = match[0]
             P.series(ax, observable.centres, r["measured"], r["measured_error"],
-                     index=idx, label=name, fill=False)
+                     index=idx, label=name.replace("random", "random "), fill=False)
             ax.plot(observable.centres, r["predicted"], color=P.series_color(idx),
                     linestyle=":", linewidth=1.2, alpha=0.8)
+            # The curve's nearest bin is [3.5, 4.0] A, whereas the scalar target
+            # is [3.4, 3.9] A. The point at 3.75 A is not the target statistic,
+            # so draw the deposited target measurement as a separate diamond.
+            ax.errorbar(
+                target_x, r["target_measured"], yerr=r["target_error"], fmt="D",
+                markersize=5.8, color=P.series_color(idx),
+                ecolor=P.series_color(idx), markerfacecolor=P.SURFACE,
+                markeredgewidth=1.0, elinewidth=0.9, capsize=2.2,
+                linestyle="none", zorder=6,
+            )
+        ax.axvspan(
+            target_bin[0], target_bin[1], color=P.NEUTRAL, alpha=0.12, zorder=0
+        )
         ax.axhline(0.0, color=P.TEXT_SECONDARY, linewidth=0.6)
-        ax.set_title(f"force RMSE = {level:.0e} eV/Å")
+        ax.set_title(f"legacy force-RMSE level {level:.0e} eV/Å")
         ax.set_xlabel("r (Å)")
+        ax.text(
+            0.03, 0.96,
+            f"shaded target: {target_bin[0]:.1f}–{target_bin[1]:.1f} Å",
+            transform=ax.transAxes, va="top", fontsize=7.0,
+            color=P.TEXT_SECONDARY,
+        )
     axes[0].set_ylabel("shift in pair count")
-    axes[0].legend(ncol=1)
-    fig.suptitle("Identical force error, opposite consequences "
-                 "(points: measured; dotted: first-order prediction)", y=1.04)
-    P.save_figure(fig, ctx.figure_path("counterexamples"))
+    series_handles = [
+        Line2D(
+            [], [], color=P.series_color(idx), marker=P.MARKERS[idx],
+            label=name.replace("random", "random "),
+        )
+        for idx, name in enumerate(["aligned", "random0", "random1", "null"])
+    ]
+    meaning_handles = [
+        Line2D(
+            [], [], color=P.TEXT_SECONDARY, linestyle=":",
+            label="first-order curve",
+        ),
+        Line2D(
+            [], [], color=P.TEXT_SECONDARY, marker="D",
+            markerfacecolor=P.SURFACE, linestyle="none",
+            label="target-bin measurement ±1 SE",
+        ),
+    ]
+    axes[0].legend(
+        handles=series_handles + meaning_handles, ncol=2, fontsize=6.7,
+        loc="lower left",
+    )
+    fig.suptitle(
+        "Legacy single-construction fields: curve and separately measured target bin",
+        y=0.96,
+    )
+    fig.text(
+        0.5, 0.045,
+        "Descriptive legacy artifact with invalid launch provenance and shared "
+        "streams; not a confirmatory replication. Curve points: measured ±1 SE; "
+        "dotted: first order.",
+        ha="center", fontsize=7.3, color=P.TEXT_SECONDARY,
+    )
+    # Editable .svg accompanies the project's review .png and manuscript .pdf.
+    P.save_figure(
+        fig, ctx.figure_path("counterexamples"), formats=("png", "pdf", "svg")
+    )
     plt.close(fig)
 
 
@@ -441,28 +513,27 @@ def report(summary):
         for g in gen:
             print(f"    n_construct = {g['n_construct']:5d}: out-of-sample predicted "
                   f"|shift| = {g['out_of_sample']:.4f} +/- {g['out_of_sample_error']:.4f} pairs")
-    print("\n  --- P3: designed counterexamples ---")
+    print("\n  --- legacy single-construction designed panel (descriptive only) ---")
     for level, s in summary["levels"].items():
-        null_flag = "consistent with zero" if s["null_measured_within_error"] else "NOT zero"
         print(f"  at force RMSE {level} eV/A:")
         t = s["target"]
         print(f"    TARGET observable (the scalar the fields were designed against):")
         print(f"      null-space  predicted {t['null_predicted']:+7.3f}  "
               f"measured {t['null_measured']:+7.3f} +/- {t['null_error']:.3f}  "
-              f"{'consistent with zero' if t['null_consistent_with_zero'] else 'NOT zero'}")
+              f"{'within two marginal SE of zero' if t['null_consistent_with_zero'] else 'outside two marginal SE of zero'}")
         print(f"      aligned     predicted {t['aligned_predicted']:+7.3f}  "
               f"measured {t['aligned_measured']:+7.3f} +/- {t['aligned_error']:.3f}  "
-              f"{'significant' if t['aligned_significant'] else 'not significant'}")
+              f"{'outside two marginal SE of zero' if t['aligned_significant'] else 'within two marginal SE of zero'}")
         print(f"      random      measured {t['random_measured_mean']:+7.3f} (mean)")
         print(f"      null-space residual vs second-order prediction: "
               f"{t['null_measured_minus_second_order']:+7.3f} "
               f"({'consistent' if t['null_consistent_with_second_order'] else 'NOT consistent'})")
-        print(f"    full curve: null {s['measured_max']['null']:+.3f} "
-              f"+/- {s['measured_max']['null_error']:.3f}, aligned "
-              f"{s['measured_max']['aligned']:+.3f} +/- {s['measured_max']['aligned_error']:.3f} "
-              f"({null_flag})")
+        print(f"    post-selected curve maxima (descriptive only): null "
+              f"{s['curve_max_descriptive']['null']:+.3f}, aligned "
+              f"{s['curve_max_descriptive']['aligned']:+.3f}; no valid "
+              "selection-adjusted uncertainty")
 
 
 if __name__ == "__main__":
     main(run, default_config=DEFAULTS,
-         description="Designed error fields with matched force RMSE and opposite consequences")
+         description="Legacy single-construction fields with matched force RMSE")

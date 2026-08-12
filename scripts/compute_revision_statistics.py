@@ -18,9 +18,10 @@ Six blocks:
    sign pattern is reported.
 
 2. **Null-versus-aligned difference.** In the difference between two fields of
-   the same arm the shared reference mean cancels identically. The quoted
-   uncertainty is the quadrature sum of the two tabulated errors, which
-   double-counts the shared term and is therefore an upper bound.
+   the same arm the shared reference mean cancels identically. Only the legacy
+   point contrast is auditable: the aligned/null direct chains reused random
+   streams and their covariance was not deposited, so quadrature of marginal
+   errors is neither a valid contrast error nor demonstrably conservative.
 
 3. **Band robustness.** Spearman rho, with 95% percentile bootstrap intervals
    over members, inside the analyst-chosen band on three nested subsets: all 15
@@ -33,9 +34,12 @@ Six blocks:
    is copied in alongside for comparison. Also the observable-error spread on
    the noise-subtracted and raw series, and with the designed fields removed.
 
-4. **Width exponent.** A bootstrap interval on the fitted log-log exponent of the
-   direct-sampling width sweep, propagating the per-point blocking errors, plus
-   the exponent with the largest (saturating) width dropped.
+4. **Width exponent.** Descriptive log-log slopes plus a legacy
+   independent-marginal sensitivity range. There is no valid interval because
+   cross-width covariance and raw chain units were not deposited, and the
+   stored norm of per-bin errors is not the sampling SE of a curve norm. The
+   primary description uses only widths satisfying ``r0 + 3w < r_on``; the
+   six-point switch-contaminated fit is retained only as legacy description.
 
 5. **Outer-bin share.** The fraction of the squared norm of the measured
    difference curve carried by the two outermost bins, which sit at the potential
@@ -64,6 +68,23 @@ SEED = 20240517
 
 def load(rel):
     return json.loads((ROOT / rel).read_text())
+
+
+def legacy_component_se_norm(record):
+    """Read the non-inferential width diagnostic across result schemas.
+
+    New exp06 outputs name the quantity honestly.  The fallback exists only so
+    the deposited legacy records remain readable; it must not make new outputs
+    depend on the withdrawn ``direct_norm_error`` key.
+    """
+    if "legacy_component_se_norm_noninferential" in record:
+        return float(record["legacy_component_se_norm_noninferential"])
+    if "direct_norm_error" in record:
+        return float(record["direct_norm_error"])
+    raise KeyError(
+        "width record lacks legacy_component_se_norm_noninferential "
+        "(or the legacy direct_norm_error fallback)"
+    )
 
 
 def residual_decomposition(records, label):
@@ -129,8 +150,13 @@ def main():
             {
                 "force_rms_level": level,
                 "aligned_minus_null_pairs": float(d),
-                "upper_bound_error_pairs": e,
-                "lower_bound_sigma": float(abs(d) / e),
+                "legacy_marginal_quadrature_error_pairs": e,
+                "legacy_quadrature_signal_ratio": float(abs(d) / e),
+                "contrast_uncertainty_auditable": False,
+                "reason": (
+                    "aligned/null direct-chain covariance was not deposited; "
+                    "marginal quadrature is not known to be conservative"
+                ),
             }
         )
     out["null_vs_aligned_difference"] = diffs
@@ -237,29 +263,74 @@ def main():
     w = load("results/exp06_response_validation/width_records.json")
     width = np.array([x["width"] for x in w])
     direct = np.array([x["direct_norm"] for x in w])
-    derr = np.array([x["direct_norm_error"] for x in w])
+    derr = np.array([legacy_component_se_norm(x) for x in w])
     linear = np.array([x["linear_norm"] for x in w])
 
     def slope(y, x=width):
         return float(np.polyfit(np.log(x), np.log(y), 1)[0])
 
-    rng = np.random.default_rng(SEED)
-    draws = []
-    for _ in range(N_BOOT):
-        y = direct + rng.normal(0.0, derr)
-        if (y <= 0).any():
-            continue
-        draws.append(slope(y))
-    draws = np.asarray(draws)
-    lo, hi = np.percentile(draws, [2.5, 97.5])
+    manifest = load("results/exp06_response_validation/manifest.json")
+    width_spec = manifest["config"]["width_sweep"]
+    cutoff = float(manifest["config"]["potential"]["cutoff"])
+    r0 = float(width_spec["r0"])
+    r_on = 0.85 * cutoff  # PairPerturbation's deposited default
+    compliant = r0 + 3.0 * width < r_on
+
+    def legacy_independent_marginal_sensitivity(y, yerr, x):
+        """Exploratory perturbation of deposited marginal norm errors.
+
+        This is deliberately *not* an inferential bootstrap: widths share a
+        reference trajectory and random streams, their cross-width covariance
+        was not deposited, and the stored component-SE norm is not the sampling
+        SE of the curve norm.  The draws only show
+        how a historically used independent-Gaussian approximation behaves.
+        """
+        rng = np.random.default_rng(SEED)
+        samples = []
+        for _ in range(N_BOOT):
+            draw = y + rng.normal(0.0, yerr)
+            if (draw <= 0).any():
+                continue
+            samples.append(slope(draw, x))
+        return np.asarray(samples)
+
+    draws_all = legacy_independent_marginal_sensitivity(direct, derr, width)
+    draws_compliant = legacy_independent_marginal_sensitivity(
+        direct[compliant], derr[compliant], width[compliant]
+    )
+    lo_all, hi_all = np.percentile(draws_all, [2.5, 97.5])
+    lo_compliant, hi_compliant = np.percentile(draws_compliant, [2.5, 97.5])
     out["width_exponent"] = {
-        "direct": slope(direct),
-        "direct_ci95": [float(lo), float(hi)],
-        "direct_ci_n_valid_resamples": int(draws.size),
-        "fraction_of_resamples_reaching_1.5": float((draws >= 1.5).mean()),
-        "first_order": slope(linear),
+        "primary_interpretation": "inconclusive on the unswitched compliant subset",
+        "unswitched_condition": "r0 + 3*w < r_on",
+        "r0_angstrom": r0,
+        "r_on_angstrom": r_on,
+        "compliant_widths_angstrom": [float(v) for v in width[compliant]],
+        "switch_truncated_widths_angstrom": [float(v) for v in width[~compliant]],
+        "compliant_direct": slope(direct[compliant], width[compliant]),
+        "compliant_legacy_independent_marginal_sensitivity_95pct_range": [
+            float(lo_compliant), float(hi_compliant)
+        ],
+        "compliant_legacy_sensitivity_n_valid_draws": int(draws_compliant.size),
+        "compliant_legacy_sensitivity_fraction_reaching_1.5": float(
+            (draws_compliant >= 1.5).mean()
+        ),
+        "compliant_first_order": slope(linear[compliant], width[compliant]),
+        "legacy_all_six_direct": slope(direct),
+        "legacy_all_six_independent_marginal_sensitivity_95pct_range": [
+            float(lo_all), float(hi_all)
+        ],
+        "legacy_all_six_sensitivity_n_valid_draws": int(draws_all.size),
+        "legacy_all_six_sensitivity_fraction_reaching_1.5": float(
+            (draws_all >= 1.5).mean()
+        ),
+        "legacy_all_six_first_order": slope(linear),
         "first_order_has_no_deposited_per_point_error": True,
-        "direct_dropping_largest_width": slope(direct[:-1], width[:-1]),
+        "sensitivity_is_not_an_inferential_interval": True,
+        "sensitivity_limitations": (
+            "shared reference/random streams and missing cross-width covariance; "
+            "the stored component-SE norm is not the sampling SE of the curve norm"
+        ),
         "direct_norms_pairs": [float(v) for v in direct],
         "monotone": bool(np.all(np.diff(direct) > 0)),
         "argmax_width": float(width[int(np.argmax(direct))]),

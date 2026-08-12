@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""exp06 -- validating the response theory: prediction P2.
+"""exp06 -- legacy response-theory experiment (non-release).
 
 Two questions, both answered by measurement rather than by assertion.
 
@@ -25,6 +25,14 @@ reported force error does not vary at all.  The fitted exponent is reported for
 what it is worth, using the norm of the whole predicted difference curve rather
 than a single bin so that the saturation artefact discussed in the theory does
 not confound it.
+
+This module is retained to read and render the historical artefact. Its direct
+arms share a reference-equilibrated start and a legacy random-stream schedule,
+and the chain-level evidence needed to audit stationarity was not retained.
+Non-quick execution therefore fails closed. Release evidence requires a new
+versioned protocol with independent upstream units, surrogate-specific warmup,
+energy/observable/delta-U stationarity gates, raw chain deposition and a frozen
+analysis plan; relabelling this legacy schema is not a scientific rerun.
 """
 
 from __future__ import annotations
@@ -82,6 +90,17 @@ DEFAULTS = {
 }
 
 
+def require_versioned_release_replacement(ctx: ExperimentContext) -> None:
+    """Refuse to present the legacy design as a clean production rerun."""
+    if not ctx.quick:
+        raise RuntimeError(
+            "legacy exp06 is non-release: its direct chains lack independent "
+            "upstream units and fail-closed U/A/delta-U stationarity evidence. "
+            "Use --quick only for pipeline smoke tests; implement a frozen "
+            "exp06 v2 protocol before generating scientific evidence."
+        )
+
+
 def build_system(ctx):
     s, p = ctx.config["system"], ctx.config["potential"]
     cfg = scale_to_density(fcc(s["lattice_constant"], "Ar", tuple(s["reps"])), s["density"])
@@ -102,6 +121,7 @@ def sample(ctx, cfg, potential, n_samples, seed):
 
 
 def run(ctx: ExperimentContext) -> dict:
+    require_versioned_release_replacement(ctx)
     cfg, potential = build_system(ctx)
     temperature = ctx.config["system"]["temperature"]
     o = ctx.config["observable"]
@@ -143,7 +163,11 @@ def run(ctx: ExperimentContext) -> dict:
 
     summary = {
         "amplitude_sweep": summarise_amplitudes(amplitude_records),
-        "width_sweep": summarise_widths(width_records),
+        "width_sweep": summarise_widths(
+            width_records,
+            r0=float(ctx.config["width_sweep"]["r0"]),
+            cutoff=float(ctx.config["potential"]["cutoff"]),
+        ),
     }
     ctx.save_json("amplitude_records", amplitude_records)
     ctx.save_json("width_records", width_records)
@@ -236,13 +260,17 @@ def width_sweep(ctx, cfg, potential, observable, frames,
             "force_rms": perturbation.force_rms(frames),
             "linear_norm": float(np.linalg.norm(predicted)),
             "direct_norm": float(np.linalg.norm(measured)),
-            "direct_norm_error": float(np.linalg.norm(measured_err)),
+            # Historical diagnostic only: ||per-bin SE|| is not the sampling
+            # SE of ||measured curve|| and must never be printed as a +/- bar.
+            "legacy_component_se_norm_noninferential": float(
+                np.linalg.norm(measured_err)
+            ),
             "linear_curve": predicted.tolist(),
             "direct_curve": measured.tolist(),
         })
         r = records[-1]
         print(f"    {width:9.2f} {r['amplitude']:10.2e} {r['force_rms']:10.2e} "
-              f"{r['linear_norm']:9.3f} {r['direct_norm']:8.3f}+/-{r['direct_norm_error']:<6.3f}")
+              f"{r['linear_norm']:9.3f} {r['direct_norm']:8.3f} (point estimate)")
     return records
 
 
@@ -274,22 +302,32 @@ def summarise_amplitudes(records) -> dict:
     }
 
 
-def summarise_widths(records) -> dict:
-    """Fit the exponent the frequency argument predicts to be 3/2."""
+def summarise_widths(records, *, r0: float, cutoff: float) -> dict:
+    """Describe the unswitched subset; do not infer an exponent."""
     widths = np.array([r["width"] for r in records])
     direct = np.array([r["direct_norm"] for r in records])
     linear = np.array([r["linear_norm"] for r in records])
 
-    def fit(y):
-        good = (y > 0) & np.isfinite(y)
+    r_on = 0.85 * cutoff
+    compliant = r0 + 3.0 * widths < r_on
+
+    def fit(y, mask):
+        good = mask & (y > 0) & np.isfinite(y)
         if good.sum() < 3:
             return float("nan")
         return float(np.polyfit(np.log(widths[good]), np.log(y[good]), 1)[0])
 
     return {
-        "predicted_exponent": 1.5,
-        "measured_exponent_direct": fit(direct),
-        "measured_exponent_linear": fit(linear),
+        "interpretation": "inconclusive; descriptive unswitched subset only",
+        "historical_hypothesis_exponent": 1.5,
+        "unswitched_condition": "r0 + 3*w < 0.85*cutoff",
+        "compliant_widths": widths[compliant].tolist(),
+        "switch_truncated_widths": widths[~compliant].tolist(),
+        "descriptive_exponent_direct_compliant": fit(direct, compliant),
+        "descriptive_exponent_linear_compliant": fit(linear, compliant),
+        "legacy_all_six_exponent_direct": fit(direct, np.ones_like(compliant, bool)),
+        "legacy_all_six_exponent_linear": fit(linear, np.ones_like(compliant, bool)),
+        "norm_uncertainty_available": False,
         "dynamic_range": float(direct.max() / direct.min()) if direct.min() > 0 else float("inf"),
         "force_rms_spread": float(
             np.ptp([r["force_rms"] for r in records]) / np.mean([r["force_rms"] for r in records])
@@ -325,19 +363,20 @@ def make_figures(ctx, amplitude_records, width_records):
 
     widths = np.array([r["width"] for r in width_records])
     direct = np.array([r["direct_norm"] for r in width_records])
-    errs = np.array([r["direct_norm_error"] for r in width_records])
-    P.series(ax2, widths, direct, errs, index=0, label="measured", fill=False)
-    good = direct > 0
-    if good.sum() >= 2:
-        reference = direct[good][0] * (widths[good] / widths[good][0]) ** 1.5
-        ax2.plot(widths[good], reference, color=P.TEXT_SECONDARY, linestyle="--",
-                 linewidth=1.0, label="width$^{3/2}$")
+    r0 = float(ctx.config["width_sweep"]["r0"])
+    r_on = 0.85 * float(ctx.config["potential"]["cutoff"])
+    compliant = r0 + 3.0 * widths < r_on
+    ax2.plot(widths[compliant], direct[compliant], marker="o", linestyle="none",
+             color=P.SERIES[0], label="unswitched point estimate")
+    ax2.plot(widths[~compliant], direct[~compliant], marker="o", linestyle="none",
+             markerfacecolor="none", color=P.TEXT_SECONDARY,
+             label="switch-truncated point estimate")
     ax2.set_xscale("log")
     ax2.set_yscale("log")
     ax2.set_xlabel("width of the error field (Å)")
     ax2.set_ylabel("|shift| at fixed force RMSE")
     ax2.legend()
-    ax2.set_title("Same force error, different damage")
+    ax2.set_title("Legacy width sweep (descriptive)")
 
     P.add_panel_labels([ax1, ax2])
     P.save_figure(fig, ctx.figure_path("response_validation"))
@@ -352,10 +391,12 @@ def report(summary):
     print(f"  every screen-passing case agrees with direct sampling: "
           f"{a['screen_passed_cases_all_agree']} (audit only, not a gate)")
     print(f"  largest beta*sd(dU) at which it still agrees:   {a['largest_agreeing_beta_sigma']:.3f}")
-    print("\n  --- the frequency argument ---")
-    print(f"  measured exponent (direct):     {w['measured_exponent_direct']:.2f}")
-    print(f"  measured exponent (first order):{w['measured_exponent_linear']:.2f}")
-    print(f"  predicted by theory:            {w['predicted_exponent']:.2f}")
+    print("\n  --- legacy width sweep (no inferential exponent) ---")
+    print(f"  unswitched descriptive slope (direct):     "
+          f"{w['descriptive_exponent_direct_compliant']:.2f}")
+    print(f"  unswitched descriptive slope (first order):"
+          f"{w['descriptive_exponent_linear_compliant']:.2f}")
+    print("  no curve-norm SE or joint cross-width covariance was retained")
     print(f"  observable error spans {w['dynamic_range']:.0f}x across widths, "
           f"while force RMSE varies by {100 * w['force_rms_spread']:.1f}%")
 

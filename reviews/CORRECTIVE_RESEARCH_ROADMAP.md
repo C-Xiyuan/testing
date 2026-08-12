@@ -22,8 +22,10 @@ errors, no-oracle calibration or selection utility.
 
 ## Release blockers before new scientific claims
 
-The corrected `exp09`, `exp10` and `exp11` v2 pipelines must be run from one
-frozen, clean commit with master seed `20260812`.  Smoke runs, legacy seed 0,
+The corrected exp09/exp11 v3 and exp10 v2 pipelines must be run from one
+frozen, clean commit with master seed `20260812`.  The v3 protocols pin the
+aligned-field sign exposed by the round-2 audit; the never-run v2 contracts are
+superseded rather than silently amended. Smoke runs, legacy seed 0,
 missing raw arrays, changed source during execution, failed stationarity, failed
 overlap or a missing manifest make an output non-evidential.
 
@@ -163,11 +165,17 @@ a selector.
 ## Stop/go order
 
 1. Run corrected P0-1/P0-2/P0-3 pipelines and publish raw evidence.
-2. Run A1.  Stop expansion if the fixed-cell mechanism is not stable across its
+2. Before retaining any numerical table or figure sourced from legacy
+   exp03/05/06/07, implement new versioned variants with disjoint upstream,
+   reference and member streams, stationarity gates, raw chain units and launch
+   provenance, then rerun them from the same signed commit. If that work is not
+   done, remove those legacy numbers and figures from the release manuscript;
+   exp09--11 cannot repair their provenance retrospectively.
+3. Run A1.  Stop expansion if the fixed-cell mechanism is not stable across its
    nearest state/size/target perturbations.
-3. Run A2 and B1.  Stop any practical-selector language if fitted errors fail.
-4. Commit DFT resources only after B1 passes.
-5. Run Gate C only after an observable predictor has held-out calibration and a
+4. Run A2 and B1.  Stop any practical-selector language if fitted errors fail.
+5. Commit DFT resources only after B1 passes.
+6. Run Gate C only after an observable predictor has held-out calibration and a
    fail-closed overlap/stationarity policy.
 
 At every stage, the configuration, estimand, hierarchy, decision rule and

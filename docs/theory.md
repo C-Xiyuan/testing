@@ -513,26 +513,22 @@ The argument is only worth making if it can fail. It fails if:
    error magnitudes, which would be a more interesting result than the one
    expected here.
 
-Each is checked explicitly, and the pre-registration of these criteria in
-advance of running the experiments is deliberate.
+These were the historical falsification targets. They were not all checked:
+the fitted-model, multi-observable and decision-utility versions remain
+unanswered, and the legacy fixed-cell runs do not constitute a preregistered
+population test. Current gates and failure wording are in the claim ledger.
 
 ---
 
 ## 9. Relation to existing work
 
-The observation that force error does not predict simulation quality is not new
-as an *empirical* finding: benchmark studies comparing MLIPs on downstream
-simulation tasks have reported exactly this dissociation, and the practical
-advice to validate on simulation observables rather than on held-out forces is
-increasingly standard.
-
-What this repository adds is (a) a *mechanism* — the covariance formula and its
-frequency-weighting consequence — rather than an observation; (b) an
-**analytic-oracle** methodology in which `δU` is known exactly at every point of
-configuration space, so the mechanism can be tested rather than inferred;
-(c) **designed** perturbations that make the prediction falsifiable
-constructively rather than only observationally; and (d) a cheap predictor with
-a stated failure mode and an experiment built to expose it.
+The observation that force error and downstream simulation quality can diverge
+predates this repository; this notebook did not perform a sufficient literature
+audit to support the stronger phrase “exactly this dissociation.” Its proposed
+increment was an analytic-oracle construction with known `δU` and deliberately
+null/aligned perturbations. Current evidence supports only a provisional
+fixed-cell legacy observation. It does not establish the frequency of this
+geometry in fitted MLIPs or a calibrated cheap predictor.
 
 The statistical mechanics is textbook — free-energy perturbation, cumulant
 expansions, Zwanzig's relation, Bennett's acceptance ratio. The contribution is

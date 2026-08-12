@@ -63,8 +63,8 @@ single-realisation excursions, nor identify which legacy measurement was
 The exp10 v2 code repairs the gate, distinguishes equivalence from meaningful
 difference and inconclusive results, preserves raw configurations and chain
 units, uses joint complete-chain uncertainty, isolates the HMC--MBAR primary
-family, and records launch/end provenance. A quick smoke completed and failed
-closed; it is explicitly `smoke_only`. **No v2 production run has completed.**
+family, and records launch/end provenance. Any earlier smoke output was
+non-evidential and is not retained. **No v2 production run has completed.**
 
 ## P0-2: what exp09 actually says
 
@@ -89,7 +89,8 @@ Accordingly, the following previous conclusions are withdrawn:
 
 The retained statement is that reference draw, truncation and missing prediction
 uncertainty are all plausible contributors and require a properly independent,
-jointly analysed rerun.  `exp09_calibration_replication_v2` repairs field streams,
+jointly analysed rerun.  `exp09_calibration_replication_v3` repairs field streams,
+fixes the aligned SVD sign,
 unit-of-analysis handling and provenance; production has not been rerun.
 
 ## P0-3: what exp11 actually says
@@ -109,12 +110,12 @@ it failed in clusters 4 and 5, so “controls behaved as designed” is also
 withdrawn.  The aligned/null suppression ratio has a near-zero denominator and
 spans 16–467×; neither a single 360× nor median 26× is release evidence.
 
-The exp11 v2 code makes paired seed/start blocks explicit, computes paired-chain
+The exp11 v3 code makes paired seed/start blocks explicit, computes paired-chain
 uncertainty, reports control-order failures, gates on force matching and held-out
 covariance-nullness, uses tri-state effect interpretation, and records raw
-configurations plus launch/end provenance. Its quick smoke failed both
-manipulation gates and remained `smoke_only`. Production has not been rerun.
-Even a successful v2 rerun of this same cell remains only part of Gate A.
+configurations plus launch/end provenance. No quick output is retained as
+evidence. Production has not been rerun.
+Even a successful v3 rerun of this same cell remains only part of Gate A.
 
 ## Exact N=2 calculation
 
@@ -146,7 +147,8 @@ carry valid provenance.
 > basis, legacy artefacts report a large cluster-level
 > aligned-minus-null point contrast while force RMSE differs by 0.52%. The paired
 > contrast uncertainty is unavailable. The result is provisional
-> until a clean v2 rerun, remains fixed-cell even then, and does not establish
+> until clean exp09/exp11 v3 and exp10 v2 reruns, remains fixed-cell even then,
+> and does not establish
 > prevalence in fitted models,
 > transfer across targets/bases/sizes/states, calibrated end-to-end prediction
 > or selection utility.

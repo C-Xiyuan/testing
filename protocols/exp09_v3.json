@@ -1,9 +1,8 @@
 {
-  "protocol": "exp09_calibration_replication_v2",
+  "protocol": "exp09_calibration_replication_v3",
   "schema_version": 1,
-  "protocol_version": 2,
-  "status": "superseded_before_production",
-  "superseded_by": "exp09_v3.json",
+  "protocol_version": 3,
+  "status": "frozen_before_production",
   "master_seed": 20260812,
   "executable_config_contract": "executable_config below is canonical; experiments/exp09_calibration_replication/run.py DEFAULTS must match it exactly, and production CLI/config overrides require a new protocol version",
   "executable_config": {
@@ -52,6 +51,7 @@
       "equivalence_bound_pairs": null
     }
   },
+  "aligned_direction_convention": "for this scalar target, orient the leading aligned direction so Cov(A, delta_U_aligned) <= 0 and the first-order aligned shift is non-negative",
   "inferential_units": {
     "reference": "independent reference chain",
     "direct": "independent chain nested in fixed field",

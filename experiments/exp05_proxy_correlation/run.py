@@ -174,13 +174,14 @@ def proxy_metrics(perturbation, frames, temperature) -> dict:
     }
 
 
-def spearman_with_ci(x, y, n_resamples=2000, seed=0):
-    """Spearman rho with a percentile bootstrap interval over zoo members.
+def spearman_with_row_sensitivity(x, y, n_resamples=2000, seed=0):
+    """Legacy row-resampling sensitivity for a fixed, clustered zoo.
 
-    The members are independent of each other, so an ordinary (non-block)
-    bootstrap is the right one here.  The interval is not optional: with a few
-    dozen members the sampling distribution of a rank correlation is wide, and
-    quoting rho alone would be exactly the overclaiming this project is about.
+    Members share construction families, a reference trajectory and random
+    streams. They are not an IID sample from a defined model population, so the
+    returned percentile range is descriptive membership sensitivity, not a
+    population confidence interval. New inferential work must replicate the
+    construction/field-family clusters and resample at those levels.
     """
     from scipy.stats import spearmanr
 
@@ -196,8 +197,12 @@ def spearman_with_ci(x, y, n_resamples=2000, seed=0):
         draws[b] = spearmanr(x[idx], y[idx]).statistic
     draws = draws[np.isfinite(draws)]
     lo, hi = np.percentile(draws, [2.5, 97.5])
+    # ``ci_low``/``ci_high`` are retained as legacy schema keys only. They do
+    # not denote a confidence interval for a model population.
     return {"rho": point, "ci_low": float(lo), "ci_high": float(hi),
-            "n": int(x.size), "n_bootstrap": int(draws.size)}
+            "n": int(x.size), "n_bootstrap": int(draws.size),
+            "interval_kind": "fixed_zoo_row_resampling_sensitivity",
+            "population_inference_valid": False}
 
 
 def top_k_overlap(proxy, truth, k):
@@ -297,7 +302,9 @@ def analyse(ctx, records) -> dict:
     correlations = {}
     for metric in metric_names:
         values = np.array([r[metric] for r in records])
-        stats = spearman_with_ci(values, truth, n_resamples=n_boot, seed=ctx.seed)
+        stats = spearman_with_row_sensitivity(
+            values, truth, n_resamples=n_boot, seed=ctx.seed
+        )
         stats["top3_overlap"] = top_k_overlap(values, truth, min(3, len(records)))
         stats["top5_overlap"] = top_k_overlap(values, truth, min(5, len(records)))
         correlations[metric] = stats
@@ -325,7 +332,13 @@ def make_figure(ctx, records, summary):
     from atomlab.utils import plotting as P
 
     P.use_style()
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(9.6, 2.9))
+    matplotlib.rcParams.update({
+        "font.family": "sans-serif",
+        "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"],
+        "svg.fonttype": "none",
+        "pdf.fonttype": 42,
+    })
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(7.2, 3.25))
 
     force = np.array([r["force_rmse"] for r in records])
     truth = np.array([r["observable_error"] for r in records])
@@ -338,7 +351,10 @@ def make_figure(ctx, records, summary):
     ax1.set_xlabel("force RMSE (eV/Å)")
     ax1.set_ylabel("|observable error|")
     rho = summary["correlations"]["force_rmse"]
-    ax1.set_title(f"ρ = {rho['rho']:.2f}  [{rho['ci_low']:.2f}, {rho['ci_high']:.2f}]")
+    ax1.set_title(
+        f"ρ = {rho['rho']:.2f}  [{rho['ci_low']:.2f}, {rho['ci_high']:.2f}]\n"
+        "fixed-zoo row sensitivity"
+    )
 
     ax2.errorbar(predicted, truth, yerr=noise, fmt="o", markersize=4,
                  color=P.SERIES[1], ecolor=P.GRID, elinewidth=0.8, capsize=1.5)
@@ -347,7 +363,10 @@ def make_figure(ctx, records, summary):
     ax2.set_xlabel("predicted |shift| (response theory)")
     ax2.set_ylabel("measured |observable error|")
     rho2 = summary["correlations"]["predicted_norm"]
-    ax2.set_title(f"ρ = {rho2['rho']:.2f}  [{rho2['ci_low']:.2f}, {rho2['ci_high']:.2f}]")
+    ax2.set_title(
+        f"ρ = {rho2['rho']:.2f}  [{rho2['ci_low']:.2f}, {rho2['ci_high']:.2f}]\n"
+        "fixed-zoo row sensitivity"
+    )
 
     names = list(summary["correlations"])
     rhos = [summary["correlations"][n]["rho"] for n in names]
@@ -362,10 +381,21 @@ def make_figure(ctx, records, summary):
     ax3.set_yticks(y, [names[i].replace("_", " ") for i in order])
     ax3.axvline(0.0, color=P.TEXT_SECONDARY, linewidth=0.6)
     ax3.set_xlabel("Spearman ρ vs observable error")
-    ax3.set_title("with 95% intervals")
+    ax3.set_title("fixed-zoo row sensitivity\n(not a population CI)")
 
     P.add_panel_labels([ax1, ax2, ax3])
-    P.save_figure(fig, ctx.figure_path("proxy_correlation"))
+    fig.text(
+        0.5, 0.015,
+        "Brackets/whiskers: 2.5–97.5% percentiles from resampling rows of this "
+        "fixed, clustered zoo; sensitivity only, not population confidence intervals.",
+        ha="center", va="bottom", fontsize=7.5, color=P.TEXT_SECONDARY,
+    )
+    fig.subplots_adjust(bottom=0.22, top=0.79, wspace=0.55)
+    base = Path(ctx.figure_path("proxy_correlation"))
+    base.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(base.with_suffix(".png"), dpi=600, bbox_inches="tight")
+    fig.savefig(base.with_suffix(".pdf"), bbox_inches="tight")
+    fig.savefig(base.with_suffix(".svg"), bbox_inches="tight")
     plt.close(fig)
 
 
@@ -375,7 +405,9 @@ def report(summary):
           f"{summary['force_rmse_range'][0]:.1e} to {summary['force_rmse_range'][1]:.1e} eV/A")
     print(f"  {summary['n_resolvable']} of them have an observable error resolvable "
           f"above the sampling noise")
-    print(f"  {'metric':24s} {'rho':>6} {'95% interval':>18} {'top-3':>7} {'top-5':>7}")
+    print("  2.5--97.5% percentile ranges below are row-resampling sensitivity")
+    print("  summaries for this fixed, clustered zoo, not population 95% CIs.")
+    print(f"  {'metric':24s} {'rho':>6} {'row sensitivity':>18} {'top-3':>7} {'top-5':>7}")
     for name, s in sorted(summary["correlations"].items(), key=lambda kv: -kv[1]["rho"]):
         print(f"  {name:24s} {s['rho']:6.2f}  [{s['ci_low']:6.2f}, {s['ci_high']:6.2f}] "
               f"{s['top3_overlap']:7.2f} {s['top5_overlap']:7.2f}")

@@ -45,6 +45,7 @@ from atomlab.potentials.perturbations import (
     predicted_shift,
     radial_coupling,
     smooth_cutoff,
+    _solve_weights,
 )
 
 CUTOFF = 5.0
@@ -610,6 +611,35 @@ def test_null_space_predicted_shift_is_zero(designed_setup):
     assert np.linalg.norm(d_aligned) > 1.0
 
 
+def test_aligned_direction_is_invariant_to_svd_sign(monkeypatch):
+    """The signed aligned field must not inherit LAPACK's arbitrary SVD sign."""
+    covariance = np.array([[2.0, -1.0, 0.5], [0.2, 1.5, -0.3]])
+    transform = np.eye(3)
+    original_svd = np.linalg.svd
+
+    y_reference, _, _ = _solve_weights(
+        covariance, transform, "aligned", np.random.default_rng(1), rcond=1e-12
+    )
+
+    def sign_flipped_svd(matrix, full_matrices=True):
+        u, sv, vt = original_svd(matrix, full_matrices=full_matrices)
+        u = u.copy()
+        vt = vt.copy()
+        u[:, 0] *= -1.0
+        vt[0] *= -1.0
+        return u, sv, vt
+
+    monkeypatch.setattr(np.linalg, "svd", sign_flipped_svd)
+    y_flipped, _, _ = _solve_weights(
+        covariance, transform, "aligned", np.random.default_rng(1), rcond=1e-12
+    )
+
+    assert np.allclose(y_reference, y_flipped, atol=1e-14)
+    projected = covariance @ y_flipped
+    anchor = int(np.argmax(np.abs(projected)))
+    assert projected[anchor] < 0.0
+
+
 def test_designed_construction_is_deterministic(designed_setup):
     a = _designed(NullSpacePerturbation, designed_setup, seed=7)
     b = _designed(NullSpacePerturbation, designed_setup, seed=7)
@@ -630,6 +660,7 @@ def test_scalar_observable_null_space(designed_setup):
 
     kw = dict(cutoff=CUTOFF, basis=basis, design=design, target_force_rms=0.08, seed=21)
     null = NullSpacePerturbation(train, coordination, 150.0, **kw)
+    aligned = AlignedPerturbation(train, coordination, 150.0, **kw)
     rand = RandomShellPerturbation(train, coordination, 150.0, **kw)
     assert null.observable_dim == 1
     assert null.null_dimension == basis.n_functions - 1
@@ -637,6 +668,10 @@ def test_scalar_observable_null_space(designed_setup):
     c_rand = abs(float(perturbation_covariance(rand, coordination, train)[0]))
     print(f"\n[scalar observable] in-sample suppression = {c_rand / c_null:.3e}")
     assert c_rand / c_null > 1e6
+    # The sign convention makes a one-sided aligned-minus-null rule portable:
+    # Cov <= 0, so the leading shift -beta*Cov is >= 0.
+    assert aligned.design_covariance[0] < 0.0
+    assert predicted_shift(aligned, coordination, train, 150.0)[0] > 0.0
 
 
 def test_null_space_refuses_impossible_requests(designed_setup):

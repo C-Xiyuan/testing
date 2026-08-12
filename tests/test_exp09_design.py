@@ -1,4 +1,4 @@
-"""Design, uncertainty, and fail-closed regressions for exp09 v2."""
+"""Design, uncertainty, and fail-closed regressions for exp09 v3."""
 
 from __future__ import annotations
 
@@ -22,10 +22,18 @@ def constant_chain_arrays(frame_repeat=1):
     return reference_a, reference_du, direct_a
 
 
-def test_v2_uses_a_new_result_name():
-    assert exp09.EXPERIMENT_NAME == "exp09_calibration_replication_v2"
+def test_v3_uses_a_new_result_name():
+    assert exp09.EXPERIMENT_NAME == "exp09_calibration_replication_v3"
     assert exp09.PRODUCTION_MASTER_SEED == 20260812
     assert exp09.ACTUAL_CONSTRUCTION_PANELS == 1
+
+
+def test_v3_main_entrypoint_records_the_same_protocol_version():
+    source = exp09.__loader__.get_source(exp09.__name__)
+    assert "protocol_version=3" in source
+    assert "protocol_version=2" not in source
+    assert '"experiment_version": 3' in source
+    assert '"experiment_version": 2' not in source
 
 
 def test_production_refuses_legacy_or_unregistered_master_seed():

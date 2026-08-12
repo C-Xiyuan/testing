@@ -1412,6 +1412,18 @@ def _solve_weights(
         # -- not w ~ c, which would only be optimal if force error happened to
         # be the Euclidean norm on coefficients.  It is not.
         y = vt[0].copy()
+        # A non-degenerate singular vector is defined only up to sign. Leaving that sign to
+        # LAPACK makes a one-sided aligned-minus-null experiment change its
+        # scientific disposition across otherwise equivalent BLAS builds.  Use
+        # an observable-space convention instead: the largest-magnitude design
+        # covariance component is non-positive, hence its first-order shift
+        # (-beta Cov) is non-negative.  For a scalar target this simply fixes
+        # Cov(A, delta_U_aligned) < 0.  The rank check above guarantees that the
+        # anchor is non-zero apart from round-off.
+        projected = m_tilde @ y
+        anchor = int(np.argmax(np.abs(projected)))
+        if projected[anchor] > 0.0:
+            y = -y
     elif mode == "random":
         y = rng.standard_normal(k_prime)
     else:  # pragma: no cover - guarded by the subclasses
@@ -1484,6 +1496,15 @@ class _DesignedShellPerturbation(LinearShellPerturbation):
         #: i.e. the dimension the construction actually had to work in.
         self.n_well_conditioned = int(transform.shape[1])
         self.seed = seed
+        design_covariance = self.covariance @ self.weights
+        if self._mode == "aligned":
+            self.alignment_anchor_index = int(np.argmax(np.abs(design_covariance)))
+            self.alignment_anchor_covariance = float(
+                design_covariance[self.alignment_anchor_index]
+            )
+        else:
+            self.alignment_anchor_index = None
+            self.alignment_anchor_covariance = None
 
     # -- diagnostics -------------------------------------------------------
 
@@ -1515,6 +1536,12 @@ class _DesignedShellPerturbation(LinearShellPerturbation):
             "predicted_shift_norm": float(
                 inverse_temperature(self.temperature) * np.linalg.norm(cov)
             ),
+            "aligned_sign_convention": (
+                "largest-magnitude design covariance component <= 0"
+                if self._mode == "aligned" else None
+            ),
+            "alignment_anchor_index": self.alignment_anchor_index,
+            "alignment_anchor_covariance": self.alignment_anchor_covariance,
         }
 
 
@@ -1603,7 +1630,13 @@ class AlignedPerturbation(_DesignedShellPerturbation):
     (via the whitening transform, so the ill-conditioned directions of ``G``
     are dropped rather than inverted).  For a vector observable it takes the
     direction maximising ``||C w||_2`` per unit force error, i.e. the top right
-    singular vector of the whitened covariance matrix.
+    singular vector of the whitened covariance matrix.  Because singular-vector
+    signs are arbitrary, the implementation orients that vector so its
+    largest-magnitude design covariance component is non-positive.  The
+    corresponding first-order shift component is therefore non-negative. This
+    pins the current scalar-target signed rule across LAPACK implementations.
+    A vector target with a degenerate leading singular subspace would require a
+    fuller basis-orientation convention and a new protocol.
 
     Parameters
     ----------

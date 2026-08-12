@@ -102,11 +102,11 @@ written, and saying so is cheaper than pretending otherwise.
 |---|---|---|
 | `exp03_model_zoo` | Fitted models across architectures and budgets. | legacy same-system feasibility evidence only (§3b); no ranking inference |
 | `exp05_proxy_correlation` | **P1** — how well does any proxy metric rank models? | legacy fixed-zoo description only (§3a, §5.1); no population or selection inference |
-| `exp06_response_validation` | **P2** — first-order vs reweighted vs direct sampling. | legacy run; discrepancy not reproduced in exp10 point estimates, but not resolved |
+| `exp06_response_validation` | **P2** — first-order vs reweighted vs direct sampling. | legacy run; formal execution now fails closed because shared starts/streams and stationarity evidence are unrepairable; a frozen v2 or removal is required |
 | `exp07_designed_counterexamples` | **P3** — invert the ranking by construction. | legacy fixed-cell construction (§1, §4); provisional until clean regeneration |
-| `exp09_calibration_replication` | Are the exp07 residuals calibrated, or one shared offset? | legacy exploratory run; non-IID direct streams and invalid provenance; v2 repaired and smoke-tested fail-closed, production not rerun |
-| `exp10_endtoend_consistency` | Reconcile reference-based estimators with direct sampling. | legacy point non-recurrence only; formal result underpowered/not evaluable; v2 repaired and smoke-tested fail-closed, production not rerun |
-| `exp11_counterexample_replication` | Does the counterexample survive a change of construction chain? | legacy fixed-cell partial replication; field-level UQ defect and invalid provenance; v2 repaired with held-out manipulation gate and smoke-tested fail-closed, production not rerun |
+| `exp09_calibration_replication` | Are the exp07 residuals calibrated, or one shared offset? | legacy exploratory run; non-IID direct streams and invalid provenance; v3 code/protocol repaired, no retained v3 result, production not rerun |
+| `exp10_endtoend_consistency` | Reconcile reference-based estimators with direct sampling. | legacy point non-recurrence only; formal result underpowered/not evaluable; v2 code/protocol repaired, no retained v2 result, production not rerun |
+| `exp11_counterexample_replication` | Does the counterexample survive a change of construction chain? | legacy fixed-cell partial replication; field-level UQ defect and invalid provenance; v3 fixes the aligned sign and held-out manipulation gate; production not rerun |
 | `exp01`, `exp02`, `exp04`, `exp08` | reference physics, datasets, observable matrix, committee predictor. | planned; not written |
 
 Standalone analyses that need no new sampling, in `scripts/`:
@@ -143,7 +143,7 @@ The narrowest statement suggested by the legacy artefacts:
 > differing by 0.52% in held-out force RMSE. The paired contrast uncertainty
 > was not retained.
 
-That is a provisional, fixed-cell legacy observation pending clean v2
+That is a provisional, fixed-cell legacy observation pending clean v3
 replication. It does **not** establish that fitted
 MLIP error fields occupy such directions in practice, that force RMSE fails as a
 selector among realistic candidates, or that the response estimator is a usable
@@ -160,4 +160,4 @@ Legacy manifests read
 repository state at run completion and therefore cannot prove which source was
 executed.  The repair branch captures start and end state separately, rejects
 dirty production starts and hashes artefacts, but those safeguards become
-evidence only after new v2 production runs complete.
+evidence only after corrected production runs complete.

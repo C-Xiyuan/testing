@@ -57,15 +57,14 @@ class SamplerReport:
     n_proposals, n_accepted:
         Raw counts.
     energy_drift_per_step:
-        Mean ``|dH|`` over the accepted trajectories, in eV.  This is the
+        Mean ``|dH|`` over all proposals, in eV.  This is the
         integrator error the Metropolis test is correcting for; if it is large
         compared with ``k_B T`` the acceptance will collapse.
     final_step_size:
         Timestep after adaptation, in ps.
     temperature_measured:
-        Temperature inferred from the sampled potential-energy fluctuations via
-        the configurational relation, used as an independent check that the
-        sampler produced the requested ensemble.
+        Reserved for a future independent configurational-temperature check.
+        It is currently ``nan`` and must not be interpreted as a diagnostic.
     """
 
     acceptance: float
@@ -221,7 +220,7 @@ def hybrid_monte_carlo(
             n_accepted += 1
             window_accepted += 1
 
-        if adapt and step < burn_in and step > 0 and step % 10 == 0:
+        if adapt and step < burn_in and (step + 1) % 10 == 0:
             # Adapt on the acceptance in the last window only. A cumulative rate
             # lags badly: the high acceptance of the first few timid steps keeps
             # pushing dt up long after it has become too large, and the sampler

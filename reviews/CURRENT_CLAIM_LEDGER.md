@@ -1,6 +1,6 @@
 # Current claim ledger
 
-**Status date:** 2026-08-12
+**Status date:** 2026-08-13
 
 **Audit baseline:** `c7003a471659b269ef035e5a88ec71a1d9c05b91`
 
@@ -22,8 +22,10 @@ not promoted to confirmatory evidence.
 
 “Code repaired” below means only that the identified implementation change is
 present on the current worktree.  It is not a scientific result and does not
-assert that a production experiment passed.  No v2 production run has yet
-supplied claim-bearing data.
+assert that a production experiment passed. No corrected production run has yet
+supplied claim-bearing data. Exp09 and exp11 v2 were superseded before production
+when the arbitrary SVD sign of the aligned construction was identified; their
+frozen successors are v3. Exp10 remains v2.
 
 ## Cumulative dispositions
 
@@ -35,18 +37,18 @@ supplied claim-bearing data.
 | **P0-4** clustered zoo/post-hoc band | **Partially resolved by claim restriction** | The two-regime pattern may be described only for the fixed, designed, clustered zoo, with uncertainty and post-hoc window selection disclosed. | No population inference about fitted models or model-selection utility follows. |
 | **P0-5** warning-light gate | **Resolved by withdrawal** | The second/first-order ratio may be descriptive. | It must not certify predictions or be reused as an abstention gate without a new held-out calibration study. |
 | **P1-1** fitted-model inference | **Partially resolved by claim restriction** | The fitted-model arm is a same-system feasibility observation: the calculation can be applied to training-induced error fields. | It is not external validation, supports no ranking claim and the EGNN seed pair remains n=2. |
-| **P1-2** evidence-status consistency | **Resolved for the corrective branch; release still gated by new evidence** | README, results narrative, manuscript, response, specification and this ledger distinguish legacy evidence, repaired code, smoke-only checks and unrun production. | Keep `paper/main.md` generated from `main.tex`; citation metadata and any future numerical result still require release audit. |
+| **P1-2** evidence-status consistency | **Partially resolved; release-blocking truth-surface audit remains** | The corrective texts distinguish legacy evidence, repaired code, unretained smoke checks and unrun production. | Regenerated figures, manuscript word count, citations and all numerical statements must pass one final contradiction/provenance audit; code repair alone cannot close this item. |
 | **Gate A** boundary/replication matrix | **Unanswered** | Legacy exp11 supplies only one fixed-cell pilot-like cluster result. | Required target × basis × size/state matrix and angular/many-body boundary tests have not run. |
 | **Gate B** fitted-error prevalence | **Unanswered** | None. | Predeclared multi-seed, representation-diverse fitted-model campaign has not run. |
 | **Gate C** selection utility | **Unanswered** | None. | Frozen policies, cost-matched candidate selection, regret/failure endpoints and honest abstention have not run. |
 
-## Legacy artefacts and v2 state
+## Legacy artefacts and corrected-pipeline state
 
 | Experiment | Legacy artefact ceiling | Repair status | Production status |
 |---|---|---|---|
-| `exp09_calibration_replication` | Exploratory non-IID variance decomposition only. | v2 code repaired as `exp09_calibration_replication_v2`: field-specific streams/starts, fixed-panel conditional complete-chain bootstrap, raw configurations, stationarity and launch/end provenance. A dirty-tree quick smoke completed and was correctly labelled `smoke_only`; its numbers are not evidence. | **Production not rerun.** No tracked `results/exp09_calibration_replication_v2/` production evidence. |
-| `exp10_endtoend_consistency` | Point non-recurrence only; formal endpoint not evaluable. | v2 primary family is HMC-direct minus MBAR at two endpoints; complete-chain percentile UQ, relaxation/stationarity/overlap gates, independent upstream replicas, raw configurations and launch/end provenance are implemented. A quick smoke completed and failed closed, as expected. | **Production not rerun.** No tracked `results/exp10_endtoend_consistency_v2/` production evidence. |
-| `exp11_counterexample_replication` | Fixed-cell cluster-level contrast only. | v2 uses construction cluster as unit, paired seed/start blocks, force-match and held-out covariance-null manipulation gates, tri-state effect interpretation, raw configurations and launch/end provenance. A quick smoke completed and failed both manipulation gates; it is smoke only. | **Production not rerun.** No tracked `results/exp11_counterexample_replication_v2/` production evidence. |
+| `exp09_calibration_replication` | Exploratory non-IID variance decomposition only. | V3 uses field-specific streams/starts, a deterministic observable-space aligned sign, fixed-panel complete-chain bootstrap, raw configurations, stationarity and launch/end provenance. V2 was superseded before production; no smoke artifact is retained as evidence. | **V3 production not run.** No tracked `results/exp09_calibration_replication_v3/` production evidence. |
+| `exp10_endtoend_consistency` | Point non-recurrence only; formal endpoint not evaluable. | v2 primary family is HMC-direct minus MBAR at two endpoints; complete-chain percentile UQ, relaxation/stationarity/overlap gates, independent upstream replicas, raw configurations and launch/end provenance are implemented. Any earlier smoke output was non-evidence and is not retained. | **Production not rerun.** No tracked `results/exp10_endtoend_consistency_v2/` production evidence. |
+| `exp11_counterexample_replication` | Fixed-cell cluster-level contrast only. | V3 uses construction cluster as unit, deterministic aligned sign, paired seed/start blocks (not proposal-level exact CRN), force-match and held-out covariance-null gates, tri-state interpretation, raw configurations and launch/end provenance. V2 was superseded before production; no smoke artifact is retained as evidence. | **V3 production not run.** No tracked `results/exp11_counterexample_replication_v3/` production evidence. |
 
 The common provenance harness now records launch and finish source states,
 detects source changes, rejects dirty production starts and inventories output
@@ -59,7 +61,7 @@ repository state only at the end of a run.
 generated reading copy and must be regenerated with `paper/tex2md.py`, not
 edited as an independent manuscript variant.  `paper/SPEC.md` is now labelled a
 superseded legacy authoring brief; its older mandatory wording must not mark any
-P0 item or Gate A/B/C complete merely because v2 code exists.
+P0 item or Gate A/B/C complete merely because corrected code exists.
 `paper/RESPONSE.md` now redirects to the audited response, and `paper/SPEC.md`
 has been replaced by a short active corrective specification; their historical
 overclaims remain available only in Git history. Citation metadata must still be
@@ -90,13 +92,16 @@ end-to-end prediction or selection utility.
 Do not describe the repository as submission-ready until all of the following
 are true:
 
-1. clean v2 production runs pass start/end provenance and deposit raw
+1. clean exp09/exp11 v3 and exp10 v2 production runs pass start/end provenance and deposit raw
    chain-level analysis data;
 2. P0-1 has a valid relaxation/stationarity gate and a defensible equivalence or
    meaningfully-different disposition;
 3. P0-2 and P0-3 are recomputed with their true independent/paired units;
 4. Gate A has a defensible boundary disposition;
-5. every manuscript truth surface is regenerated from this claim ceiling and
+5. new versioned replacements for legacy exp03/05/06/07 are run from a frozen
+   signed/tagged revision, or all numerical claims and figures depending on
+   them are removed from submission;
+6. every manuscript truth surface is regenerated from this claim ceiling and
    passes a contradiction scan.
 
 Gates B and C are required for claims about fitted-model prevalence and

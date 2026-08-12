@@ -38,7 +38,8 @@ class PairBinObservable:
 
     Notes
     -----
-    ``g(r_k) = count_k / (N * rho * V_shell_k / 2)`` with
+    ``g(r_k) = count_k / (N * rho_other * V_shell_k / 2)`` with
+    ``rho_other = (N-1)/V`` and
     ``V_shell_k = (4/3) pi (r_out^3 - r_in^3)``.  :meth:`to_g_of_r` applies that
     conversion so figures can be drawn in the units readers expect, while the
     response analysis operates on the counts.
@@ -89,9 +90,15 @@ class PairBinObservable:
         """
         counts = np.asarray(counts, dtype=float)
         n = configuration.n_atoms
-        density = n / configuration.volume
+        if not np.isfinite(configuration.volume) or configuration.volume <= 0:
+            raise ValueError("g(r) normalization requires a finite positive cell volume")
+        if n < 2:
+            raise ValueError("g(r) normalization requires at least two atoms")
+        # For a tagged atom there are N-1 possible partners, not N.  Using
+        # N/V leaves a finite-size (N-1)/N bias even for an ideal gas.
+        other_density = (n - 1) / configuration.volume
         shell = (4.0 / 3.0) * np.pi * (self.edges[1:] ** 3 - self.edges[:-1] ** 3)
-        return counts / (0.5 * n * density * shell)
+        return counts / (0.5 * n * other_density * shell)
 
 
 def coordination_number(configuration, r_cut: float) -> float:

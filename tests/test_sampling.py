@@ -209,6 +209,32 @@ class TestBookkeeping:
         assert report.acceptance < 0.2
         assert any("acceptance" in note for note in report.notes)
 
+    def test_hmc_does_not_adapt_without_burn_in(self):
+        """`adapt=True` cannot change the production kernel when burn-in is zero."""
+        cfg, potential = einstein_system()
+        initial = 3e-3
+        _, report = hybrid_monte_carlo(
+            cfg, potential, 100.0, n_samples=25, n_leapfrog=4,
+            step_size=initial, burn_in=0, seed=130, adapt=True,
+            remove_com=False,
+        )
+        assert report.final_step_size == pytest.approx(initial)
+
+    def test_hmc_adaptation_uses_complete_windows_and_freezes(self):
+        """Two ten-proposal burn-in windows adapt twice; production adds none."""
+        cfg, potential = einstein_system()
+        initial = 1e-4  # essentially unit acceptance, so both windows scale up
+        reports = []
+        for n_samples in (1, 30):
+            _, report = hybrid_monte_carlo(
+                cfg, potential, 100.0, n_samples=n_samples, n_leapfrog=2,
+                step_size=initial, burn_in=20, seed=131, adapt=True,
+                remove_com=False,
+            )
+            reports.append(report)
+        assert reports[0].final_step_size == pytest.approx(initial * 1.1**2)
+        assert reports[1].final_step_size == pytest.approx(reports[0].final_step_size)
+
     def test_metropolis_adapts_toward_half_acceptance(self):
         cfg, potential = einstein_system()
         _, report = metropolis_nvt(
