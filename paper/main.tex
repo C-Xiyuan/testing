@@ -290,15 +290,22 @@ evaluation per stored frame per model. That is a large saving when screening
 many models, and it makes the claim
 falsifiable, since prediction and measurement are separate experiments.
 
-\emph{(iii) The second-order term is a candidate warning light.} The $n = 2$
+\emph{(iii) The second-order term suggests a warning light, and it does not
+work.} The $n = 2$
 term is estimable from the same samples, and its ratio to the first-order term
 suggests itself as a self-diagnostic: where the ratio is small the linear
 prediction should be trustworthy, and where it is not, no linear reasoning about
-the error field is safe. We state this as a hypothesis, not a result, because
-our own tests are mixed --- Sec.~\ref{sec:breakdown} reports a sweep in which
-one of the two cases the diagnostic certified is the largest unexplained
-disagreement in this paper. We report it wherever recorded and its
-absence where it was not, and do not treat it as established.
+the error field is safe.
+
+We proposed that and then scored it as what it is, a screening test, over every
+case in this study where the diagnostic and an independent direct measurement
+both exist ($n = 25$; Sec.~\ref{sec:warninglight}). Of 22 cases it certifies, 4
+disagree with direct sampling --- a false-trust rate of 18\%, upper 95\% limit
+37\% --- and it flags 1 of the 5 genuine disagreements. The statistic barely
+separates the two groups at any threshold: area under the ROC curve 0.59
+against 0.5 for no information, one-sided $p = 0.29$. \textbf{The claim is
+withdrawn.} We report the ratio alongside every prediction as a descriptive
+number and use it to certify nothing.
 
 \subsection{Vector observables, and the contrast with free energy}
 
@@ -1098,14 +1105,52 @@ without cleanly demonstrating it: the $30.4\sigma$ is an upper
 bound on the disagreement attributable to truncation. Re-running with the guard
 recorded is the fix; nothing else here depends on it.
 
-Nor can we still offer the amplitude sweep in support of the warning light.
+\subsection{The warning light does not work}
+\label{sec:warninglight}
+
+The amplitude sweep cannot be offered in support of the warning light.
 It flags the two smallest amplitudes as trustworthy and the five larger
 as not; but of those two positives only one agrees with direct sampling,
 the other being the unresolved discrepancy of
 Sec.~\ref{sec:discrepancy}, which the deposited summary records under
-the key \texttt{flagged\_cases\_all\_agree: false}. A diagnostic returning a
-false positive on half its positives is not evidence for itself; what
-remains is Sec.~\ref{sec:fitted}'s partial performance.
+the key \texttt{flagged\_cases\_all\_agree: false}.
+
+That is one experiment, and the question deserves the whole sample. A
+screening test is characterised by its error rates on cases whose truth is
+known independently, so we pooled every case in this study carrying both the
+diagnostic and a direct measurement --- the seven amplitudes of the sweep and
+the eighteen fitted models of Sec.~\ref{sec:fitted} at two budgets, 25 in all.
+Using the threshold already fixed in the code (ratio $<0.25$, chosen a priori
+because a truncated series needs its next term small, and not tuned on these
+data) and calling a case a disagreement when prediction and measurement differ
+by more than two combined standard errors:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline\hline
+ & agrees with direct MD & disagrees \\
+\hline
+diagnostic says trust & 18 & \textbf{4} \\
+diagnostic says beware & 2 & 1 \\
+\hline\hline
+\end{tabular}
+\end{center}
+
+The false-trust rate --- the quantity that matters, since it is the rate at
+which the diagnostic converts an unknown into a confident error --- is
+$4/22 = 18\%$, with an upper 95\% limit of 37\%. Sensitivity to genuine failure
+is $1/5 = 0.20$. And the statistic does not separate the two groups at any
+threshold: median ratio 0.033 among agreeing cases against 0.091 among
+disagreeing ones, area under the ROC curve 0.59 against 0.5 for no information,
+one-sided $p = 0.29$.
+
+Two caveats and neither rescues it. The threshold was chosen a priori rather
+than frozen on a held-out development set, which is better than tuning but is
+not the validation protocol a safety diagnostic needs; and the 25 cases share a
+system, an observable and in places a reference chain, so the binomial interval
+is optimistically narrow. \textbf{We withdraw the claim.} The second-order ratio
+is reported with every prediction as a descriptive statistic, and nothing in
+this paper is certified by it.
 
 \subsection{The dilute-gas closed form disagrees}
 \label{sec:dilute}
