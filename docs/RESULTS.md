@@ -423,7 +423,11 @@ the results are in §5.6.
 
 The estimator was checked against the exact `g(r) = exp(−βu)` limit at ρ\* =
 0.079. The estimator and the exact reweighting identity agree to under 2 % in
-every bin. Both disagree with a hand-derived closed form by 5.4 σ rms.
+every bin. Both disagree with a hand-derived closed form by **4.7 σ rms, 6.5 σ
+at worst** over seven bins (`results/validation/low_density_limit.txt`). An
+earlier version of this section quoted 5.4 σ, which had no deposited
+computation behind it; the numbers here are from a re-run whose log is in the
+repository.
 
 The hand calculation needed one correction along the way that is worth recording
 because the estimator gets it right automatically: the number of pairs is
@@ -433,10 +437,15 @@ gives a prediction wrong by a factor of ten in the outer bins and wrong in sign
 in the tail. A covariance is mean-subtracted, and that subtraction *is* the
 normalisation, so the estimator never had the problem.
 
-The residual 5.4 σ is most likely the `O(ρ)` correction to `g = exp(−βu)`, which
-at ρ\* = 0.079 is not negligible. **This is not confirmed.** The test that would
-confirm it — repeating at a quarter of the density and checking the deviation
-falls — has not been run.
+The residual 4.7 σ is most likely the `O(ρ)` correction to `g = exp(−βu)`, which
+at ρ\* = 0.079 is not negligible. **This is not confirmed**, and the external
+review is right that until it is, this is a benchmark the estimator has *not
+passed* rather than evidence that it works. The test that would confirm it —
+a density series, or an exact `N = 2` calculation where `g = exp(−βu)` holds
+identically — has not been run. Note also that what is being compared here is an
+approximation valid to `O(ρ)` against an estimator that makes no such
+approximation, so this disagreement carries less weight than one between two
+exact quantities.
 
 ## 6. What is not here
 
