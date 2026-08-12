@@ -38,7 +38,7 @@
 |---|---|---|---|
 | P0-1 端到端一致性 | exp10：8 参考链 + 16 surrogate 链、双 bin、双 sampler、六 estimator；bracketing 排除弛豫；发现并修复自身 bracketing 臂 step-size bug | 六 estimator 表与全部诊断经逐位核实（附件 C.4）；预注册判定为 **underpowered**；"closed" 措辞超出判定（§1）；「relaxation excluded by measurement」超出 deposit（最深 discard 处 −1.28±1.08，附件 B.3-4）；协方差修正符号反（B.3-2）；欠功效主因是 90%-discard 规则（B.3-5）——补齐比预想便宜 | **部分** |
 | P0-2 校准/共同偏移 | exp09 生产版 64-cell 分解：offset 归因参考链实现；二阶项移除 grand mean 与场结构；发现预测自身误差缺失（interaction 的 1.19×） | 分解表逐位核实（附件 C.4）、分解逻辑成立；但 (a) exp09 自认的 CRN 缺陷方向性被误标为 conservative——对「二阶修正后无场结构」这一**零假设式头条结论**它是 anti-conservative 的：用作者自己报告的共享分量（0.134/0.401）修正列效应噪声地板，0.435σ → ≈0.41σ，方差比 0.94 → ≈1.06（一阶 2.58 → ≈2.9），结论方向不翻转但「exactly the truncation」余量更薄，需在 Gate A1 用逐场独立流复测；(b) 0.134 的原料（per-chain 直接链均值）未入档（B.1-6）；(c) null 场二阶案例的 deposit 旗标是 improves=false，docs 的「points the same way」spin 不成立（C12） | **部分** |
-| P0-3 反例复现 | exp11：6 独立 construction clusters，预注册 estimand/等价界/最小效应，全部通过；360× 自我纠正为 median 26× | 契约/CI/力匹配逐位核实（附件 C.4）、cluster 间种子独立性经枚举确认；但 (a) 仅覆盖 construction 轴（1 target × 1 basis × 1 size）；(b) 场间直接链共享随机流、承诺的 paired-covariance 设计未实现（附件 B.1-1）；(c) 六 cluster 共享同一平衡起始构型且直接链未做 drift check（B.1-2）；(d) 26× 与入档字段名实错位、分母与零相容（B.2-3） | **部分（construction 轴已闭合，带四项保留）** |
+| P0-3 反例复现 | exp11：6 独立 construction clusters，预注册 estimand/等价界/最小效应，全部通过；360× 自我纠正为 median 26× | 契约/CI/力匹配逐位核实（附件 C.4）、cluster 间种子独立性经枚举确认；但 (a) 仅覆盖 construction 轴（1 target × 1 basis × 1 size）；(b) 场间直接链共享随机流、承诺的 paired-covariance 设计未实现（附件 B.1-1）；(c) 六 cluster 共享同一平衡起始构型且直接链未做 drift check（B.1-2）；(d) 26× 与入档字段名实错位、分母与零相容（B.2-3）；(e) 带符号单侧判定坐在未固定的 LAPACK 符号工件上（附件 D.1） | **部分（construction 轴已闭合，带五项保留）** |
 | P0-4 clustered zoo | 撤回推断，限定为 fixed-zoo 描述；`zoo_uncertainty_propagation.py` 补测量误差传播并汇报 floor 率 | 文本处理到位（RESULTS.md §3a 的限定段落是模范写法）；**但图 `headline_regimes.png` 面板 (b) 仍印着 "physics spans 30×"**，而 30× 在正文已被 struck——图文相抵，见 §7 | **文本已解决，图未跟上** |
 | P0-5 warning light | 89-case screening：false-trust 19%、AUC 0.556；claim 撤回；同时确立「作为 correction 有效、作为 gate 无效」的区分 | 撤回到位且区分清晰；deposit 支持 89 例版（逐项复核，附件 C.2-3），`CLAUDE_RESPONSE.md` §2 的 25 例表为旧快照须修正；**但 89 例中 64 例是 8 场 × 8 参考链的伪重复、且部分真值标签已被 exp10 推翻**（附件 B.5-2/3）——19%/0.556 只能作描述统计，不应再作为该诊断的性质被引用 | **撤回成立；引用的数字需降格** |
 | P1-1 fitted arm 推断 | §3b 重写为 feasibility；EGNN n=2 标注为 hypothesis-generating | 核查通过 | **已解决** |
@@ -106,7 +106,14 @@
 
 ### R2-P0-6 核心代码与测试
 
-[AGENT-CODE-FINDINGS]
+逐项见 **附件 D（`reviews/R2_ANNEX_D_CODE_AUDIT.md`）**。正面结论先行：**核心链健全**——δU 进入协方差、预测与采样的是同一个函数（同 half list、同 cutoff），force RMSE 三处同口径，HMC/邻居表/势经交叉验证正确。需要回应的：
+
+1. **[P1] aligned 场的符号是未固定的 LAPACK 工件**（附件 D.1）。`perturbations.py:1417` 取 SVD 的 `vt[0]`，符号任意且依赖 LAPACK 实现；代码无一处固定 Cov(A, δU_aligned) 的符号。exp07 的预测-测量一致性安全（同翻），**但 exp11 的预注册判定是带符号单侧的**（下限 > +1.0 pairs）：换一个 BLAS/LAPACK 构建或一个近翻转面的协方差抽样，「replicates」在物理完全相同时变成「withdrawn」。**clean re-run 之前必须先修**（一行符号约定 + 回归测试），否则 re-run 与现档不可比。
+2. **[P2] w^{3/2} 反驳的两个最大宽度违反自身前提**（附件 D.2-3）：`r0 + 3w < r_on` 在 w=0.65、1.0 处不成立（6.15、7.2 > 5.95），高斯被 quintic switch 截断，0.56 的拟合指数混入截断效应而 `summarise_widths` 用了全部六点。负结果不翻转（去饱和点已知 0.72），但「measured exponent」需加截断 caveat 或按合规子集重拟合。
+3. **[P2] exp06 的直接链从不做平稳性检查**（exp11 显式 `check=False`）：残余弛豫把 direct 拉向 U₀——恰在决定 linear/reweighted/direct 失效排序的大幅度端。exp10 的 start-bias 教训未回补到 exp06。
+4. **[P3 但触及一个在册数字]** exp07 的 `measured_max`（§4.3 的 11.36 ± 0.95）是 8 个含噪 bin 的最大值（上偏），且误差条取自**预测**峰位 bin 而非实测最大 bin（附件 D.3）。
+5. **测试缺口三项**（附件 D.6）：HMC 自适应冻结无回归测试；claim-bearing 观测量 `PairBinObservable` 完全无测试；aligned 符号无钉住测试、端到端预测=测量检查只活在实验脚本里。
+6. 测试套件完整运行结果见附件 D.4。
 
 ### R2-P1（重要但不改变结论）
 
@@ -132,6 +139,7 @@
 | 两 regime（across decades 强、band 内弱） | exp05 + band_robustness（窗口无关表述）+ uncertainty propagation | **fixed-zoo descriptive（正确限定）** | fitted models 上的预注册 selection experiment（Gate C）；在此之前不得回写 selector 语言 |
 | estimator 机械正确性 | 两粒子精确基准（reweighting 1.5–1.8% across 200×；linear 10% 失效点按对数内插为 **βσ≈0.09**，文档的 0.21 是首个超限网格点——附件 C.3-C10）+ `reweight()` bug 修复（真实、正确、有回归测试） | **established（N=2）** | N=108 的传递性说明已给（βσ 分布形状不同）；建议 N=3 quadrature 桥接（见 §5）；失效点表述需改 |
 | 35% discrepancy | exp10：+0.047/+0.160，旧 direct 在新测量的 2.23σ 尾部（文档的 2.7σ 系误差条归因错误，附件 C.3-C9） | **superseded, equivalence not yet established** | 低-discard 重分析 + 适度加链（附件 B.3-5）达 ±0.5 界，或在所有文档统一「underpowered」措辞 |
+| 三个自我反驳（P1、smoothness、w^{3/2}） | exp05 + exp06 宽度扫描 + revision_statistics（指数 0.56 [0.09, 1.34]） | **established as refutations** | w^{3/2} 的测得指数需加截断 caveat：两个最大宽度违反 `r0+3w<r_on` 前提、高斯被 switch 截断（附件 D.2-3）；按合规子集重拟合或在文中声明 |
 | force RMSE 与 observable error 的机制解释 | theory.md + 全部实验 | 一致 | 角度/多体误差（A2）、动力学（A3）未触及——结论 scope 已正确限定 |
 
 ---
@@ -145,7 +153,7 @@
 | 优先级 | 实验 | 回答什么 | 估算成本 | 失败时的收缩 |
 |---|---|---|---|---|
 | 1 | **exp10 补齐**：先对已入档 primary 臂预注册低-discard 重分析（成本≈0，附件 B.3-5），再按重分析后的方差决定加链数 | 把 "underpowered" 变成等价性判定 | ≈0 – 8 CPU·h | 区间仍超界→撤回 estimator agreement 的定量表述，保留定性 tracking |
-| 2 | **exp03/05/06/07 clean re-run（tagged commit）** | 兑现 §3.7 承诺；Table I–VI 可复现 | ≈4.7 h 墙钟（六份旧 manifest wall-time 合计 17,034 s——附件 C.0；含 quick 的 n400 臂按生产设置会略增） | 数字漂移超过误差条→逐表修订并披露 |
+| 2 | **exp03/05/06/07 clean re-run（tagged commit）**——**前置条件：先修 aligned 符号工件并钉住测试**（附件 D.1），否则 re-run 与现档不可比 | 兑现 §3.7 承诺；Table I–VI 可复现 | ≈4.7 h 墙钟（六份旧 manifest wall-time 合计 17,034 s——附件 C.0；含 quick 的 n400 臂按生产设置会略增） | 数字漂移超过误差条→逐表修订并披露 |
 | 3 | **exp11 扩展：+2 targets、+1 basis、N=256** | P0-3 的其余轴；Gate A1 的一半 | 每新 cell ≈ 6 clusters ×（construction+evaluation+6 direct）链 ≈ 3–6 CPU·h/cell，全矩阵 ≈40–60 CPU·h | 某轴失败→标题与结论限定到通过的轴 |
 | 4 | **K-observable response 向量的联合校准** | 论文的最终建议（report a vector）目前完全未测：8 bin 的预测/测量对与 direct chains 已在档，只差把 per-bin 预测区间的**联合覆盖率**算出来 | ≈0（纯分析，复用 deposit） | 联合覆盖差→「vector of response scores」从 recommendation 降为 proposal |
 | 5 | **committee 方向测试（Gate C 的最小前置）** | no-oracle 可行性的第一道闸：用已有 10 fitted models 构造 committee mean 作 δU 替代，测 (a) committee-δU 与 true-δU 的 response 分量相关；(b) shared-bias stress（common biased subsample 重训小委员会）下该相关是否塌缩 | ≈10–20 CPU·h（重训 + 已有链复用） | 塌缩且不可检测→Gate C 的 response policy 需要 abstention 规则先行，论文 §6 committee 段措辞再降一档 |
@@ -234,7 +242,7 @@
 5. exp03/05/06/07 clean re-run：执行时间表，或对「before any of their numbers are used in a submitted document」承诺的显式修改与理由。
 6. 对 §5 扩展表第 4 项（response 向量联合校准，成本≈0）与第 5 项（committee 方向测试）：接受哪些、何时运行、预注册什么判定规则？
 7. 图表：§7 表中每一项的处理（重生成/caption 修补/删除），以及 exp09–11 新图的设计。
-8. 对本轮四处方法学修正是否有异议？若有，请给出定量反驳：(a) exp09 CRN 方向性（0.94→≈1.06，对零假设式结论 anti-conservative）；(b) exp10 "closed" 措辞与 relaxation "excluded" 措辞；(c) exp11 26× 改立为噪声受限下界（分母与零相容 + deposit 字段名实错位）；(d) warning-light 19%/AUC 0.556 因伪重复与被推翻的真值标签而降为描述统计。
+8. 对本轮五处方法学修正是否有异议？若有，请给出定量反驳：(a) exp09 CRN 方向性（0.94→≈1.06，对零假设式结论 anti-conservative）；(b) exp10 "closed" 措辞与 relaxation "excluded" 措辞；(c) exp11 26× 改立为噪声受限下界（分母与零相容 + deposit 字段名实错位）；(d) warning-light 19%/AUC 0.556 因伪重复与被推翻的真值标签而降为描述统计；(e) aligned 场符号必须在 clean re-run 前钉住（附件 D.1），且 w^{3/2} 指数需按 `r0+3w<r_on` 合规子集重拟合或加截断声明（D.2-3）。
 
 在 `GPT_RESPONSE_R2.md` 与相应修改进入仓库之前，本审计维持第一轮的建议：**当前稿件不得标记为 submission-ready**——且本轮给出的理由与第一轮不同：不是证据不足，而是**论文尚未呈现已经取得的证据**。
 
