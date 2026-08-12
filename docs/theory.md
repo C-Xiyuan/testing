@@ -161,12 +161,21 @@ dozens of models against a dozen observables this is a large practical saving;
 more importantly, it is a falsifiable prediction, and `experiments/exp06` tests
 it against direct MD.
 
-**(iii) The second-order term is a computable warning light.** The `n = 2` term
-`(β²/2)⟨ÃδŨ²⟩₀` is estimable from the very same samples. Its size relative to
-the first-order term is a self-diagnostic: when the ratio is small the linear
-prediction is trustworthy, and when it is not, the error field is not a
-perturbation and no linear reasoning about it — including the field's own
-implicit assumption that "a bit more accuracy helps a bit" — is safe.
+**(iii) The second-order term is computable, and is a candidate warning light.**
+The `n = 2` term `(β²/2)⟨ÃδŨ²⟩₀` is estimable from the very same samples, and
+its size relative to the first-order term is the obvious self-diagnostic: a small
+ratio ought to mean the linear prediction is trustworthy, and a large one that
+the error field is not a perturbation at all.
+
+That it *ought* to work is not evidence that it does, and the measurements in
+this repository so far say it does not. `exp06` flags two cases as trustworthy
+of which only one agrees with direct sampling. `exp09` finds that adding the
+second-order term to the prediction makes the residuals worse on every measure —
+larger rms, larger field-to-field spread, larger interaction term — rather than
+better. Both are recorded in `docs/RESULTS.md`. Until a threshold is frozen on
+one set of error fields and its false-trust rate measured on another, the ratio
+is a heuristic under test, not a validated gate. It is used in this repository
+to *flag* cases for attention and never to certify one.
 
 ### 3.1 Vector observables
 
@@ -206,9 +215,20 @@ The same expansion applied to the free energy gives Zwanzig's relation
 So the free energy error is controlled at leading order by the **mean** of the
 error field, while observable errors are controlled by its **covariances**. A
 model can therefore have an excellent free energy and poor structure, or the
-reverse. This already shows that no single scalar can summarise model quality,
-and it is a useful sanity check on intuition: "the model is 3 meV/atom off" is a
-statement about `⟨δU⟩₀` and says nothing about `g(r)`.
+reverse. This is already enough to rule out a *task-independent* scalar: no
+number computed without reference to which quantity is wanted can order models
+the same way for every quantity, because the orderings genuinely differ. It is a
+useful sanity check on intuition — "the model is 3 meV/atom off" is a statement
+about `⟨δU⟩₀` and says nothing about `g(r)`.
+
+It does **not** rule out a useful scalar. Once a task is specified — a set of
+observables and a tolerance for each — a scalar loss over that set is perfectly
+well defined, and minimising a worst-case ratio `max_j |Δ⟨A_j⟩| / τ_j` is a
+scalar criterion that this argument leaves entirely intact. An earlier draft
+wrote "no single scalar can summarise model quality", which overstates what
+follows from the mathematics. The defensible statement is: *there is no scalar
+that is independent of the task definition and still orders models consistently
+for all observables.*
 
 ---
 
@@ -339,9 +359,11 @@ probes rather than for better in-distribution norms.
 
 **Errors orthogonal to the specific observable.** The most important case, and
 the one that makes model quality irreducibly observable-dependent: `Cov₀(A, δU)`
-can vanish for one observable and not another. There is no scalar model-quality
-number, and asking for one is asking for a projection onto every direction at
-once. The constructive version of this — deliberately building `δU` orthogonal to
+can vanish for one observable and not another. A scalar that does not know which
+observable is wanted is being asked for a projection onto every direction at
+once, which is why no such number exists; a scalar defined *after* the
+observables and their tolerances are fixed is a different object and is not
+excluded here. The constructive version of this — deliberately building `δU` orthogonal to
 a chosen observable while carrying large force error — is `NullSpacePerturbation`
 in `atomlab/potentials/perturbations.py` and is the sharpest falsification test
 in the programme (`experiments/exp07`).

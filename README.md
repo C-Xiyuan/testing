@@ -42,39 +42,59 @@ rather than DFT data. This looks like a limitation and is actually the point:
 
 No external dataset is used, downloaded, or needed.
 
-## What is here
+## What is here, and what it is evidence for
 
-```
-atomlab/
-  units.py, types.py         metal units; Configuration / Result / Trajectory / Dataset
-  cell.py, neighbors.py      triclinic minimum image, cell-linked neighbour lists
-  build.py                   lattice and structure builders
-  potentials/                Lennard-Jones, Morse, Stillinger-Weber, EAM, harmonic
-    perturbations.py         designed δU with controlled covariance structure
-  md/                        velocity Verlet, BAOAB Langevin, Nose-Hoover chains, MTK NPT
-  observables/               g(r), S(q), ADF, Steinhardt, MSD/VACF/D, VDOS, phonons,
-                             equation of state, elastic constants, melting diagnostics
-  models/                    ACSF/SOAP/bispectrum descriptors, linear (ACE-like), BPNN,
-                             GAP-like kernel model, E(3)-equivariant MPNN, pair spline
-  training/                  dataset generation, trainer, active learning
-  analysis/                  proxy-metric zoo, response theory, rank correlation, statistics
-experiments/                 exp01..exp08, each reproducible from a config + seed
-docs/theory.md               the derivation
-docs/design.md               the interface contract
-```
+An earlier version of this section listed everything the codebase can do, which
+read as a list of everything the study had shown. Those are different claims and
+an external review was right to say so. Four states are distinguished below, and
+only the last one supports a sentence in the results:
+
+| state | meaning |
+|---|---|
+| **implemented** | code exists and runs |
+| **validated** | checked against an independent closed-form or literature value, in `tests/` or `docs/validation.md` |
+| **claim-bearing** | a number produced by this module appears in `docs/RESULTS.md` and is load-bearing for a conclusion |
+| **planned** | not written |
+
+| module | implemented | validated | claim-bearing |
+|---|:--:|:--:|:--:|
+| `units`, `types`, `cell`, `neighbors`, `build` | ✔ | ✔ | ✔ |
+| `potentials/lennard_jones` | ✔ | ✔ (fcc lattice sum) | ✔ |
+| `potentials/stillinger_weber` | ✔ | ✔ (E_coh = −2ε exactly) | ✘ |
+| `potentials/eam` | ✔ | ✔ (a₀, E_coh, B₀) | ✘ |
+| `potentials/morse`, `harmonic` | ✔ | ✔ | ✘ |
+| `potentials/perturbations` | ✔ | ✔ (finite-difference forces) | ✔ |
+| `sampling` (HMC, Metropolis) | ✔ | ✔ (equipartition, two samplers agree) | ✔ |
+| `md/` (Verlet, Langevin, Nosé–Hoover, MTK) | ✔ | ✔ (energy conservation, T/P control) | ✘ |
+| `observables/rdf`, `adf`, `thermo` | ✔ | ✔ | partly — `rdf` only |
+| `observables/phonons` | ✔ | ✔ (1e-5 vs analytic chain) | ✘ |
+| `observables/dynamics`, `vdos` | ✔ | ✔ | ✘ |
+| `models/descriptors` (ACSF, SOAP, bispectrum) | ✔ | ✔ (rotational invariance to 1e-15) | ✔ |
+| `models/linear`, `bpnn`, `egnn`, `pair_spline` | ✔ | ✔ (fit/predict round-trip) | ✔ |
+| `analysis/response` | ✔ | ✔ (harmonic oscillator, exact) | ✔ |
+| `analysis/fep` (BAR, MBAR) | ✔ | ✔ (displaced harmonic, exact) | pending exp10 |
+| `analysis/statistics` | ✔ | ✔ (blocking vs known τ) | ✔ |
+| `analysis/metrics`, `correlation` | ✔ | ✔ | ✔ |
+| `training/` | ✘ | — | — | 
+
+`training/` is empty: the model-fitting used in `exp03` lives in the model
+classes themselves, and the dataset-generation and active-learning module the
+directory was created for was never written.
 
 ## The experiments
 
-| | Question |
-|---|---|
-| `exp01_reference_physics` | Converged ground-truth observables with error bars. |
-| `exp02_datasets` | Training sets at several budgets and sampling strategies. |
-| `exp03_model_zoo` | Train every architecture across budgets and seeds. |
-| `exp04_observables` | Run MD with every model; assemble the observable-error matrix. |
-| `exp05_proxy_correlation` | **P1** — how well does any proxy metric rank models? |
-| `exp06_response_validation` | **P2** — first-order vs reweighted vs direct MD. |
-| `exp07_designed_counterexamples` | **P3** — invert the ranking by construction. |
-| `exp08_practical_predictor` | A committee predictor that needs no ground truth, and its failure mode. |
+Numbering is historical; four of the eight originally planned were never
+written, and saying so is cheaper than pretending otherwise.
+
+| | Question | State |
+|---|---|---|
+| `exp03_model_zoo` | Fitted models across architectures and budgets. | run; claim-bearing (§5.3) |
+| `exp05_proxy_correlation` | **P1** — how well does any proxy metric rank models? | run; claim-bearing (§3, §5.1) |
+| `exp06_response_validation` | **P2** — first-order vs reweighted vs direct MD. | run; **one unresolved disagreement**, see exp10 |
+| `exp07_designed_counterexamples` | **P3** — invert the ranking by construction. | run; claim-bearing (§4) |
+| `exp09_calibration_replication` | Are the exp07 residuals calibrated, or one shared offset? | written; running |
+| `exp10_endtoend_consistency` | Reconcile reference-based estimators with direct sampling. | written; running |
+| `exp01`, `exp02`, `exp04`, `exp08` | reference physics, datasets, observable matrix, committee predictor. | planned; not written |
 
 ## Install and run
 
@@ -82,14 +102,30 @@ docs/design.md               the interface contract
 pip install -e ".[dev]"
 pytest -q                      # fast correctness suite
 pytest -q -m slow              # physics validation (minutes)
-python experiments/exp01_reference_physics/run.py --config config.json
+python experiments/exp07_designed_counterexamples/run.py --quick
 ```
 
 Requires NumPy, SciPy, Numba, PyTorch (CPU is sufficient — everything here is
 sized for four cores), Matplotlib. `ase` is a test-only cross-check dependency
 and is never imported from `atomlab/`.
 
-## Status
+## Status of the scientific claims
 
-Under active construction. `docs/design.md` is the contract; results and figures
-land in `results/` and `figures/` as each experiment completes.
+The narrowest statement the data support:
+
+> In one Lennard-Jones liquid state, for one pre-registered pair-count
+> observable and one radial Gaussian basis, error fields can be constructed that
+> match on held-out force RMSE and differ significantly in the directly sampled
+> value of that observable.
+
+That is a controlled existence proof. It does **not** establish that fitted
+MLIP error fields occupy such directions in practice, that force RMSE fails as a
+selector among realistic candidates, or that the response estimator is a usable
+substitute for end-to-end validation. `reviews/` holds an external critique and
+`reviews/CLAUDE_RESPONSE.md` the item-by-item reply, including which claims were
+withdrawn and which experiments are outstanding.
+
+`docs/design.md` is the interface contract; results and figures land in
+`results/` and `figures/` as each experiment completes. Every manifest records
+the commit, the working-tree dirt, and a SHA-256 over all source files, so a
+number can be traced to the code that produced it.

@@ -49,20 +49,51 @@ involved in producing it.** The measured column comes from explicit sampling of
 each perturbed potential.
 
 Across all eight fields, the residual between prediction and measurement is
-**1.01 σ rms** — the prediction agrees with the measurement at exactly the level
-the error bars claim, neither better nor worse
-(`figures/headline_prediction.png`).
+**1.01 σ rms** (`figures/headline_prediction.png`).
 
-This is the practical payoff. Evaluating a model's effect on an observable
+**That number was presented as a calibration pass and it is not one.** An
+external review (`reviews/`) pointed out what decomposing the eight residuals
+shows: all eight are negative, the common offset is −0.861 σ, and the scatter
+about that offset is 0.571 σ. An rms near one is therefore a systematic
+displacement plus a spread *smaller* than the quoted error bars — not eight
+independent predictions landing where they should. The eight are also not
+independent: every measured shift is (surrogate chain mean − reference chain
+mean) and all eight share one reference chain, so a single reference realisation
+displaces all of them together.
+
+`exp09` measures the size of that effect directly, with eight independent
+reference chains and four independent direct chains per field, decomposing the
+residual table into a reference-chain contribution, a field contribution, and
+the rest. What the corrected statement is, is recorded in §5.6 with that
+experiment's numbers. Until then the honest form of this section's claim is:
+**the prediction tracks the measurement across a factor of fifty in shift
+magnitude, and its calibration at the one-standard-error level is not
+established.**
+
+The practical payoff is unaffected by that distinction, and is the reason the
+prediction is worth calibrating: evaluating a model's effect on an observable
 costs one energy evaluation per stored frame instead of a full simulation.
 
-### 2.1 The second-order term is also right
+### 2.1 The second-order term, and where it fails
 
 For a null-space field the first-order term vanishes by construction, so any
 residual effect must be second order — and the same expansion predicts that too.
 At both force levels the measured residual agrees with the second-order estimate
-(−0.540 and −0.439 pairs, both within the error bar). The formula is not merely
-right at leading order; its own correction term is right as well.
+(−0.540 and −0.439 pairs, both within the error bar).
+
+**Two other measurements say the second-order term is not usable as a general
+correction, and they are the ones to weight.** In `exp06` two amplitudes are
+flagged trustworthy by the second-order ratio and only one of them agrees with
+direct sampling. In `exp09`, adding the second-order term to the prediction
+makes the residuals *worse* on every measure — larger rms, larger field-to-field
+spread, larger interaction — across eight fields and eight reference chains.
+
+The reconciliation is that the null-space case is the one where the second-order
+term is the *entire* signal, so getting it right there is a weaker test than it
+looks: there is nothing for it to be added to. Where the first-order term is
+non-zero, the second-order estimate is noisy enough that including it costs more
+than it buys. The correction term is right in the case constructed to isolate
+it, and is not a general improvement.
 
 ### 2.2 How much data the construction needs
 
@@ -94,9 +125,18 @@ The null-space field leaves its target bin alone and moves the *rest* of the
 
 This is the point rather than a caveat. There is no such thing as an error field
 that is harmless in general; harmlessness is a relation between an error and a
-particular question. It follows that no single scalar can summarise model
-quality — not force RMSE, and not any replacement for it either. What can be
-computed is a *vector* of response scores, one per observable anyone cares about.
+particular question.
+
+It follows that no *task-independent* scalar can order models the same way for
+every observable — not force RMSE, and not any replacement computed without
+reference to what the model is for. It does **not** follow that no scalar is
+useful, which an earlier version of this section claimed. Once a set of
+observables and a tolerance for each are fixed, a scalar loss over that set is
+well defined; `max_j |Δ⟨A_j⟩| / τ_j` is one, and nothing here argues against it.
+What cannot exist is the thing force RMSE is currently used as: a single number,
+computed before anyone says what the model is for, that ranks models correctly
+for whatever comes next. What can be computed is a *vector* of response scores,
+one per observable anyone cares about, and a scalar built from it afterwards.
 
 ## 3a. Force error works across decades and fails within a band
 
@@ -117,11 +157,23 @@ members whose force RMSE differs by a factor of 2.6:
 | | across the zoo | within the band |
 |---|---|---|
 | force RMSE spread | 360× | 2.6× |
-| observable error spread | — | **30×** |
+| observable error spread, raw | — | 12.1× |
+| observable error spread, noise-subtracted | — | ~~30×~~ (see below) |
+| observable error spread, excluding the two designed extremes | — | **6.5×** |
 | ρ (force RMSE, truth) | **+0.835** | **+0.343** |
 | ρ (response prediction, truth) | +0.982 | **+0.943** |
 
-Inside the band the physics still varies by a factor of thirty, force error
+**The 30× figure should not be used and is struck above.** It is a ratio of
+noise-subtracted norms whose denominator is the member `null_f4e-03`, whose
+observable error is 2.65 raw against a noise level of 2.43 — that is, the
+denominator is not resolved from zero, so the ratio is a statement about the
+noise floor rather than about the physics. Two defensible numbers replace it:
+the raw spread is **12.1×**, and excluding the two members that were
+*constructed* to sit at the extremes (the null-space and aligned fields, which
+are the answer rather than evidence for it) the spread among the remaining 13 is
+**6.5×**. Sixfold is the number to quote.
+
+Inside the band the physics still varies by roughly a factor of six, force error
 explains almost none of it, and the response prediction explains nearly all of
 it. See `figures/headline_regimes.png`.
 
@@ -156,11 +208,34 @@ more the prediction does.
 This check was run before any external review, and it found against the way the
 result had been presented. The window-free statement is the one to quote.
 
-So the corrected claim, which the data does support: **force error is a coarse
-filter, not a selector.** It will tell you that a badly fitted model is bad. It
-will not tell you which of your good models to use, and the designed
-counterexamples of §1 show why — within a band, the ordering is set by the
-projection, which force error does not measure.
+**What this does and does not license.** "Force error is a coarse filter, not a
+selector" is how this was written, and as a general statement about model
+selection it is not supported by this zoo, for a reason that survives the
+window sweep: the 34 members are not 34 draws from any population of models. They
+are a handful of parameter families — 18 shell points from one factorial grid,
+several amplitude points that are the same shape rescaled — sharing a reference
+trajectory, a baseline and a random stream. Sweeping windows over that set
+removes the presentation bias of quoting one favourable interval; it does not
+turn a designed, clustered set into evidence about fitted models. Every window
+re-uses the same points.
+
+The supported form, which is narrower and is what §3a should be read as
+claiming:
+
+> Within this fixed zoo of designed error fields, and at every window width of
+> 3× or below, force RMSE fails to resolve the ordering of observable error
+> (median ρ 0.32–0.34) while the response prediction resolves it (median ρ
+> 0.90–0.94). Whether this holds among *fitted* models of comparable force error
+> is a separate question, and requires a pre-registered selection experiment on
+> models this study did not produce.
+
+Independent evidence bears on the wider claim in both directions and should be
+read alongside it. Gawkowski *et al.*'s finite-temperature benchmark of 15
+foundation MLIPs finds that lower single-point force error does on average go
+with lower observable error — consistent with the across-decades regime here —
+*and* that individual systems show qualitative structural failures at low force
+error, which is the within-band regime. The useful framing is therefore
+conditional trust and exception detection, not a verdict on force RMSE.
 
 Two secondary observations from the same run:
 
@@ -186,17 +261,33 @@ Ten models — a pair spline, a linear ACE-style basis, Behler-Parrinello networ
 and E(3)-equivariant networks — fitted to 400 configurations of Lennard-Jones
 argon, with training and test data drawn from separate Markov chains.
 
-**The response formula works on fitted models too.** Predicted against measured
-observable shift, in rms units of the measurement's own uncertainty:
+**The response formula reaches training-induced error fields.** Predicted against
+measured observable shift, in rms units of the measurement's own uncertainty,
+with the same decomposition §2 now applies to itself:
 
-| setting | models | residual |
-|---|---|---|
-| designed error fields (exp07) | 8 | 1.01 σ |
-| fitted models, 400 configurations | 10 | 1.06 σ |
-| fitted models, 40 configurations | 8 | 1.00 σ |
+| setting | models | rms | common offset | scatter about it | all same sign |
+|---|---|---|---|---|---|
+| designed error fields (exp07) | 8 | 1.01 σ | −0.86 σ | 0.57 σ | yes (8/8) |
+| fitted models, 400 configurations | 10 | 1.06 σ | −0.49 σ | 1.00 σ | no (7/10) |
+| fitted models, 40 configurations | 8 | 1.00 σ | −0.85 σ | 0.57 σ | yes (8/8) |
 
-Three independent settings, all landing at one standard error. That is the
-external-validity check for §2, and it passes.
+**This was written as "three independent settings, all landing at one standard
+error — the external-validity check for §2, and it passes". It is neither
+independent nor a pass.** The three settings share the Lennard-Jones system, the
+observable, the reference chain, the training pool and the code path; the two
+neural-network families have two seeds each. And the decomposition on the right
+of the table shows the same signature in two of the three arms as in §2: a
+common negative offset with a scatter smaller than the quoted errors. The
+400-configuration arm, which is the one whose residuals do change sign, has a
+scatter of a full standard error and no significant offset — so it is the only
+one of the three that looks like a calibration result, and it is the one with
+the fewest usable models.
+
+What this arm does establish is narrower and still worth having: **the response
+calculation can be applied to training-induced error fields, not only to
+designed ones, and produces predictions of the right size.** It is a feasibility
+result. It is not an external-validity check, because nothing about it is
+external.
 
 The low-budget arm also produced the guard's best moment. Two E(3)-equivariant
 networks fitted to 40 configurations gave apparent observable shifts of **−95.5
@@ -231,9 +322,14 @@ reasonably call them equivalent.
 
 The response formula predicted both, from the reference trajectory alone.
 
-This is the band effect of §3a appearing in fitted models rather than designed
-ones — and it appears between two runs of the *same* model, which is as narrow a
-band as it is possible to construct.
+This looks like the band effect of §3a appearing in fitted models rather than
+designed ones, between two runs of the *same* model — as narrow a band as it is
+possible to construct. **It is n = 2, and should be read as an observation that
+generates a hypothesis rather than as a regularity.** Two seeds cannot establish
+that seed-to-seed observable variance generally exceeds what force error
+anticipates; they can establish that it happened once, here, and that the
+response calculation saw it coming. Whether it is typical is exactly what the
+larger seed sweeps in the Gate B plan (`reviews/CLAUDE_RESPONSE.md`) are for.
 
 ## 4. At fixed force error, the damage still varies fivefold
 
@@ -299,15 +395,29 @@ Three explanations are excluded by measurement:
   measured shift *toward* the reference and make it smaller in magnitude; it is
   larger.
 
-What remains is a genuine open question about either the reweighting
-estimator's finite-sample behaviour under correlated samples — the Kish
-effective sample size assumes independence, and the true independent count here
-is smaller by the autocorrelation time — or something not yet identified. It is
-recorded here unresolved rather than attributed to the nearest plausible cause.
+Two things about that third bullet, both of which the external review pressed on
+and both of which turned out to matter.
 
-Note that the exp07 measurements in §1 used a different observable and twice as
-many frames and are well calibrated at 1.01 σ rms against prediction, so
-whatever this is, it is not a general failure of either estimator.
+**The exclusion of incomplete relaxation was an argument, not a measurement.**
+It is also incomplete on its own terms: it explains why bin 5.25 Å cannot be a
+relaxation artefact, and says nothing about bin 4.25 Å, where the same
+perturbation gives a direct shift *smaller* in magnitude than the prediction at
+every one of exp06's seven amplitudes. Those are opposite signs in two bins of
+one experiment. `exp10` measures both, with surrogate chains started from
+configurations equilibrated under the reference *and* under the surrogate, so
+relaxation is bracketed rather than argued about.
+
+**The prediction's error bar was the wrong one.** The ±0.101 quoted on the
++1.725 is a within-chain blocking error from a *single* reference chain. It
+describes how well that chain determines its own covariance and says nothing
+about how much the covariance moves between chains — which is exactly what a
+comparison against an independently sampled ensemble needs. If the between-chain
+scatter of the prediction is comparable to 0.1 pairs, the 3.7 σ is arithmetic.
+`exp10` computes the prediction separately from each of eight reference chains
+and reports that scatter.
+
+The open question is therefore narrower than this section originally said, and
+the results are in §5.6.
 
 ### 5.3 The dilute-gas closed form
 
@@ -330,17 +440,25 @@ falls — has not been run.
 
 ## 6. What is not here
 
-- **exp03/exp04, the trained model zoo.** Three of the model implementations
-  (linear/ACE, GAP kernel, Behler-Parrinello) did not complete: the agents
-  writing them hit a session limit. The E(3)-equivariant network, the
-  descriptors and the pair spline did land and are tested. The consequence is
-  that every result above uses *designed* error fields rather than fitted
-  models. That is the better test of the mechanism, for the reason given in
-  `experiments/exp05_proxy_correlation/run.py` — it decouples the size of the
-  error from its shape — but it is a weaker claim about external validity, and
-  the study does not currently show that real fitted models occupy the regime
-  the designed fields explore.
-- **exp05 has not been run**, only written. It needs roughly an hour of compute.
+- **exp01, exp02, exp04, exp08 were never written.** The README used to list
+  them as if they had been. Reference physics, dataset generation, the full
+  observable matrix and the committee predictor are all absent, and
+  `atomlab/training/` is an empty package.
+- **Fitted models are a feasibility arm, not an external check.** §3b uses ten
+  models that share the system, observable, reference chain, training pool and
+  code path with the designed-field arms. It shows the response calculation
+  reaches training-induced error fields. It does not show that fitted models
+  occupy the regime the designed fields explore, and the difference matters for
+  every conclusion phrased as advice.
+- **Nothing was run on a clean commit.** `exp03`, `exp05`, `exp06` and `exp07`
+  all have `git_dirty: true` in their manifests and cannot be reconstructed
+  exactly. Manifests now also record which paths were dirty and a content digest
+  over all source files (`experiments/common.py`), so future runs are traceable;
+  the existing ones are not, and must be re-run on a tagged commit before their
+  numbers appear in a submitted document.
+- **Raw trajectories are not stored**, only per-frame observable values and
+  energies. Re-running reproduces the numbers from the same seed; it does not
+  let a reader re-analyse the original configurations.
 - **Dynamical observables.** Diffusion and vibrational spectra need real time
   evolution, which Monte Carlo cannot provide. The molecular dynamics layer
   exists and is tested; the experiments using it were not reached.
