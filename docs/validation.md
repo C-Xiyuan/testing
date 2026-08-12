@@ -153,3 +153,46 @@ freedom there and suppressing its momentum under-samples it. And step-size
 adaptation driven by a cumulative acceptance rate lags so badly that the
 sampler settled at acceptance 0.35 against a target of 0.75; adapting on a
 windowed rate brings it to 0.74.
+
+## 6. Bidirectional free-energy perturbation
+
+`atomlab/analysis/fep.py` implements BAR and two-state MBAR because a
+disagreement between exact reweighting and direct sampling cannot be settled
+with a one-directional estimator: forward reweighting's variance lives in a tail
+the reference chain barely samples, so a wrong answer and a converged answer
+look alike.
+
+The check uses a displaced harmonic pair, `U₀ = ½kx²` against
+`U₁ = ½k(x−d)² + c`, chosen because the two things being tested are independent
+in it — the partition functions differ only by the constant, so `ΔF = c` exactly
+for any `d`, and `⟨x⟩₁ − ⟨x⟩₀ = d` exactly for any `c`. A wrong free energy and
+a wrong reweighting are therefore distinguishable failures rather than one
+blurred one.
+
+| Check | Result |
+|---|---|
+| BAR recovers `ΔF = c` | within 4 σ for c = 0, ±0.01, −0.02 eV |
+| BAR is independent of `d` | 0.02, 0.05, 0.09 Å all give c to 2 × 10⁻³ eV |
+| MBAR recovers the shift `d` | within 4 σ, and `⟨x⟩₀`, `⟨x⟩₁` each to 0.01 Å |
+| MBAR beats forward-only reweighting | at d = 0.18 Å, where forward reweighting must reach into a tail it barely samples |
+| Analytic error bar is calibrated | claimed error within a factor 1.4 of the scatter over 40 independent draws of the same size |
+| Diagnostics condemn a broken case | work overlap 0.9+ → far lower, Kish falls, max weight rises, on separating the ensembles |
+
+The last two are the ones worth having. An error bar that is not checked against
+the scatter it claims to describe is decoration, and an estimator that returns a
+confident number when the ensembles do not overlap is worse than one that
+returns nothing.
+
+A seventh test exists because the sign convention is the classic way to get a
+plausible wrong answer here. Passing the reverse work with a flipped sign does
+not merely degrade the estimate: the flipped estimator stops responding to the
+quantity it is measuring, returning ≈ 0.005 eV whether the true offset is 0.01
+or 0.03. A user comparing two systems would see a stable, confident,
+meaningless number. The test asserts that non-response, not just an error.
+
+## 7. Whole-suite status
+
+`pytest tests/` at the commit that introduced `analysis/fep.py`: **793 tests,
+0 failures, 0 errors, 13 skipped**, in roughly 25 minutes on four cores while
+three experiments were running. The skips are the optional-dependency
+cross-checks against `ase`.
