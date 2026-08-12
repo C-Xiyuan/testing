@@ -1,0 +1,267 @@
+{
+  "threshold": 0.25,
+  "agreement_sigma": 2.0,
+  "n_cases": 25,
+  "n_trusted": 22,
+  "n_false_trust": 4,
+  "false_trust_rate": 0.18181818181818182,
+  "false_trust_upper_95": 0.36909113432556817,
+  "sensitivity": 0.2,
+  "specificity": 0.9,
+  "auc": 0.59,
+  "threshold_was_frozen_on_held_out_data": false,
+  "cases_are_independent": false,
+  "verdict": "4 of 22 trusted cases disagree with direct sampling; the upper limit on the false-trust rate is 37%, far above any tolerance one would set, so the diagnostic must not be used to certify a case",
+  "cases": [
+    {
+      "source": "exp06 amplitude sweep",
+      "case": "amplitude 0.0005",
+      "ratio": 0.005702746303084745,
+      "predicted": -3.835286762738472,
+      "measured": -1.9481666666666513,
+      "error": 0.8380147811908796,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp06 amplitude sweep",
+      "case": "amplitude 0.001",
+      "ratio": 0.01140549260616949,
+      "predicted": -7.670573525476944,
+      "measured": -6.605500000000006,
+      "error": 0.8920883826350915,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp06 amplitude sweep",
+      "case": "amplitude 0.002",
+      "ratio": 0.02281098521233898,
+      "predicted": -15.341147050953888,
+      "measured": -12.635500000000008,
+      "error": 1.0509834497797979,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp06 amplitude sweep",
+      "case": "amplitude 0.004",
+      "ratio": 0.04562197042467796,
+      "predicted": -30.682294101907775,
+      "measured": -28.6635,
+      "error": 1.5492945908373366,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp06 amplitude sweep",
+      "case": "amplitude 0.008",
+      "ratio": 0.09124394084935591,
+      "predicted": -61.36458820381555,
+      "measured": -54.420833333333334,
+      "error": 2.8365222492854882,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp06 amplitude sweep",
+      "case": "amplitude 0.016",
+      "ratio": 0.18248788169871183,
+      "predicted": -122.7291764076311,
+      "measured": -96.06016666666666,
+      "error": 5.488865376887836,
+      "agrees": false,
+      "trusted": true
+    },
+    {
+      "source": "exp06 amplitude sweep",
+      "case": "amplitude 0.032",
+      "ratio": 0.36497576339742366,
+      "predicted": -245.4583528152622,
+      "measured": -144.08883333333333,
+      "error": 10.903092570647768,
+      "agrees": false,
+      "trusted": false
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "spline_k8",
+      "ratio": 0.01659789136271862,
+      "predicted": 1.667019610876874,
+      "measured": 0.9823333333333437,
+      "error": 0.563684527445225,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "spline_k24",
+      "ratio": 0.08960131603445716,
+      "predicted": 0.24476756716496692,
+      "measured": 0.049000000000006594,
+      "error": 0.603480326779735,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "linear_l2",
+      "ratio": 0.1309071311952482,
+      "predicted": -0.04365065408138089,
+      "measured": -0.9196666666666431,
+      "error": 0.5487405368736561,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "linear_l4",
+      "ratio": 0.0045377641816959045,
+      "predicted": -0.06407135258839149,
+      "measured": -0.4783333333333246,
+      "error": 0.6109636116674462,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "bpnn_16x2_s0",
+      "ratio": 0.008592973518460561,
+      "predicted": 0.24998743430296141,
+      "measured": -0.06499999999999773,
+      "error": 0.6305549562723687,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "bpnn_16x2_s1",
+      "ratio": 0.010159286033662267,
+      "predicted": 0.25681856783167534,
+      "measured": -0.46699999999998454,
+      "error": 0.5797053066887442,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "bpnn_64x2_s0",
+      "ratio": 0.014286889475313855,
+      "predicted": 0.2362350595608952,
+      "measured": 0.5889999999999986,
+      "error": 0.6198747108520605,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "bpnn_64x2_s1",
+      "ratio": 0.01820426237218026,
+      "predicted": 0.23503090701087068,
+      "measured": 0.3650000000000091,
+      "error": 0.5635811326857029,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "egnn_c8_s0",
+      "ratio": 0.41157386294564674,
+      "predicted": -0.9785733677696725,
+      "measured": -0.1523333333333312,
+      "error": 0.5673646988382155,
+      "agrees": true,
+      "trusted": false
+    },
+    {
+      "source": "exp03 (exp03_model_zoo)",
+      "case": "egnn_c8_s1",
+      "ratio": 0.1422909378640155,
+      "predicted": -3.02815303889576,
+      "measured": -4.100999999999999,
+      "error": 0.685978150445543,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "spline_k8",
+      "ratio": 0.014418951913256416,
+      "predicted": 1.7976530563335318,
+      "measured": 0.731000000000023,
+      "error": 0.60215205228882,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "spline_k24",
+      "ratio": 0.08733725810451788,
+      "predicted": 0.26512952816879504,
+      "measured": -0.5729999999999791,
+      "error": 0.5897548181692064,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "linear_l2",
+      "ratio": 0.23329691306246508,
+      "predicted": -0.01823023024679639,
+      "measured": -0.41833333333332234,
+      "error": 0.5959318551386596,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "linear_l4",
+      "ratio": 0.019373441592998294,
+      "predicted": -0.034779865190502905,
+      "measured": -0.3369999999999891,
+      "error": 0.7328980416689486,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "bpnn_16x2_s0",
+      "ratio": 0.027570084039282416,
+      "predicted": 0.19408156949178246,
+      "measured": -0.22099999999997522,
+      "error": 0.5823209839537793,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "bpnn_16x2_s1",
+      "ratio": 0.03768809850486158,
+      "predicted": 0.13888113367108365,
+      "measured": -0.5396666666666476,
+      "error": 0.5952979088958266,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "bpnn_64x2_s0",
+      "ratio": 0.18185300119434022,
+      "predicted": 0.13383039495467786,
+      "measured": -0.25833333333332575,
+      "error": 0.5778744576833102,
+      "agrees": true,
+      "trusted": true
+    },
+    {
+      "source": "exp03 (exp03_model_zoo_n40)",
+      "case": "bpnn_64x2_s1",
+      "ratio": 0.39655586845116797,
+      "predicted": 0.05650704810584152,
+      "measured": 0.0556666666666672,
+      "error": 0.5692768537675501,
+      "agrees": true,
+      "trusted": false
+    }
+  ]
+}
