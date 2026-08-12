@@ -425,6 +425,7 @@ def compare_estimators(refs, surrogate_chains, other_chains, temperature, discar
                      "second_order": np.asarray(linear.second_order.value).tolist(),
                      "second_order_ratio": np.asarray(linear.second_order_ratio).tolist(),
                      "per_chain": per_chain.tolist(),
+                     "per_chain_reference_mean": [r["mean"].tolist() for r in refs],
                      "between_chain_scatter": per_chain.std(axis=0, ddof=1).tolist(),
                      "between_chain_sem": (per_chain.std(axis=0, ddof=1)
                                            / np.sqrt(len(per_chain))).tolist()}
@@ -476,6 +477,19 @@ def compare_estimators(refs, surrogate_chains, other_chains, temperature, discar
         out[arm_name] = {"value": value.tolist(), "error": err.tolist(),
                          "n_reference_chains": len(ref_chain),
                          "n_surrogate_chains": len(sur_chain)}
+
+    # The review asks for the prediction/direct covariance, and it is not zero
+    # even though the prediction and the surrogate chains are disjoint: the
+    # measured shift subtracts the reference mean, which the prediction is also
+    # computed from. Estimating it across the eight reference chains says
+    # whether adding the two errors in quadrature -- which is conservative when
+    # the correlation is positive -- is conservative by a little or a lot.
+    ref_chain_means = np.array([r["mean"] for r in refs])
+    corr = []
+    for j in range(per_chain.shape[1]):
+        c = np.corrcoef(ref_chain_means[:, j], per_chain[:, j])[0, 1]
+        corr.append(float(c) if np.isfinite(c) else 0.0)
+    out["prediction_reference_correlation"] = corr
 
     out["overlap"] = overlap_diagnostics(du_ref, du_sur, temperature)
     out["tau_reference"] = float(integrated_autocorrelation_time(a_ref))
@@ -541,7 +555,14 @@ def assemble(est, metro, relaxation, ref_grand, ref_sem, radii, bound, discard):
             # their errors are positively correlated and adding in quadrature is
             # conservative for the difference. Stated rather than silently
             # assumed.
+            # Quadrature is the conservative choice when the two errors are
+            # positively correlated; the measured correlation is carried through
+            # so a reader can see by how much rather than take the word for it.
+            rho = np.asarray(est.get("prediction_reference_correlation",
+                                     [0.0] * len(radii)), float)
             err = np.sqrt(error**2 + target_err**2)
+            err_corr = np.sqrt(np.maximum(
+                error**2 + target_err**2 - 2.0 * rho * error * target_err, 0.0))
             for j, r in enumerate(radii):
                 half95, half9875 = 1.96 * err[j], 2.50 * err[j]
                 comparisons.append({
@@ -550,6 +571,8 @@ def assemble(est, metro, relaxation, ref_grand, ref_sem, radii, bound, discard):
                     "reference_based": float(target[j]),
                     "reference_based_error": float(target_err[j]),
                     "difference": float(diff[j]), "difference_error": float(err[j]),
+                    "difference_error_covariance_corrected": float(err_corr[j]),
+                    "prediction_reference_correlation": float(rho[j]),
                     "ci95": [float(diff[j] - half95), float(diff[j] + half95)],
                     "ci_bonferroni": [float(diff[j] - half9875), float(diff[j] + half9875)],
                     "within_bound": bool(abs(diff[j]) + half95 <= bound),
