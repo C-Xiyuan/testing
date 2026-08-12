@@ -447,6 +447,47 @@ approximation valid to `O(ρ)` against an estimator that makes no such
 approximation, so this disagreement carries less weight than one between two
 exact quantities.
 
+### 5.4 The second-order warning light does not work
+
+This was written up as a result and it is not one. The claim was that the ratio
+of the second-order cumulant term to the first is a self-diagnostic: below a
+threshold the linear prediction can be trusted, above it not.
+
+That is a screening test, and a screening test is judged by its error rates on
+cases where the truth is known some other way. Those are computable from every
+case in this repository where both the diagnostic and an independent direct
+measurement exist — 25 of them, across `exp06` and two `exp03` arms
+(`scripts/warning_light_calibration.py`, output in
+`results/validation/warning_light_calibration.json`):
+
+| | agrees with direct MD | disagrees |
+|---|---|---|
+| diagnostic says trust | 18 | **4** |
+| diagnostic says beware | 2 | 1 |
+
+- **False-trust rate 18 %** (4 of 22), upper 95 % limit **37 %**. A diagnostic
+  that certifies four wrong answers in twenty-two is worse than no diagnostic,
+  because it turns an unknown into a confident error.
+- **Sensitivity 0.20**: it flags one of the five genuine disagreements.
+- **The statistic barely separates the two groups at all.** Median ratio 0.033
+  for agreeing cases and 0.091 for disagreeing ones, AUC 0.59 against 0.5 for
+  no information, one-sided *p* = 0.29. This is not a threshold that needs
+  moving; it is a statistic with little discriminating power here.
+
+Two caveats, neither of which rescues it. The 0.25 threshold was chosen a
+priori from the theory rather than fitted to these data — better than tuning,
+but not the frozen-development-set protocol a real validation needs. And the 25
+cases share a system, an observable and in places a reference chain, so the
+binomial interval is optimistically narrow.
+
+`exp09` adds an independent line of evidence pointing the same way: adding the
+second-order term to the prediction makes the residuals worse, not better, on
+every measure. §2.1 gives the reconciliation with the one case where the
+second-order term *is* right.
+
+**The claim is withdrawn.** The ratio is reported alongside every prediction as
+a descriptive statistic and is not used to certify anything.
+
 ## 6. What is not here
 
 - **exp01, exp02, exp04, exp08 were never written.** The README used to list

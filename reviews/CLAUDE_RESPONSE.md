@@ -30,7 +30,7 @@ the design rather than an intention.
 | **P0-2** calibration / common offset | **Agree** | Reproduced independently before reading the review's own numbers: the eight exp07 residuals are all negative, mean −0.861 σ, scatter about that 0.571 σ, rms 1.013 σ. An rms near one built from a common offset plus a sub-unit scatter is not a calibration pass. | `exp09` — 8 independent reference chains × 8 fields × 4 independent direct chains per field, with the residual table decomposed into reference-chain (row) and field (column) effects, each compared against the spread its own quoted error predicts. | `experiments/exp09_calibration_replication` | *(filled in §2)* |
 | **P0-3** counterexample replication | **Agree** | One construction chain, one evaluation split, two force levels that are the same field direction rescaled, and shared random streams between the two direct runs. Existence is established; stability is not. | Not yet run. Design frozen in §5 (Gate A1) with the experimental unit set to the construction/reference cluster. | — | Downgraded now, in `docs/RESULTS.md` §1 and here, to a single-state constructive example. |
 | **P0-4** clustered zoo / post-hoc band | **Agree** | The 34 members are a handful of parameter families sharing a reference trajectory, a baseline and a random stream; `run.py:177–183` declares them independent and bootstraps rows. The window sweep in `799277d` removes presentation bias, not the inference problem — every window re-uses the same clustered points. The 30× spread has a denominator (`null_f4e-03`, 2.65 raw against 2.43 noise) that is not resolved from zero. | Rewrote §3a of `docs/RESULTS.md`: struck the 30×, replaced with raw 12.1× and 6.5× excluding the two designed extremes; replaced "coarse filter, not a selector" with the within-zoo statement quoted in §4 below. | `docs/RESULTS.md` §3a | Restricted to a descriptive statement about this fixed zoo. |
-| **P0-5** warning-light false trust | **Agree**, and it is worse than the review says | `exp06` flags two cases trustworthy and only one agrees. Beyond that, `exp09` finds that **adding** the second-order term makes the residuals worse on every measure — larger rms, larger field-to-field spread, larger interaction. That is a stronger negative result than the review had. | Rewrote `docs/theory.md` §3(iii) from "computable warning light" to "candidate warning light" with both failures named; `docs/RESULTS.md` §2.1 rewritten to explain why the null-space case is a weaker test than it looks. | `docs/theory.md`, `docs/RESULTS.md` §2.1, `exp09` | Demoted to an untested heuristic used to flag, never to certify. |
+| **P0-5** warning-light false trust | **Agree**, and it is worse than the review says | The review had one false trust from `exp06`. Scoring the diagnostic as a screening test over all 25 cases in the repository where it and an independent direct measurement both exist gives a **false-trust rate of 18 % (4/22, upper 95 % limit 37 %)**, sensitivity 0.20, and **AUC 0.59** (0.5 = no information, one-sided *p* = 0.29) — the statistic barely separates agreeing from disagreeing cases at all. Independently, `exp09` finds that adding the second-order term makes the residuals worse on every measure. | Wrote `scripts/warning_light_calibration.py` and `docs/RESULTS.md` §5.4, which withdraws the claim outright. `docs/theory.md` §3(iii) rewritten from "computable warning light" to "candidate warning light" with both failures named; `docs/RESULTS.md` §2.1 explains why the one case where the second-order term *is* right is a weaker test than it looks. | `scripts/warning_light_calibration.py`, `results/validation/warning_light_calibration.json`, `exp09` | **Withdrawn.** The ratio is reported as a descriptive statistic and used to certify nothing. |
 | **P1-1** fitted-model inference | **Agree** | Ten models sharing system, observable, training pool, reference chain and code path, with two seeds per network family and every ranking interval spanning zero. The EGNN 27× is n = 2. | Rewrote `docs/RESULTS.md` §3b: removed "external-validity check … and it passes", added the residual decomposition per arm, labelled the EGNN pair as hypothesis-generating. | `docs/RESULTS.md` §3b | Feasibility result: the response calculation reaches training-induced error fields and predicts them at the right size. |
 | **P1-2** README evidence status | **Agree** | README listed exp01–exp08 and the full module inventory as if all of it were evidence; four experiments were never written and `atomlab/training/` is empty. | README rewritten with the four-state table the review asks for (implemented / validated / claim-bearing / planned), per module and per experiment, plus an explicit "narrowest supportable statement". | `README.md` | — |
 | **Gate A** scope | Accept | — | Adopted as the next programme, with the primary cell chosen in §5 rather than "more systems". | — | — |
@@ -56,6 +56,31 @@ the test is a ratio and not a threshold.
 ### exp10 — end-to-end consistency
 
 *(Results inserted below once the production run completes.)*
+
+### The warning light, scored as a screening test
+
+This one needed no new sampling, only the right question. Over the 25 cases in
+the repository where the second-order diagnostic and an independent direct
+measurement both exist:
+
+| | agrees with direct MD | disagrees |
+|---|---|---|
+| diagnostic says trust | 18 | **4** |
+| diagnostic says beware | 2 | 1 |
+
+False-trust rate 18 % (upper 95 % limit 37 %); sensitivity to failure 0.20;
+specificity 0.90. Median ratio 0.033 among agreeing cases against 0.091 among
+disagreeing ones, AUC 0.59, one-sided *p* = 0.29.
+
+Two caveats are in the script's docstring and neither rescues the number: the
+0.25 threshold was chosen a priori from the theory rather than frozen on a
+held-out development set, which is better than tuning but is not validation;
+and the cases share a system, an observable and in places a reference chain, so
+the binomial interval is optimistically narrow.
+
+The honest reading is not that the threshold is in the wrong place. An AUC of
+0.59 says the statistic has little discriminating power on these cases at any
+threshold. The claim is withdrawn rather than adjusted.
 
 ---
 
