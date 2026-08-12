@@ -177,8 +177,13 @@ def run(ctx: ExperimentContext) -> dict:
     with ctx.timed("training_data"):
         pool_traj, _ = sample(ctx, cfg, potential, ctx.scaled("data.n_train_pool"),
                               seed=ctx.seed + 11, label="train pool")
+        # No drift check on the test set. The reference trajectory needs one
+        # because its averages are ensemble averages and a drifting chain would
+        # bias them; a test set is a bag of labelled configurations whose only
+        # job is to be disjoint from the training data, and it is deliberately
+        # small.
         test_traj, _ = sample(ctx, cfg, potential, ctx.scaled("data.n_test"),
-                              seed=ctx.seed + 12, label="test")
+                              seed=ctx.seed + 12, label="test", check=False)
         pool = potential.label([pool_traj.frame(i) for i in range(pool_traj.n_frames)])
         test = Dataset(potential.label([test_traj.frame(i) for i in range(test_traj.n_frames)]))
     print(f"    {len(pool)} training configurations, {len(test)} test")
