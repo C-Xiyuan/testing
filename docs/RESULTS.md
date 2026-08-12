@@ -98,6 +98,57 @@ particular question. It follows that no single scalar can summarise model
 quality — not force RMSE, and not any replacement for it either. What can be
 computed is a *vector* of response scores, one per observable anyone cares about.
 
+## 3a. Force error works across decades and fails within a band
+
+This is the result that refuted the project's own prediction, and it is more
+useful than the prediction was.
+
+**P1 as originally stated — that force RMSE would rank models weakly against
+downstream physics — is not supported.** Over a zoo of 34 surrogates spanning
+three decades of force RMSE (5 × 10⁻⁴ to 1.8 × 10⁻¹ eV/Å), the rank correlation
+between force RMSE and measured observable error is **ρ = 0.83 [0.68, 0.92]**.
+That is strong. A model a hundred times worse in force error really is worse,
+and no theory was needed to say so.
+
+What force RMSE cannot do is choose among models of *comparable* force error —
+which is the only situation a practitioner is ever in. Restricting to the 15
+members whose force RMSE differs by a factor of 2.6:
+
+| | across the zoo | within the band |
+|---|---|---|
+| force RMSE spread | 360× | 2.6× |
+| observable error spread | — | **30×** |
+| ρ (force RMSE, truth) | **+0.835** | **+0.343** |
+| ρ (response prediction, truth) | +0.982 | **+0.943** |
+
+Inside the band the physics still varies by a factor of thirty, force error
+explains almost none of it, and the response prediction explains nearly all of
+it. See `figures/headline_regimes.png`.
+
+So the corrected claim, which the data does support: **force error is a coarse
+filter, not a selector.** It will tell you that a badly fitted model is bad. It
+will not tell you which of your good models to use, and the designed
+counterexamples of §1 show why — within a band, the ordering is set by the
+projection, which force error does not measure.
+
+Two secondary observations from the same run:
+
+- **The smoothness ratio does not work.** `std(δU)/force_RMSE`, proposed in the
+  theory document as an empirical stand-in for the inverse spectral weighting,
+  has ρ = **−0.01 [−0.37, 0.37]** against observable error. It carries no
+  information at all here. Proposed and refuted in the same study.
+- Per-atom energy spread (`ρ = 0.92`) outranks every force metric across the
+  zoo, which is not something the theory predicts and is worth no more than the
+  observation.
+
+One statistical caution applies to this section. The observable error is a norm,
+so noise inflates it: `E|v_measured|² = |v_true|² + E|noise|²`. All numbers above
+subtract the noise in quadrature. Doing so changes the correlations by under
+0.01 but is necessary at the low-force-error end, where signal and noise are
+comparable. Top-k overlap statistics were also computed and are *not* reported
+as evidence: with 34 members they moved between 0.33 and 0.67 depending on that
+correction, which means they are too noisy to carry a claim.
+
 ## 4. At fixed force error, the damage still varies fivefold
 
 Holding force RMSE constant to 0.0 % and varying only the **width** of the error
