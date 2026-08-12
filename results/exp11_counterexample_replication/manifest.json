@@ -1,0 +1,144 @@
+{
+  "experiment": "exp11_counterexample_replication",
+  "git_commit": "9adfe3c34a05c76e76345b8f7de96364dabc4cca",
+  "git_branch": "claude/ai-science-project-plan-p0obrk",
+  "git_dirty": true,
+  "code": {
+    "dirty_paths": [
+      "results/exp11_counterexample_replication/"
+    ],
+    "n_source_files": 77,
+    "sha256": "db6cdfb1058379ea2fb4fed6f9c44b527dfd569f8a24fb60186ae540b494e3da"
+  },
+  "seed": 0,
+  "quick_mode": false,
+  "config": {
+    "system": {
+      "lattice_constant": 5.4,
+      "reps": [
+        3,
+        3,
+        3
+      ],
+      "density": 0.02,
+      "temperature": 120.0
+    },
+    "potential": {
+      "epsilon": 0.0103,
+      "sigma": 3.405,
+      "cutoff": 7.0,
+      "mode": "shifted_force"
+    },
+    "observable": {
+      "target_bin": [
+        3.4,
+        3.9
+      ]
+    },
+    "sampling": {
+      "n_construction": 1500,
+      "n_evaluation": 1500,
+      "n_direct": 900,
+      "n_leapfrog": 8,
+      "step_size": 0.002,
+      "burn_in": 300,
+      "n_melt": 400,
+      "n_anneal": 1000
+    },
+    "replication": {
+      "n_clusters": 6,
+      "n_direct_chains": 3
+    },
+    "perturbations": {
+      "basis_r_min": 3.0,
+      "basis_r_max": 6.6,
+      "n_basis": 14,
+      "force_rms": 0.004
+    },
+    "analysis": {
+      "match_tolerance": 0.02,
+      "minimum_effect_pairs": 1.0
+    }
+  },
+  "timings_seconds": {
+    "equilibration": 59.46204948425293,
+    "cluster_0": 880.4177515506744,
+    "cluster_1": 886.4568617343903,
+    "cluster_2": 878.6266350746155,
+    "cluster_3": 870.5087368488312,
+    "cluster_4": 867.718323469162,
+    "cluster_5": 861.1329724788666
+  },
+  "total_seconds": 5304.390831947327,
+  "platform": "Linux-6.18.5-fc-v20-x86_64-with-glibc2.39",
+  "cpu_count": 4,
+  "libraries": {
+    "python": "3.11.15",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "torch": "2.13.0+cpu",
+    "numba": "0.66.0",
+    "matplotlib": "3.11.1"
+  },
+  "finished_at": "2026-08-12T06:45:08+0000",
+  "results": {
+    "n_clusters_run": 6,
+    "n_clusters_kept": 6,
+    "excluded_for_force_match": [],
+    "match_tolerance": 0.02,
+    "minimum_effect_pairs": 1.0,
+    "contrasts": [
+      10.881481481481444,
+      10.691111111111098,
+      11.005925925925936,
+      11.277407407407395,
+      10.437777777777796,
+      9.734814814814825
+    ],
+    "contrast_mean": 10.671419753086417,
+    "between_cluster_sd": 0.5395269185490548,
+    "within_cluster_sd": 0.49048255495681403,
+    "variance_ratio_between_over_within": 1.099992065154201,
+    "sem": 0.2202609421568875,
+    "ci95": [
+      10.105220976077781,
+      11.237618530095052
+    ],
+    "replicates": true,
+    "excludes_zero": true,
+    "underpowered": false,
+    "null_suppression": [
+      7.01720907487398,
+      5.664862090002608,
+      1.5863848195405656,
+      3.6148624033122623,
+      153.26596920154978,
+      3.8944193327474506
+    ],
+    "null_measured": [
+      -0.5676296296296357,
+      0.6005925925925908,
+      0.29118518518515657,
+      -0.21103703703704468,
+      -0.33592592592594883,
+      0.22577777777775054
+    ],
+    "aligned_measured": [
+      10.313851851851808,
+      11.29170370370369,
+      11.297111111111093,
+      11.06637037037035,
+      10.101851851851848,
+      9.960592592592576
+    ],
+    "random_measured": [
+      2.2353333333333296,
+      4.457629629629594,
+      1.2763703703703584,
+      1.03748148148145,
+      -3.921851851851841,
+      0.025777777777761912
+    ],
+    "exp07_single_cluster_contrast": 10.111
+  }
+}

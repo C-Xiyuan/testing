@@ -1,0 +1,338 @@
+[
+  {
+    "cluster": 0,
+    "reference_mean": 211.10133333333334,
+    "reference_error": 0.47192355036619815,
+    "fields": {
+      "null": {
+        "force_rmse_in_sample": 0.0039999999999999775,
+        "force_rmse_out_of_sample": 0.004029366477574242,
+        "covariance_in_sample": 4.168335678846151e-16,
+        "covariance_out_of_sample": 0.004606935062785439,
+        "predicted": -0.44551051184832313,
+        "predicted_error": 0.5872518885844021,
+        "direct_means": [
+          210.19555555555556,
+          210.8411111111111,
+          210.56444444444443
+        ],
+        "measured": -0.5676296296296357,
+        "measured_error": 0.5076185414442085
+      },
+      "aligned": {
+        "force_rmse_in_sample": 0.003999999999999991,
+        "force_rmse_out_of_sample": 0.003994618162450536,
+        "covariance_in_sample": -0.09560353461457288,
+        "covariance_out_of_sample": -0.0970924493886167,
+        "predicted": 9.389259070123906,
+        "predicted_error": 0.5657596242526409,
+        "direct_means": [
+          221.1211111111111,
+          221.79777777777778,
+          221.32666666666665
+        ],
+        "measured": 10.313851851851808,
+        "measured_error": 0.5126667542389489
+      },
+      "random": {
+        "force_rmse_in_sample": 0.003999999999999985,
+        "force_rmse_out_of_sample": 0.004000619609373825,
+        "covariance_in_sample": -0.024014911417900443,
+        "covariance_out_of_sample": -0.03232782652993311,
+        "predicted": 3.126240406693805,
+        "predicted_error": 0.46435698728021346,
+        "direct_means": [
+          213.72222222222223,
+          213.02333333333334,
+          213.26444444444445
+        ],
+        "measured": 2.2353333333333296,
+        "measured_error": 0.5145091411435551
+      }
+    },
+    "contrast": 10.881481481481444,
+    "contrast_error": 0.2740074994217665,
+    "match_ratio": 0.9913762336295047,
+    "null_suppression": 7.01720907487398
+  },
+  {
+    "cluster": 1,
+    "reference_mean": 209.90533333333335,
+    "reference_error": 0.4840103766240472,
+    "fields": {
+      "null": {
+        "force_rmse_in_sample": 0.003999999999999989,
+        "force_rmse_out_of_sample": 0.003986423114152617,
+        "covariance_in_sample": 5.922176987927119e-16,
+        "covariance_out_of_sample": 0.005143879773266308,
+        "predicted": -0.49743538370791174,
+        "predicted_error": 0.29206768165367203,
+        "direct_means": [
+          209.53555555555556,
+          211.94444444444446,
+          210.0377777777778
+        ],
+        "measured": 0.6005925925925908,
+        "measured_error": 0.8789874042050233
+      },
+      "aligned": {
+        "force_rmse_in_sample": 0.004000000000000002,
+        "force_rmse_out_of_sample": 0.004000236527436916,
+        "covariance_in_sample": -0.09647055762942373,
+        "covariance_out_of_sample": -0.09690585852652032,
+        "predicted": 9.371214928119327,
+        "predicted_error": 0.5559525891667283,
+        "direct_means": [
+          221.1,
+          221.1888888888889,
+          221.3022222222222
+        ],
+        "measured": 11.29170370370369,
+        "measured_error": 0.4875350876494471
+      },
+      "random": {
+        "force_rmse_in_sample": 0.00399999999999996,
+        "force_rmse_out_of_sample": 0.004013729888613971,
+        "covariance_in_sample": -0.022590968189742645,
+        "covariance_out_of_sample": -0.02913936952310752,
+        "predicted": 2.8179028473928516,
+        "predicted_error": 0.3686177421844561,
+        "direct_means": [
+          215.20444444444445,
+          214.13,
+          213.75444444444443
+        ],
+        "measured": 4.457629629629594,
+        "measured_error": 0.6504170304821439
+      }
+    },
+    "contrast": 10.691111111111098,
+    "contrast_error": 0.7360551807309931,
+    "match_ratio": 1.0034651146877156,
+    "null_suppression": 5.664862090002608
+  },
+  {
+    "cluster": 2,
+    "reference_mean": 209.95733333333334,
+    "reference_error": 0.4012334632486348,
+    "fields": {
+      "null": {
+        "force_rmse_in_sample": 0.0040000000000000304,
+        "force_rmse_out_of_sample": 0.004003990139505013,
+        "covariance_in_sample": -4.470517796289156e-16,
+        "covariance_out_of_sample": 0.006048680791522475,
+        "predicted": -0.5849335488156414,
+        "predicted_error": 0.34161162980468857,
+        "direct_means": [
+          210.61111111111111,
+          210.1588888888889,
+          209.97555555555556
+        ],
+        "measured": 0.29118518518515657,
+        "measured_error": 0.4434608945636287
+      },
+      "aligned": {
+        "force_rmse_in_sample": 0.003999999999999999,
+        "force_rmse_out_of_sample": 0.003996639246525396,
+        "covariance_in_sample": -0.0965744063208983,
+        "covariance_out_of_sample": -0.09699206677286303,
+        "predicted": 9.379551637760391,
+        "predicted_error": 0.5835808884639114,
+        "direct_means": [
+          220.89444444444445,
+          221.13222222222223,
+          221.73666666666668
+        ],
+        "measured": 11.297111111111093,
+        "measured_error": 0.4731113849459498
+      },
+      "random": {
+        "force_rmse_in_sample": 0.003999999999999967,
+        "force_rmse_out_of_sample": 0.004005760767896726,
+        "covariance_in_sample": -0.008790522839311398,
+        "covariance_out_of_sample": -0.009595535385917868,
+        "predicted": 0.9279297022811241,
+        "predicted_error": 0.20106403785223542,
+        "direct_means": [
+          211.28666666666666,
+          211.64222222222222,
+          210.7722222222222
+        ],
+        "measured": 1.2763703703703584,
+        "measured_error": 0.4740934094584614
+      }
+    },
+    "contrast": 11.005925925925936,
+    "contrast_error": 0.31387157168444124,
+    "match_ratio": 0.9981641081212738,
+    "null_suppression": 1.5863848195405656
+  },
+  {
+    "cluster": 3,
+    "reference_mean": 210.55066666666667,
+    "reference_error": 0.4651868275680986,
+    "fields": {
+      "null": {
+        "force_rmse_in_sample": 0.003999999999999972,
+        "force_rmse_out_of_sample": 0.004000554293430959,
+        "covariance_in_sample": 3.1447678202524445e-16,
+        "covariance_out_of_sample": 0.003508768517338301,
+        "predicted": -0.3393130653705225,
+        "predicted_error": 0.27624477103493117,
+        "direct_means": [
+          210.29333333333332,
+          210.65333333333334,
+          210.07222222222222
+        ],
+        "measured": -0.21103703703704468,
+        "measured_error": 0.4950509720493033
+      },
+      "aligned": {
+        "force_rmse_in_sample": 0.0039999999999999975,
+        "force_rmse_out_of_sample": 0.003981969456075257,
+        "covariance_in_sample": -0.10122580606779115,
+        "covariance_out_of_sample": -0.1064428220881086,
+        "predicted": 10.293480482093315,
+        "predicted_error": 0.6511956552193676,
+        "direct_means": [
+          221.6588888888889,
+          221.2888888888889,
+          221.90333333333334
+        ],
+        "measured": 11.06637037037035,
+        "measured_error": 0.4982956052329275
+      },
+      "random": {
+        "force_rmse_in_sample": 0.003999999999999987,
+        "force_rmse_out_of_sample": 0.004001391832773115,
+        "covariance_in_sample": -0.009071154874738783,
+        "covariance_out_of_sample": -0.012683715395251934,
+        "predicted": 1.2265700429605384,
+        "predicted_error": 0.36859384888875624,
+        "direct_means": [
+          211.9388888888889,
+          211.32444444444445,
+          211.5011111111111
+        ],
+        "measured": 1.03748148148145,
+        "measured_error": 0.4997544169616105
+      }
+    },
+    "contrast": 11.277407407407395,
+    "contrast_error": 0.24612274587218827,
+    "match_ratio": 0.9953544344126964,
+    "null_suppression": 3.6148624033122623
+  },
+  {
+    "cluster": 4,
+    "reference_mean": 210.91333333333333,
+    "reference_error": 0.6036334362147063,
+    "fields": {
+      "null": {
+        "force_rmse_in_sample": 0.004000000000000028,
+        "force_rmse_out_of_sample": 0.004002738647857743,
+        "covariance_in_sample": 6.162145140014211e-17,
+        "covariance_out_of_sample": -0.00021707684103178528,
+        "predicted": 0.020992267796371675,
+        "predicted_error": 0.3983191889342007,
+        "direct_means": [
+          211.1511111111111,
+          210.2211111111111,
+          210.36
+        ],
+        "measured": -0.33592592592594883,
+        "measured_error": 0.669525817661482
+      },
+      "aligned": {
+        "force_rmse_in_sample": 0.004,
+        "force_rmse_out_of_sample": 0.004007986210648497,
+        "covariance_in_sample": -0.097723497766914,
+        "covariance_out_of_sample": -0.10142846690955575,
+        "predicted": 9.808570685940108,
+        "predicted_error": 0.6008268257733675,
+        "direct_means": [
+          220.89222222222222,
+          220.11333333333334,
+          222.04
+        ],
+        "measured": 10.101851851851848,
+        "measured_error": 0.8230980105179231
+      },
+      "random": {
+        "force_rmse_in_sample": 0.0040000000000000235,
+        "force_rmse_out_of_sample": 0.004005825557060719,
+        "covariance_in_sample": 0.031994940322027834,
+        "covariance_out_of_sample": 0.03327049243194732,
+        "predicted": -3.217400269549434,
+        "predicted_error": 0.3192486107512575,
+        "direct_means": [
+          206.04666666666665,
+          207.2722222222222,
+          207.65555555555557
+        ],
+        "measured": -3.921851851851841,
+        "measured_error": 0.7744594594038723
+      }
+    },
+    "contrast": 10.437777777777796,
+    "contrast_error": 0.6300861090367659,
+    "match_ratio": 1.0013109931105701,
+    "null_suppression": 153.26596920154978
+  },
+  {
+    "cluster": 5,
+    "reference_mean": 210.90866666666668,
+    "reference_error": 0.4354386879238952,
+    "fields": {
+      "null": {
+        "force_rmse_in_sample": 0.00399999999999997,
+        "force_rmse_out_of_sample": 0.004017471187936268,
+        "covariance_in_sample": -7.011662024100304e-16,
+        "covariance_out_of_sample": -0.002428346661635291,
+        "predicted": 0.23483160700689265,
+        "predicted_error": 0.4935745412021854,
+        "direct_means": [
+          210.80777777777777,
+          212.0911111111111,
+          210.50444444444443
+        ],
+        "measured": 0.22577777777775054,
+        "measured_error": 0.6527459086897863
+      },
+      "aligned": {
+        "force_rmse_in_sample": 0.003999999999999994,
+        "force_rmse_out_of_sample": 0.0040127285869696085,
+        "covariance_in_sample": -0.10716469315357548,
+        "covariance_out_of_sample": -0.10685135434564375,
+        "predicted": 10.332987315309019,
+        "predicted_error": 0.6529301673849727,
+        "direct_means": [
+          220.60555555555555,
+          220.77777777777777,
+          221.22444444444446
+        ],
+        "measured": 9.960592592592576,
+        "measured_error": 0.47288231908538714
+      },
+      "random": {
+        "force_rmse_in_sample": 0.003999999999999947,
+        "force_rmse_out_of_sample": 0.003998611323914454,
+        "covariance_in_sample": -0.00173905403808254,
+        "covariance_out_of_sample": -0.009457000185685209,
+        "predicted": 0.9145327502677941,
+        "predicted_error": 0.3236212280751955,
+        "direct_means": [
+          211.33333333333334,
+          209.92333333333335,
+          211.54666666666665
+        ],
+        "measured": 0.025777777777761912,
+        "measured_error": 0.6700640740157291
+      }
+    },
+    "contrast": 9.734814814814825,
+    "contrast_error": 0.5200780779200966,
+    "match_ratio": 0.9988195059168313,
+    "null_suppression": 3.8944193327474506
+  }
+]

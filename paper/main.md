@@ -601,7 +601,9 @@ frames and evaluated on disjoint ones, the out-of-sample predicted shift is
 0.041 ± 0.067, 0.142 ± 0.071, 0.037 ± 0.077 and 0.028 ± 0.078 pairs (Table II),
 against in-sample values of order 10⁻¹⁵ — against the aligned field's 10.21
 pairs, a suppression of 360× at 2000 frames and 72× at the least favourable
-row. An earlier construction on 30 frames failed to generalise — the null space
+row *on this construction chain*. Repeating the construction on six independent
+chains (Section 4.8) puts that ratio's median at 26× over a range of 16 to 467×,
+so 360× is an upper-tail draw and the median is the figure to carry. An earlier construction on 30 frames failed to generalise — the null space
 of a covariance estimated from 30 samples is the null space of the noise — but
 that run predates the deposited records and its artefact was not retained, so
 we quote no number.
@@ -881,6 +883,48 @@ variance. Its effect is one-directional: shared streams make the per-field
 errors more alike, lowering the column noise floor and making the test for field
 structure conservative. It does confound the grand mean with a common direct
 draw, which is why the grand mean is never read on its own above.
+
+### 4.8. The counterexample replicates across construction chains
+
+Section 4.1 establishes the aligned−null separation once, from one construction
+trajectory, with two force levels that are the same field rescaled and two
+direct runs sharing a random stream. Existence does not imply stability, so we
+repeated it with the *construction cluster* as the unit of replication: six
+clusters, each with its own construction trajectory, its own disjoint evaluation
+trajectory and its own direct chains, sharing nothing but the reference
+potential, the target definition and the basis geometry. The estimand, the
+force-matching tolerance, the minimum meaningful effect and the decision rule
+were fixed before the run.
+
+| cluster | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| aligned − null (pairs) | 10.88 | 10.69 | 11.01 | 11.28 | 10.44 | 9.73 |
+| force match, out of sample | 0.991 | 1.004 | 0.998 | 0.995 | 1.001 | 0.999 |
+
+The mean is +10.671 pairs with a 95% interval of [+10.105, +11.238] taken over
+clusters, against a pre-registered minimum meaningful effect of 1.0 pairs; all
+six passed the 2% force-matching tolerance out of sample, worst deviation 0.86%.
+**The contrast replicates.** Two features make that stronger than a repeated
+measurement: the between-cluster spread is 0.540 pairs against a within-cluster
+0.490, a ratio of 1.10, so changing the construction trajectory moves the answer
+barely more than re-running the direct chains does; and Section 4.1's
+single-cluster 10.111 sits near the bottom of the six rather than at the top.
+
+The controls behave as designed. Null-field shifts are [−0.57, +0.60, +0.29,
+−0.21, −0.34, +0.23] pairs, straddling zero; random fields at the same force
+RMSE give [+2.24, +4.46, +1.28, +1.04, −3.92, +0.03], scattered as an arbitrary
+direction should be.
+
+**One number does not survive, and it is ours.** The 360× suppression of the
+null field's predicted shift relative to the aligned field's, quoted above from
+one construction chain, is [21, 19, 16, 30, 467, 44]× across the six — median
+26×. The distribution is heavy-tailed for an understandable reason: the
+denominator is a near-cancelling quantity, so one cluster in six lands close to
+zero and returns an enormous ratio, which is precisely why a single draw of it
+should not have been reported as a property of the method. The construction
+itself is sound — the null field's covariance with the target is ~10⁻¹⁶ in
+sample and 10⁻³ out of sample — but the defensible suppression is a median of
+26× with a factor-of-thirty spread across construction chains.
 
 ## 5. What did not work
 
@@ -1235,7 +1279,8 @@ that field's gradient: a covariance is a projection, a norm is not. At force
 RMSE matched to 0.52% we separated a target pair count by 10.11 pairs, at least
 11.4σ, by changing only the correlation between error field and observable, and
 the null-space construction achieving the quiet end survives out of sample with
-a 360× suppression. The same field moves a non-target bin by 11.36 ± 0.95
+a suppression whose median over six independent construction chains is 26×.
+The same field moves a non-target bin by 11.36 ± 0.95
 pairs, so harmlessness is relative to the questions a field was built against,
 not a property of a model.
 
@@ -1529,7 +1574,7 @@ frames. In sample the predicted shift is zero to machine precision by
 construction; out of sample it is not, and the table shows that it remains
 small from 250 frames upward. For scale, the aligned field at the same force
 error (4×10⁻³ eV/Å) has a predicted shift of 10.21 pairs, so the suppression
-out of sample is 360× at 2000 construction frames and 72× at the least
+out of sample on this chain is 360× at 2000 construction frames and 72× at the least
 favourable row. An earlier construction using 30 frames failed to generalise,
 but that run predates the deposited records and its artefact was not retained,
 so no number for it is quoted. ± is a standard error.

@@ -121,7 +121,10 @@ evaluating on the other:
 | 2000 | 0.028 ± 0.078 |
 
 Against the aligned field's 10.2 pairs at the same force error, that is a
-suppression of roughly 400×, and it holds out of sample.
+suppression of roughly 400× **on this construction chain**. Across six
+independent construction chains the same ratio has a median of 26× and a range
+of 16–467× (§5.6), so this chain was a favourable draw and the figure to carry
+forward is the median, not this one.
 
 An earlier attempt at 30 construction frames gave 1.2–1.6 pairs — the null space
 of a covariance estimated from 30 samples is the null space of the noise. The
@@ -634,6 +637,65 @@ reported alongside the row and column structure rather than on its own.
 The seeds are left as they were run. Editing them now would break the match
 between the deposited numbers and the source digest the manifest records, which
 is the thing this repository has just finished building.
+
+### 5.6 The counterexample replicates; its headline suppression does not
+
+`exp11`, review item P0-3. exp07 established the aligned-minus-null contrast
+once, from one construction trajectory, with two force levels that are the same
+field rescaled and two direct runs sharing a random stream. This repeats it with
+the **construction cluster as the experimental unit**: six clusters, each with
+its own construction trajectory, its own disjoint evaluation trajectory and its
+own direct chains, sharing nothing but the potential, the target and the basis
+geometry. Estimand, matching tolerance, minimum meaningful effect and decision
+rule were fixed in the module docstring before the run.
+
+| cluster | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| aligned − null (pairs) | 10.88 | 10.69 | 11.01 | 11.28 | 10.44 | 9.73 |
+| force-RMSE match, out of sample | 0.991 | 1.004 | 0.998 | 0.995 | 1.001 | 0.999 |
+
+**Mean +10.671 pairs, 95 % CI [+10.105, +11.238]** with the cluster as the unit,
+against a pre-registered minimum meaningful effect of 1.0 pairs. All six
+clusters passed the 2 % force-matching tolerance out of sample, worst deviation
+0.86 %. **The contrast replicates.**
+
+Two things make this stronger than a repeated measurement. The between-cluster
+spread is 0.540 pairs against a within-cluster 0.490, a ratio of **1.10** — so
+choosing a different construction trajectory moves the answer barely more than
+re-running the direct chains does. The effect is a property of the construction
+*method*, not of a lucky chain. And exp07's single-cluster 10.111 sits near the
+bottom of the six, so that number was if anything conservative.
+
+The null and random controls behave as designed. Null-field shifts across the
+six are [−0.57, +0.60, +0.29, −0.21, −0.34, +0.23] pairs, straddling zero;
+random fields at the same force RMSE give [+2.24, +4.46, +1.28, +1.04, −3.92,
++0.03], scattered as an arbitrary direction should be; aligned fields give
+[+10.31, +11.29, +11.30, +11.07, +10.10, +9.96].
+
+#### The 360× suppression was a favourable construction chain
+
+This is the number that does not survive, and it is one of ours.
+`docs/RESULTS.md` §2.2 and the manuscript both quote a **≈360×** suppression of
+the null field's predicted shift relative to the aligned field's, measured on
+one construction chain. Across six independent clusters that ratio is:
+
+| cluster | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| aligned / null predicted shift | 21× | 19× | 16× | 30× | 467× | 44× |
+
+**Median 26×, range 16–467×.** exp07's 360× sits in the extreme upper tail. The
+distribution is heavy-tailed for an understandable reason — the denominator is a
+near-cancelling quantity, so one cluster in six lands near zero and produces an
+enormous ratio — which is exactly why a single draw of it should never have been
+quoted as a property of the method.
+
+The underlying construction is sound and the in-sample orthogonality is exact:
+the null field's covariance with the target is ~10⁻¹⁶ on its construction frames
+and 10⁻³ on held-out frames, a degradation of thirteen orders of magnitude. That
+is not a defect — it is the statement that a null space estimated from finite
+samples is only null on those samples, which §2.2 already says. What is wrong is
+the size of the surviving suppression. **The defensible figure is a median of
+26× with a factor-of-thirty spread across construction chains, not 360×.**
 
 ## 6. What is not here
 
