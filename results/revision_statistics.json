@@ -99,20 +99,56 @@
   "band_all": {
    "n": 15,
    "rho_force_rmse": 0.34316367590259733,
+   "rho_force_rmse_ci95": [
+    -0.23229217554144277,
+    0.7927051433146629
+   ],
    "rho_response_prediction": 0.9428571428571427,
+   "rho_response_prediction_ci95": [
+    0.7048910600293703,
+    1.0
+   ],
    "observable_error_spread_noise_subtracted": 30.234607138383204,
-   "observable_error_spread_raw": 12.05072912477587
+   "observable_error_spread_raw": 12.05072912477587,
+   "as_deposited_band_correlations": {
+    "rho_force_rmse": 0.34316367590259733,
+    "rho_force_rmse_ci95": [
+     -0.25724904092071615,
+     0.7736994078772013
+    ],
+    "rho_response_prediction": 0.9428571428571427,
+    "rho_response_prediction_ci95": [
+     0.7554308748229653,
+     1.0
+    ]
+   }
   },
   "band_minus_designed": {
    "n": 13,
    "rho_force_rmse": 0.32967032967032966,
+   "rho_force_rmse_ci95": [
+    -0.41890756302521004,
+    0.8366426007022527
+   ],
    "rho_response_prediction": 0.9120879120879121,
+   "rho_response_prediction_ci95": [
+    0.6410112359550562,
+    1.0
+   ],
    "observable_error_spread_noise_subtracted": 6.508227460623439
   },
   "band_shell_family": {
    "n": 9,
    "rho_force_rmse": 0.2833333333333333,
+   "rho_force_rmse_ci95": [
+    -0.631578947368421,
+    0.9999999999999998
+   ],
    "rho_response_prediction": 0.9833333333333333,
+   "rho_response_prediction_ci95": [
+    0.8584070796460177,
+    1.0
+   ],
    "observable_error_spread_noise_subtracted": 6.508227460623439
   },
   "ties": {
