@@ -16,6 +16,7 @@ def img(name):
 records = json.loads((ROOT / "results/exp07_designed_counterexamples/records.json").read_text())
 gen = json.loads((ROOT / "results/exp07_designed_counterexamples/generalisation.json").read_text())
 widths = json.loads((ROOT / "results/exp06_response_validation/width_records.json").read_text())
+zoo = json.loads((ROOT / "results/exp05_proxy_correlation/records.json").read_text())
 
 high = sorted((r for r in records if r["force_rms_level"] == 4e-3),
               key=lambda r: r["target_correlation"])
@@ -281,6 +282,56 @@ error. One is invisible to the physics and the other moves it by sixteen standar
   width of the error field, with force RMSE held constant to 0.0 %, the observable error still
   spans a factor of five.</figcaption>
 </figure>
+
+<h2>Where force error works, and where it stops</h2>
+<p class="lede">A coarse filter, not a selector. The distinction is the whole practical point.</p>
+
+<p>The result above says nothing about whether force error is useful <em>in general</em> — it
+was measured on fields built to have identical force error. So the question was asked
+separately, on a zoo of 34 surrogates spanning three decades of force RMSE.</p>
+
+<p><strong>Across that range force error works.</strong> Its rank correlation with the measured
+observable error is ρ = 0.83 [0.68, 0.92]. A model a hundred times worse in force error really
+is worse, and no theory was needed to say so. This contradicts the weak-correlation prediction
+this study set out to test, and the prediction is withdrawn.</p>
+
+<p>What it cannot do is choose among models of <em>comparable</em> force error — the only
+situation a practitioner is ever in.</p>
+
+<div class="compare">
+  <div class="compare-row quiet">
+    <div class="compare-label">Restricted to models within a 2.6× band of force error
+      <span>15 of the 34 surrogates</span></div>
+    <div class="compare-val">ρ = 0.34</div>
+    <div class="compare-val">force RMSE</div>
+  </div>
+  <div class="compare-row headline">
+    <div class="compare-label">Their physics, over that same band
+      <span>what the metric was standing in for</span></div>
+    <div class="compare-val">spans 30×</div>
+    <div class="compare-val">ρ = 0.94</div>
+  </div>
+</div>
+
+<figure class="wide">
+  <img src="{img('headline_regimes.png')}"
+       alt="Two panels. Left: log-log scatter of observable error against force RMSE for 34 surrogates, rising overall, with a shaded band marking models of comparable force error. Right: bar chart of observable error for the fifteen models inside that band, ordered by force RMSE, showing no trend; six models sharing a force RMSE of 4.0e-3 range from 1 to 25 pairs.">
+  <figcaption><b>(a)</b> Across three decades the trend is real. <b>(b)</b> Inside the band it
+  is not: six of these models share a force RMSE of 4.0 × 10⁻³ eV/Å to two significant figures,
+  and their observable errors run from 1.0 to 24.9 pairs.</figcaption>
+</figure>
+
+<p>So force error will tell you that a badly fitted model is bad. It will not tell you which of
+your good models to use — and the designed fields above show why: within a band, the ordering
+is set by the projection, which force error does not measure.</p>
+
+<div class="note">
+  <span class="tag">Also refuted</span>
+  <p>The theory document proposed <code>std(δU)/force_RMSE</code> as a cheap empirical
+  stand-in for the inverse spectral weighting. Measured against observable error across the
+  same zoo it gives ρ = <strong>−0.01</strong> [−0.37, 0.37]. It carries no information here.
+  Proposed and refuted within the same study.</p>
+</div>
 
 <h2>The formula predicts it</h2>
 <p class="lede">One energy evaluation per stored frame, instead of a simulation per model.</p>
