@@ -92,9 +92,21 @@ written, and saying so is cheaper than pretending otherwise.
 | `exp05_proxy_correlation` | **P1** — how well does any proxy metric rank models? | run; claim-bearing (§3, §5.1) |
 | `exp06_response_validation` | **P2** — first-order vs reweighted vs direct MD. | run; **one unresolved disagreement**, see exp10 |
 | `exp07_designed_counterexamples` | **P3** — invert the ranking by construction. | run; claim-bearing (§4) |
-| `exp09_calibration_replication` | Are the exp07 residuals calibrated, or one shared offset? | written; running |
+| `exp09_calibration_replication` | Are the exp07 residuals calibrated, or one shared offset? | run; claim-bearing (§5.5) |
 | `exp10_endtoend_consistency` | Reconcile reference-based estimators with direct sampling. | written; running |
+| `exp11_counterexample_replication` | Does the counterexample survive a change of construction chain? | written; running |
 | `exp01`, `exp02`, `exp04`, `exp08` | reference physics, datasets, observable matrix, committee predictor. | planned; not written |
+
+Standalone analyses that need no new sampling, in `scripts/`:
+
+| | Question | State |
+|---|---|---|
+| `warning_light_calibration.py` | What are the second-order gate's error rates? | run; claim-bearing (§5.4) |
+| `zoo_uncertainty_propagation.py` | Does the band survive each member's own measurement error? | run; claim-bearing (§3a) |
+| `residual_variance_budget.py` | Where does the exp09 interaction come from? | run; claim-bearing (§5.5) |
+| `validate_two_particle_exact.py` | An exact benchmark with no density expansion. | running |
+| `band_robustness.py` | Is the reported window typical of its width? | run; claim-bearing (§3a) |
+| `check_between_chain_scatter.py` | Is the blocking error optimistic or conservative? | run; claim-bearing (§5.2, §5.5) |
 
 ## Install and run
 
