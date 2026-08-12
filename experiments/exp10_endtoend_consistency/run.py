@@ -191,12 +191,40 @@ def build_system(ctx):
                              cutoff=p["cutoff"], mode=p["mode"])
 
 
-def hmc(ctx, cfg, potential, n_samples, seed, *, burn_in=None, label="", check=True):
+def tune_step_size(ctx, cfg, potential, seed, *, n_steps=300):
+    """Adapt the HMC step size on a throwaway chain, and return it.
+
+    The bracketing arms below must record their chains from the first move, so
+    they run with ``burn_in=0`` -- and step-size adaptation only happens during
+    burn-in, because an adapting proposal is not a valid MCMC kernel. Without
+    this helper those chains would keep the configured 2 fs while every other
+    chain in the experiment adapts to roughly 30 fs, sampling the surrogate
+    ensemble more than an order of magnitude more slowly than the reference
+    ensemble it is compared against. That is not a small inefficiency: the whole
+    question is whether the surrogate chains reach stationarity, and answering
+    it with a deliberately crippled kernel would answer a different question.
+
+    The tuning chain starts from the same configuration and is discarded; only
+    its step size is kept, so the recorded chain is a fixed kernel started at
+    the intended point.
+    """
+    s = ctx.config["sampling"]
+    _, report = hybrid_monte_carlo(
+        cfg, potential, ctx.config["system"]["temperature"], n_samples=1,
+        n_leapfrog=s["n_leapfrog"], step_size=s["step_size"],
+        burn_in=int(n_steps), seed=seed)
+    return float(report.final_step_size)
+
+
+def hmc(ctx, cfg, potential, n_samples, seed, *, burn_in=None, label="", check=True,
+        step_size=None):
     s = ctx.config["sampling"]
     traj, report = hybrid_monte_carlo(
         cfg, potential, ctx.config["system"]["temperature"],
-        n_samples=int(n_samples), n_leapfrog=s["n_leapfrog"], step_size=s["step_size"],
-        burn_in=s["burn_in"] if burn_in is None else int(burn_in), seed=seed)
+        n_samples=int(n_samples), n_leapfrog=s["n_leapfrog"],
+        step_size=s["step_size"] if step_size is None else float(step_size),
+        burn_in=s["burn_in"] if burn_in is None else int(burn_in), seed=seed,
+        adapt=step_size is None)
     if report.acceptance < 0.2:
         raise RuntimeError(f"{label}: acceptance {report.acceptance:.2f} too low")
     if check:
@@ -300,13 +328,17 @@ def run(ctx: ExperimentContext) -> dict:
                 for i in range(int(rep["n_surrogate_chains"]))],
             "from_surrogate": soak_frames,
         }
+        tuned = tune_step_size(ctx, cfg, surrogate, seed=ctx.seed + 6006)
+        print(f"      step size tuned on a throwaway chain: {tuned * 1e3:.2f} fs "
+              f"(configured {s_cfg['step_size'] * 1e3:.2f} fs)")
         deepest = None
         for arm, start_configs in starts.items():
             chains = []
             for i, start in enumerate(start_configs):
                 traj, _ = hmc(ctx, start, surrogate, ctx.scaled("sampling.n_surrogate"),
                               seed=ctx.seed + 4000 + 53 * i + (0 if arm == "from_reference" else 1),
-                              burn_in=0, label=f"{arm} {i}", check=False)
+                              burn_in=0, label=f"{arm} {i}", check=False,
+                              step_size=tuned)
                 a = chain_values(traj, observable, bins)
                 du = np.array([field.energy(traj.frame(j)) for j in range(traj.n_frames)])
                 chains.append({"a": a, "du": du, "ladder": ladder(a, fractions)})
@@ -357,6 +389,7 @@ def run(ctx: ExperimentContext) -> dict:
     summary = assemble(estimates, metro, relaxation, ref_grand, ref_sem,
                        centres[bins], float(an["equivalence_bound_pairs"]),
                        fractions[-1])
+    summary["tuned_step_size_fs"] = tuned * 1e3
     ctx.save_json("relaxation", relaxation)
     ctx.save_json("estimates", estimates)
     ctx.save_json("metropolis", metro)
