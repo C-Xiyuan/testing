@@ -20,20 +20,27 @@ not of the estimator, and repeating with independent reference chains should
 give offsets that scatter around zero.
 
 This experiment does that. R independent reference chains, the same designed
-fields throughout, and D independent direct chains per field, so that:
+fields throughout, and D independent direct chains per field, giving a crossed
+table of residuals in which the three error sources have different footprints:
+a reference chain's error is constant down a row, a field's direct-chain error
+is constant down a column, and any genuine field-dependent failure of the linear
+prediction is *also* constant down a column but is not sampling noise. A two-way
+decomposition therefore separates them, and each observed spread can be compared
+against the spread its own quoted error predicts.
 
-  - the offset can be computed separately per reference chain and its
-    distribution over chains inspected;
-  - direct-chain noise is separated from reference-chain noise;
-  - the experimental unit for calibration becomes the reference chain, which is
-    what the review asks for.
+Three outcomes are possible and none is assumed. Row spread at the size the
+reference error predicts means the single-chain offset was a reference
+realisation: the manuscript's error propagation was right and its independence
+claim was wrong. Column spread beyond what the direct-chain scatter allows means
+the prediction fails in a field-dependent way, which is a real result and not a
+noise artefact. Structure in neither, with the offset surviving, would mean a
+flat estimator bias and the headline agreement would have to be withdrawn.
 
-Two outcomes are informative and neither is assumed. If the per-chain offsets
-straddle zero with the spread the reference error predicts, the estimator is
-unbiased and the manuscript's error propagation was correct but its independence
-claim was not. If they are consistently negative across independent reference
-draws, the estimator has a real systematic bias and the headline agreement must
-be withdrawn.
+The field-dependent case has a candidate mechanism that this experiment also
+tests. Linear response truncates a cumulant series, and the next term is
+estimable from the same samples. If the column effects are the truncation
+showing itself, adding that term should shrink them; if they persist, the
+explanation is something else. Both residual tables are reported.
 """
 
 from __future__ import annotations
@@ -70,9 +77,13 @@ DEFAULTS = {
     "sampling": {"n_construction": 2000, "n_reference": 1500, "n_direct": 1500,
                  "n_leapfrog": 8, "step_size": 2e-3, "burn_in": 400,
                  "n_melt": 400, "n_anneal": 1000},
-    "replication": {"n_reference_chains": 6, "n_direct_chains": 3},
+    # Eight fields to match exp07's table, so the column effects are estimated
+    # on the same footing as the residuals under dispute; eight reference chains
+    # so the row spread has seven degrees of freedom rather than the one the
+    # original design had.
+    "replication": {"n_reference_chains": 8, "n_direct_chains": 4},
     "perturbations": {"basis_r_min": 3.0, "basis_r_max": 6.6, "n_basis": 14,
-                      "force_rms": 4.0e-3, "n_random": 2},
+                      "force_rms": 4.0e-3, "n_random": 6},
 }
 
 
@@ -164,9 +175,40 @@ def run(ctx: ExperimentContext) -> dict:
           f"scatter {ref_means.std(ddof=1):.3f}, "
           f"mean quoted error {np.mean([r['error'] for r in refs]):.3f}")
 
-    # Residual, per (reference chain, field). The offset per reference chain is
-    # the quantity the review asks about.
-    records, offsets = [], []
+    # Chain-to-chain scatter of the direct means, pooled across fields. With
+    # only D chains per field the per-field sd carries D-1 degrees of freedom
+    # and is far too noisy to normalise a residual by; pooling over the fields
+    # buys n_fields*(D-1) and costs only the assumption that a perturbation of
+    # fixed force RMSE does not change how fast the chain mixes -- which the
+    # per-field values printed above let a reader check.
+    n_direct = int(rep["n_direct_chains"])
+    pooled_sd = float(np.sqrt(np.mean([direct_means[n].var(ddof=1) for n, _ in fields])))
+    direct_sem = pooled_sd / np.sqrt(n_direct)
+    per_field_sem = {n: float(direct_means[n].std(ddof=1) / np.sqrt(n_direct))
+                     for n, _ in fields}
+    print(f"    direct chain SEM: pooled {direct_sem:.3f} pairs "
+          f"({n_direct} chains x {len(fields)} fields), per field "
+          f"{np.round(list(per_field_sem.values()), 3)}")
+
+    # Residual, per (reference chain, field).
+    #
+    # The crude question -- "does the mean offset straddle zero?" -- cannot be
+    # answered from the offsets alone, because every reference chain is compared
+    # against the same direct chains, so the six offsets share a common
+    # direct-chain error and are not independent draws. What the crossed design
+    # does support is a decomposition. Writing r_ij for reference chain i and
+    # field j, the three error sources enter with different footprints:
+    #
+    #   r_ij ~ b_j  +  d_j  -  e_i  +  noise
+    #
+    # where e_i is the reference chain's own error in <A> (constant down a row),
+    # d_j the direct chains' error for that field (constant down a column), and
+    # b_j any real, field-dependent failure of the linear prediction (also
+    # constant down a column, and the only term that is not sampling noise).
+    # Row effects therefore measure the reference realisation; column effects
+    # measure d_j + b_j, and d_j has a known scale -- the direct-chain SEM --
+    # so column structure larger than that scale is evidence for b_j.
+    records = []
     for r in refs:
         row = []
         for name, field in fields:
@@ -174,40 +216,39 @@ def run(ctx: ExperimentContext) -> dict:
             pred = predict_shift(r["a"], du, temperature, n_resamples=300, seed=ctx.seed)
             predicted = float(np.asarray(pred.value))
             pred_err = float(np.asarray(pred.error))
+            second = float(np.asarray(pred.second_order.value))
             measured = float(direct_means[name].mean() - r["mean"])
-            direct_sem = float(direct_means[name].std(ddof=1)
-                               / np.sqrt(len(direct_means[name])))
             err = float(np.sqrt(direct_sem**2 + r["error"]**2))
             residual = (measured - predicted) / err
             row.append(residual)
             records.append({
                 "reference_chain": r["index"], "field": name,
                 "predicted": predicted, "predicted_error": pred_err,
+                "second_order": second, "second_order_ratio": float(pred.second_order_ratio),
+                "predicted_2nd": predicted + second,
                 "measured": measured, "measurement_error": err,
-                "direct_chain_sem": direct_sem, "reference_error": r["error"],
+                "direct_chain_sem": direct_sem,
+                "direct_chain_sem_this_field": per_field_sem[name],
+                "reference_error": r["error"],
                 "residual_sigma": residual,
+                "residual_sigma_2nd": (measured - predicted - second) / err,
             })
-        offsets.append(float(np.mean(row)))
         print(f"      reference {r['index']}: per-field residuals "
-              f"{np.round(row, 2)}  offset {offsets[-1]:+.3f} sigma")
+              f"{np.round(row, 2)}  row mean {np.mean(row):+.3f} sigma")
 
-    offsets = np.array(offsets)
-    all_res = np.array([x["residual_sigma"] for x in records])
+    field_names = [n for n, _ in fields]
     summary = {
         "n_reference_chains": len(refs),
         "n_direct_chains_per_field": int(rep["n_direct_chains"]),
         "n_fields": len(fields),
+        "fields": field_names,
         "reference_mean_scatter": float(ref_means.std(ddof=1)),
         "reference_quoted_error_mean": float(np.mean([r["error"] for r in refs])),
-        "per_chain_offset_sigma": offsets.tolist(),
-        "offset_mean": float(offsets.mean()),
-        "offset_scatter": float(offsets.std(ddof=1)),
-        "offset_sem": float(offsets.std(ddof=1) / np.sqrt(len(offsets))),
-        "n_offsets_negative": int((offsets < 0).sum()),
-        "all_residuals_rms": float(np.sqrt((all_res**2).mean())),
-        "scatter_within_chain": float(np.mean([
-            np.std([x["residual_sigma"] for x in records if x["reference_chain"] == r["index"]],
-                   ddof=1) for r in refs])),
+        "direct_chain_sem_pooled": direct_sem,
+        "direct_chain_sem_per_field": per_field_sem,
+        "first_order": decompose(records, field_names, refs, "residual_sigma"),
+        "second_order_corrected": decompose(records, field_names, refs,
+                                            "residual_sigma_2nd"),
     }
     ctx.save_json("records", records)
     ctx.save_json("summary", summary)
@@ -215,28 +256,100 @@ def run(ctx: ExperimentContext) -> dict:
     return summary
 
 
+def decompose(records, field_names, refs, key):
+    """Two-way decomposition of the residual table into row and column effects.
+
+    Returns the grand mean, the row (reference-chain) and column (field)
+    effects, and for each the observed spread next to the spread that sampling
+    noise alone predicts.  The comparison is the whole point: a row spread near
+    its predicted value says the reference draw explains the offsets, and a
+    column spread far above its predicted value says something field-dependent
+    and real is left over.
+    """
+    table = {(x["reference_chain"], x["field"]): x[key] for x in records}
+    r = np.array([[table[(ref["index"], name)] for name in field_names] for ref in refs])
+    grand = float(r.mean())
+    row_effects = r.mean(axis=1) - grand
+    col_effects = r.mean(axis=0) - grand
+    interaction = r - grand - row_effects[:, None] - col_effects[None, :]
+
+    # Predicted spreads. Residuals are already in units of
+    # err = sqrt(direct_sem^2 + ref_err^2), so a reference-chain error of size
+    # ref_err contributes ref_err/err to every entry in its row, and likewise
+    # for the direct chains down a column.
+    ref_err = np.array([x["reference_error"] for x in records])
+    direct_sem = np.array([x["direct_chain_sem"] for x in records])
+    err = np.array([x["measurement_error"] for x in records])
+    row_predicted = float(np.mean(ref_err / err))
+    col_predicted = float(np.mean(direct_sem / err))
+
+    n_rows, n_cols = r.shape
+    col_excess = float(np.sqrt(max(col_effects.var(ddof=1) - col_predicted**2, 0.0)))
+    return {
+        "grand_mean": grand,
+        "row_effects": row_effects.tolist(),
+        "col_effects": col_effects.tolist(),
+        "row_spread_observed": float(row_effects.std(ddof=1)),
+        "row_spread_predicted": row_predicted,
+        "col_spread_observed": float(col_effects.std(ddof=1)),
+        "col_spread_predicted": col_predicted,
+        "col_spread_excess": col_excess,
+        "interaction_rms": float(np.sqrt((interaction**2).mean())),
+        "residual_rms": float(np.sqrt((r**2).mean())),
+        "n_negative": int((r < 0).sum()),
+        "n_total": int(r.size),
+        # Under the null "column structure is direct-chain noise only", the ratio
+        # of observed to predicted column variance is F with (n_cols-1) and
+        # n_cols*(n_direct-1) degrees of freedom; we report the ratio and let the
+        # write-up carry the caveat rather than printing a p-value from an
+        # approximation.
+        "col_variance_ratio": float(col_effects.var(ddof=1) / max(col_predicted**2, 1e-30)),
+        "shape": [n_rows, n_cols],
+    }
+
+
 def report_summary(s):
-    print("\n  --- P0-2: is the offset a property of the reference draw? ---")
+    print("\n  --- P0-2: what is the structure of the residuals? ---")
     print(f"  {s['n_reference_chains']} independent reference chains, "
           f"{s['n_direct_chains_per_field']} direct chains per field, "
           f"{s['n_fields']} fields")
     print(f"  reference <A> scatter across chains : {s['reference_mean_scatter']:.3f} pairs")
     print(f"  mean quoted reference error         : {s['reference_quoted_error_mean']:.3f} pairs")
-    print(f"  per-chain offsets (sigma)           : "
-          f"{np.round(s['per_chain_offset_sigma'], 3)}")
-    print(f"  offset mean {s['offset_mean']:+.3f} +/- {s['offset_sem']:.3f} sigma "
-          f"({s['n_offsets_negative']}/{s['n_reference_chains']} negative)")
-    print(f"  scatter of offsets across chains    : {s['offset_scatter']:.3f} sigma")
-    print(f"  residual scatter within a chain     : {s['scatter_within_chain']:.3f} sigma")
-    verdict = ("offsets straddle zero -- the single-chain offset was a reference "
-               "realisation, not an estimator bias"
-               if abs(s["offset_mean"]) < 2.0 * s["offset_sem"] else
-               "offsets are systematically non-zero across independent reference "
-               "chains -- the estimator carries a real bias and the headline "
-               "agreement must be withdrawn")
-    print(f"  VERDICT: {verdict}")
+
+    for label, key in (("linear prediction", "first_order"),
+                       ("+ second-order term", "second_order_corrected")):
+        d = s[key]
+        print(f"\n  {label}: rms {d['residual_rms']:.2f} sigma, "
+              f"{d['n_negative']}/{d['n_total']} negative")
+        print(f"    grand mean                     {d['grand_mean']:+.3f} sigma")
+        print(f"    row (reference-chain) effects  {np.round(d['row_effects'], 2)}")
+        print(f"      spread {d['row_spread_observed']:.3f} observed vs "
+              f"{d['row_spread_predicted']:.3f} predicted by the reference error")
+        print(f"    column (field) effects         {np.round(d['col_effects'], 2)}  "
+              f"({', '.join(s['fields'])})")
+        print(f"      spread {d['col_spread_observed']:.3f} observed vs "
+              f"{d['col_spread_predicted']:.3f} predicted by direct-chain noise "
+              f"(variance ratio {d['col_variance_ratio']:.1f})")
+        print(f"    interaction rms                {d['interaction_rms']:.3f} sigma")
+
+    fo, so = s["first_order"], s["second_order_corrected"]
+    print("\n  reading:")
+    print(f"    - row spread {fo['row_spread_observed']:.2f} vs "
+          f"{fo['row_spread_predicted']:.2f} predicted: the per-chain offset "
+          f"{'is' if fo['row_spread_observed'] < 2 * fo['row_spread_predicted'] else 'is NOT'}"
+          f" consistent with a reference-chain realisation")
+    print(f"    - column spread {fo['col_spread_observed']:.2f} vs "
+          f"{fo['col_spread_predicted']:.2f} predicted: field-dependent structure "
+          f"{'beyond' if fo['col_variance_ratio'] > 4 else 'within'} direct-chain noise"
+          + (f" (excess {fo['col_spread_excess']:.2f} sigma)"
+             if fo["col_variance_ratio"] > 4 else ""))
+    print(f"    - adding the second-order term takes the rms from "
+          f"{fo['residual_rms']:.2f} to {so['residual_rms']:.2f} sigma and the "
+          f"column spread from {fo['col_spread_observed']:.2f} to "
+          f"{so['col_spread_observed']:.2f}")
 
 
 if __name__ == "__main__":
     main(run, default_config=DEFAULTS,
-         description="Separate reference-chain realisation from estimator bias")
+         description="Decompose the exp07 residuals into reference-chain, "
+                     "field, and truncation contributions")

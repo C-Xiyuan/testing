@@ -118,17 +118,40 @@ of this repository.
 
 **(i) It is a covariance, not a norm.** `Cov₀(A, δU)` can vanish identically for
 an error field of arbitrarily large magnitude, and can be large for an error
-field of tiny magnitude. The magnitude of `δU` enters only through the
-Cauchy–Schwarz bound
+field of tiny magnitude. Factoring the covariance into scales and a correlation
+is a definition, not an estimate:
 
 ```
-|Δ⟨A⟩| ≤ β · σ₀(A) · σ₀(δU) · |ρ₀(A, δU)|                              (3.1)
+Δ⟨A⟩ = −β · σ₀(A) · σ₀(δU) · ρ₀(A, δU)  +  O(δU²)                      (3.1)
 ```
 
-with `ρ₀` the Pearson correlation. Reporting `σ₀(δU)` — let alone a norm of its
-gradient — reports one factor of a product of three, and not the interesting one.
-The correlation `ρ₀(A, δU)` is what distinguishes a harmless model from a
-harmful one, and it is nowhere in standard MLIP practice.
+with `ρ₀` the Pearson correlation under the reference ensemble. Equation (3.1)
+is an *equality* at first order — every factor on the right is defined so that
+it is — and that is exactly why it indicts the reported metric. The magnitude
+`σ₀(δU)` is one factor of three, and `ρ₀ ∈ [−1, 1]` is free: nothing in the
+magnitude constrains it.
+
+Bounding rather than factoring gives the Cauchy–Schwarz inequality, which is a
+different and weaker statement:
+
+```
+|Δ⟨A⟩| ≤ β · σ₀(A) · σ₀(δU)  +  O(δU²)                                (3.1a)
+```
+
+obtained by setting `|ρ₀| ≤ 1`. This is the only sense in which a magnitude
+bounds an observable error, and it is attained only when the error field is
+perfectly correlated with the observable — the designed worst case of
+`exp07`, not the generic one. Reporting `σ₀(δU)`, let alone a norm of its
+gradient, therefore reports a ceiling that is generically far from reached. The
+correlation `ρ₀(A, δU)` is what distinguishes a harmless model from a harmful
+one, and it is nowhere in standard MLIP practice.
+
+An earlier draft of this document wrote (3.1) with a `≤` and called it the
+Cauchy–Schwarz bound, which is neither: with `ρ₀` retained it is an identity,
+and the inequality only appears once `ρ₀` is discarded. The distinction matters
+because the two support opposite readings — (3.1a) says a small error field
+cannot do much damage, while (3.1) says how much damage it does is set by a
+factor the field's magnitude does not determine.
 
 **(ii) It requires only reference-ensemble samples.** Every expectation in
 Result 1a is taken under `⟨·⟩₀`. Given a reference trajectory and the ability to
