@@ -38,6 +38,7 @@ the most serious outcome available in this repository.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -63,7 +64,12 @@ EPSILON, SIGMA = 0.0103, 3.405
 BINS = np.array([3.0, 3.5, 4.0, 4.5, 5.0])
 N_SAMPLES = 60000
 BURN_IN = 2000
-AMPLITUDE = 5.0e-4    # eV, the amplitude of the disputed exp06 row
+# The first is exp06's disputed row. The rest climb until linear response has
+# to fail: with a single pair, beta*sd(dU) is far smaller than the 0.43 of the
+# 108-atom system at the same amplitude, so reaching the regime where the
+# truncation is actually in question needs a much larger bump. The exact
+# reference does not care how large -- that is the point of using it.
+AMPLITUDES = [5.0e-4, 2.0e-3, 8.0e-3, 2.0e-2, 5.0e-2, 1.0e-1]
 
 
 def exact_bin_means(pair_energy, edges, box, cutoff, temperature):
@@ -93,7 +99,7 @@ def exact_bin_means(pair_energy, edges, box, cutoff, temperature):
     return np.array(means), np.array(errors)
 
 
-def two_particle_configuration(box, rng):
+def two_particle_configuration(box):
     positions = np.array([[0.25 * box, 0.5 * box, 0.5 * box],
                           [0.65 * box, 0.5 * box, 0.5 * box]])
     return Configuration(positions=positions, cell=np.eye(3) * box, pbc=True,
@@ -102,117 +108,118 @@ def two_particle_configuration(box, rng):
 
 
 def main():
-    rng = np.random.default_rng(0)
-    cfg = two_particle_configuration(BOX, rng)
+    cfg = two_particle_configuration(BOX)
     reference = LennardJones(epsilon=EPSILON, sigma=SIGMA, cutoff=CUTOFF,
                              mode="shifted_force")
-    field = RadialShellPerturbation(r0=4.2, width=0.35, amplitude=AMPLITUDE,
-                                    cutoff=CUTOFF)
-    surrogate = reference + field
     observable = PairBinObservable(BINS, cutoff=CUTOFF)
     centres = 0.5 * (BINS[:-1] + BINS[1:])
 
     print(f"two particles, L = {BOX} A, cutoff = {CUTOFF} A, T = {TEMPERATURE} K")
-    print(f"bins {BINS}, all inside the minimum-image sphere at {0.5 * BOX} A")
-    print(f"perturbation: Gaussian shell r0 = 4.2, w = 0.35, a = {AMPLITUDE:.1e} eV\n")
+    print(f"bins {BINS}, all inside the minimum-image sphere at {0.5 * BOX} A\n")
 
-    # `pair` returns (energy, force); the composite has no `pair`, so the two
-    # terms are summed here rather than relying on an accessor that only the
-    # leaf potentials have.
     def u_reference(r):
         return float(np.asarray(reference.pair(r)).ravel()[0])
 
-    def u_surrogate(r):
-        return u_reference(r) + float(np.asarray(field.pair(r)).ravel()[0])
-
-    exact_ref, q_ref = exact_bin_means(u_reference, BINS, BOX, CUTOFF, TEMPERATURE)
-    exact_sur, q_sur = exact_bin_means(u_surrogate, BINS, BOX, CUTOFF, TEMPERATURE)
-    exact_shift = exact_sur - exact_ref
-    print(f"quadrature error on <A>: {max(q_ref.max(), q_sur.max()):.2e} "
-          f"(negligible against everything below)")
-
+    # One reference chain serves every amplitude: the perturbation enters only
+    # through dU evaluated on stored frames, so the sweep costs nothing beyond
+    # the first chain.
     traj, report = hybrid_monte_carlo(cfg, reference, TEMPERATURE,
                                       n_samples=N_SAMPLES, n_leapfrog=8,
                                       step_size=5e-3, burn_in=BURN_IN, seed=1,
                                       remove_com=False)
     print(f"reference chain: {report}")
     a = observable.evaluate_trajectory(traj)
+    frames = [traj.frame(i) for i in range(traj.n_frames)]
     sampled = a.mean(axis=0)
     sampled_err = np.asarray(blocking_analysis(a).error)
 
-    frames = [traj.frame(i) for i in range(traj.n_frames)]
-    du = np.array([field.energy(c) for c in frames])
-    pred = predict_shift(a, du, TEMPERATURE, n_resamples=600, seed=2)
-    rw = reweight(a, du, TEMPERATURE, n_resamples=300, seed=3)
-
-    print(f"\n(1) does the sampler reproduce the exact reference ensemble?")
+    exact_ref, q_ref = exact_bin_means(u_reference, BINS, BOX, CUTOFF, TEMPERATURE)
+    z_sampler = (sampled - exact_ref) / sampled_err
+    print(f"\n(1) does the sampler reproduce the exactly known reference ensemble?")
     print(f"  {'r (A)':>7}{'exact':>12}{'sampled':>18}{'sigma':>8}")
     for i, r in enumerate(centres):
-        z = (sampled[i] - exact_ref[i]) / sampled_err[i]
         print(f"  {r:>7.2f}{exact_ref[i]:>12.5f}"
-              f"{sampled[i]:>11.5f} +/-{sampled_err[i]:.5f}{z:>8.2f}")
-    z_sampler = (sampled - exact_ref) / sampled_err
+              f"{sampled[i]:>11.5f} +/-{sampled_err[i]:.5f}{z_sampler[i]:>8.2f}")
     print(f"  rms {np.sqrt((z_sampler**2).mean()):.2f} sigma over {len(centres)} bins")
+    if np.sqrt((z_sampler**2).mean()) > 2.0:
+        print("\n  The sampler does not reproduce an exactly known ensemble. "
+              "Nothing below can be interpreted until that is fixed.")
+        return
 
-    print(f"\n(2,3) do the estimators reproduce the exact shift?")
-    print(f"  {'r (A)':>7}{'exact shift':>14}{'linear':>20}{'sigma':>8}"
-          f"{'reweighted':>14}{'sigma':>8}")
-    lin = np.asarray(pred.value)
-    lin_e = np.asarray(pred.error)
-    rew = np.asarray(rw.shift.value)
-    rew_e = np.asarray(rw.shift.error)
-    for i, r in enumerate(centres):
-        zl = (lin[i] - exact_shift[i]) / lin_e[i]
-        zr = (rew[i] - exact_shift[i]) / rew_e[i]
-        print(f"  {r:>7.2f}{exact_shift[i]:>14.6f}"
-              f"{lin[i]:>13.6f} +/-{lin_e[i]:.6f}{zl:>8.2f}"
-              f"{rew[i]:>14.6f}{zr:>8.2f}")
-    z_lin = (lin - exact_shift) / lin_e
-    z_rew = (rew - exact_shift) / rew_e
-    print(f"  rms: linear {np.sqrt((z_lin**2).mean()):.2f} sigma, "
-          f"reweighted {np.sqrt((z_rew**2).mean()):.2f} sigma")
-    print(f"  second-order ratio (median) {np.median(np.asarray(pred.second_order_ratio)):.4f}, "
-          f"beta*sd(dU) {pred.beta_sigma_dU:.4f}, "
-          f"reweighting ESS fraction {rw.ess_fraction:.3f}")
+    print(f"\n(2,3) the estimators against an exact shift, as the perturbation grows")
+    print(f"  {'amplitude':>10}{'beta*sd(dU)':>13}{'2nd/1st':>9}{'ESS':>7}"
+          f"{'|exact shift|':>15}{'linear':>10}{'reweighted':>13}"
+          f"{'lin bias':>11}")
+    print(f"  {'(eV)':>10}{'':>13}{'':>9}{'':>7}{'(pairs)':>15}"
+          f"{'(sigma)':>10}{'(sigma)':>13}{'(%)':>11}")
+    rows = []
+    for k, amplitude in enumerate(AMPLITUDES):
+        field = RadialShellPerturbation(r0=4.2, width=0.35, amplitude=amplitude,
+                                        cutoff=CUTOFF)
+        exact_sur, _ = exact_bin_means(
+            lambda r, f=field: u_reference(r) + float(np.asarray(f.pair(r)).ravel()[0]),
+            BINS, BOX, CUTOFF, TEMPERATURE)
+        exact_shift = exact_sur - exact_ref
+        du = np.array([field.energy(c) for c in frames])
+        pred = predict_shift(a, du, TEMPERATURE, n_resamples=400, seed=2 + k)
+        rw = reweight(a, du, TEMPERATURE, n_resamples=200, seed=100 + k)
+        lin, lin_e = np.asarray(pred.value), np.asarray(pred.error)
+        rew, rew_e = np.asarray(rw.shift.value), np.asarray(rw.shift.error)
+        z_lin = np.sqrt((((lin - exact_shift) / lin_e) ** 2).mean())
+        z_rew = np.sqrt((((rew - exact_shift) / rew_e) ** 2).mean())
+        # Fractional bias of the linear prediction on the bin that moves most,
+        # which is the number a practitioner would actually be misled by.
+        j = int(np.argmax(np.abs(exact_shift)))
+        bias = 100.0 * (lin[j] - exact_shift[j]) / exact_shift[j]
+        ratio = float(np.median(np.asarray(pred.second_order_ratio)))
+        print(f"  {amplitude:>10.1e}{pred.beta_sigma_dU:>13.3f}{ratio:>9.3f}"
+              f"{rw.ess_fraction:>7.3f}{abs(exact_shift[j]):>15.5f}"
+              f"{z_lin:>10.2f}{z_rew:>13.2f}{bias:>11.1f}")
+        rows.append({"amplitude": amplitude, "beta_sigma_dU": pred.beta_sigma_dU,
+                     "second_order_ratio": ratio, "ess_fraction": rw.ess_fraction,
+                     "exact_shift": exact_shift.tolist(),
+                     "linear": lin.tolist(), "linear_error": lin_e.tolist(),
+                     "reweighted": rew.tolist(), "reweighted_error": rew_e.tolist(),
+                     "rms_sigma_linear": float(z_lin),
+                     "rms_sigma_reweighted": float(z_rew),
+                     "linear_bias_percent": float(bias)})
 
-    ok_sampler = np.sqrt((z_sampler**2).mean()) < 2.0
-    ok_linear = np.sqrt((z_lin**2).mean()) < 2.0
-    ok_reweight = np.sqrt((z_rew**2).mean()) < 2.0
+    ok_small = rows[0]["rms_sigma_linear"] < 2.0 and rows[0]["rms_sigma_reweighted"] < 2.0
     print()
-    if not ok_sampler:
-        print("VERDICT: the sampler does not reproduce an exactly known ensemble. "
-              "Nothing downstream of it can be interpreted until that is fixed.")
-    elif ok_linear and ok_reweight:
-        print("VERDICT: sampler, linear response and exact reweighting all agree "
-              "with a reference that involves no density expansion. The 4.7 sigma "
-              "of the dilute-gas check is a property of that check's O(rho) "
-              "reference, not of the estimator.")
-    elif ok_reweight and not ok_linear:
-        print("VERDICT: reweighting agrees and linear response does not, which "
-              "localises the disagreement in the truncation rather than the "
-              "machinery.")
+    if ok_small:
+        print("VERDICT at the disputed amplitude: sampler, linear response and exact")
+        print("  reweighting all agree with a reference carrying no density expansion.")
+        print("  The 4.7 sigma of the dilute-gas check is a property of that check's")
+        print("  O(rho) reference, not a defect in the estimator.")
     else:
-        print("VERDICT: the estimators disagree with an exact reference while the "
-              "sampler reproduces it. This is an estimator defect and the "
-              "prediction claims must be withdrawn.")
+        print("VERDICT: the estimators disagree with an exact reference while the")
+        print("  sampler reproduces it. This is an estimator defect and the")
+        print("  prediction claims must be withdrawn.")
 
-    out = ROOT / "results/validation/two_particle_exact.txt"
+    breaks = [r for r in rows if abs(r["linear_bias_percent"]) > 10.0]
+    if breaks:
+        first = breaks[0]
+        print(f"\n  Linear response first exceeds 10% bias at beta*sd(dU) = "
+              f"{first['beta_sigma_dU']:.2f}, where the second-order ratio reads "
+              f"{first['second_order_ratio']:.3f}.")
+    else:
+        print(f"\n  Linear response stays within 10% bias over the whole sweep, up "
+              f"to beta*sd(dU) = {rows[-1]['beta_sigma_dU']:.2f}.")
+    print("  Caveat: with one pair, beta*sd(dU) at a given amplitude is far below")
+    print("  its value in the 108-atom system, so the exact test reaches the")
+    print("  breakdown regime only through amplitudes no fitted model would have.")
+
+    out = ROOT / "results/validation/two_particle_exact.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        f"two particles, L={BOX}, cutoff={CUTOFF}, T={TEMPERATURE}, "
-        f"n_samples={N_SAMPLES}, amplitude={AMPLITUDE}\n"
-        f"bins {BINS.tolist()}\n"
-        f"exact reference {exact_ref.tolist()}\n"
-        f"sampled         {sampled.tolist()}\n"
-        f"sampled error   {sampled_err.tolist()}\n"
-        f"exact shift     {exact_shift.tolist()}\n"
-        f"linear          {lin.tolist()}\n"
-        f"linear error    {lin_e.tolist()}\n"
-        f"reweighted      {rew.tolist()}\n"
-        f"reweighted err  {rew_e.tolist()}\n"
-        f"z sampler {z_sampler.tolist()}\nz linear {z_lin.tolist()}\n"
-        f"z reweight {z_rew.tolist()}\n")
-    print(f"wrote {out.relative_to(ROOT)}")
+    out.write_text(json.dumps({
+        "box": BOX, "cutoff": CUTOFF, "temperature": TEMPERATURE,
+        "n_samples": N_SAMPLES, "bins": BINS.tolist(),
+        "exact_reference": exact_ref.tolist(), "sampled": sampled.tolist(),
+        "sampled_error": sampled_err.tolist(),
+        "sampler_z": z_sampler.tolist(),
+        "amplitudes": rows,
+    }, indent=2))
+    print(f"\nwrote {out.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
