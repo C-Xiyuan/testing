@@ -160,11 +160,23 @@ DEFAULTS = {
     # The disputed point: exp06's smallest amplitude, where linear response is
     # least in doubt and the disagreement is therefore most damaging.
     "field": {"r0": 4.2, "width": 0.35, "amplitude": 0.0005},
-    "sampling": {"n_reference": 2000, "n_surrogate": 2000, "n_presoak": 2500,
-                 "n_leapfrog": 8, "step_size": 2e-3, "burn_in": 400,
+    # Chain lengths are set by the wall-clock available rather than by what
+    # would be ideal, and the consequence is visible in the output: the
+    # decision rule reports "underpowered" when the interval is wider than the
+    # bound, which is the honest outcome of a short chain rather than a defect
+    # to be hidden. Sixteen surrogate chains at 1500 frames is the budget.
+    "sampling": {"n_reference": 1500, "n_surrogate": 1500, "n_presoak": 2000,
+                 "n_leapfrog": 8, "step_size": 2e-3, "burn_in": 300,
                  "n_melt": 400, "n_anneal": 1000},
     "replication": {"n_reference_chains": 8, "n_surrogate_chains": 8},
-    "metropolis": {"n_chains": 4, "n_sweeps": 700, "burn_in": 250,
+    # A Metropolis sweep costs a full energy evaluation per attempted move and
+    # is about thirteen times an HMC move here, so this arm is sized as a
+    # cross-check rather than a second primary measurement: enough to say
+    # whether the HMC answer is a property of the ensemble or of the sampler,
+    # not enough to resolve the equivalence bound. Its interval is reported and
+    # will read "underpowered" if it is wider than the bound, which is the
+    # correct outcome rather than a defect.
+    "metropolis": {"n_chains": 4, "n_sweeps": 350, "burn_in": 150,
                    "max_displacement": 0.12},
     # Fractions of each surrogate chain discarded before averaging.
     "relaxation": {"discard_fractions": [0.0, 0.1, 0.25, 0.5, 0.75, 0.9]},
@@ -602,9 +614,9 @@ def report_summary(s):
               f"{np.round(s['final_gap_error'], 2)}) after the deepest discard, "
               f"against a bound of {s['equivalence_bound_pairs']}.")
         print("  The surrogate chains have not relaxed, so the direct estimate is "
-              "not a measurement of the surrogate ensemble and the comparisons "
-              "below cannot be read as estimator disagreement. Longer chains are "
-              "needed; the size of the gap is the size of the artefact.")
+              "not a measurement of the surrogate ensemble and none of the "
+              "comparisons above can be read as estimator disagreement. Longer "
+              "chains are needed; the size of the gap is the size of the artefact.")
         return
     if s["any_disagreement"]:
         print("  VERDICT: at least one comparison is outside the bound and excludes "

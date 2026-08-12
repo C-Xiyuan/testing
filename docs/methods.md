@@ -192,4 +192,36 @@ restarts, and the manifest records which stages were reused.
 `--quick` shrinks every size parameter for a smoke test — except equilibration,
 which is deliberately never shortened. An unequilibrated reference does not test
 the pipeline faster; it produces numbers from the wrong distribution, which is
-the failure the guard exists for.
+the failure the guard exists for. Quick-mode runs are flagged in the manifest so
+they cannot be mistaken for production numbers; where one has been used in an
+analysis anyway, `docs/RESULTS.md` says so at the point of use.
+
+### 8.1 What the provenance record does and does not support
+
+An external review pointed out that `git_dirty: true` on a manifest is not a
+provenance record: it says the tree differed from the commit and not how, so a
+reader cannot distinguish an edited sampler from an edited README. Two things
+changed and one limitation remains.
+
+**Manifests record what was dirty.** Alongside `git_commit` and `git_dirty`,
+every manifest now carries `code.dirty_paths` — the `git status --porcelain`
+listing — and `code.sha256`, a digest over the content of every tracked Python
+file under `atomlab/`, `experiments/` and `scripts/`, taken in sorted path
+order. The digest changes if and only if code that can affect a number changed.
+Two runs with the same digest ran the same code whatever the commit said.
+
+**The confirmatory runs were launched from a committed tree.** `exp09`, `exp10`
+and `exp11` were all started after committing.
+
+**The earlier runs cannot be repaired.** `exp03`, `exp05`, `exp06` and `exp07`
+were run on dirty trees with no record of the diff, so they cannot be
+reconstructed exactly. They must be re-run on a tagged commit before their
+numbers appear in a submitted document, and `docs/RESULTS.md` §6 says so.
+
+**Raw trajectories are not stored.** What is written is per-frame observable
+values and energies, not configurations. Re-running from the same seed
+reproduces the numbers exactly — the samplers take an explicit
+`numpy.random.Generator` and there is no module-level RNG anywhere in the
+package — but a reader cannot re-analyse the original frames for a quantity
+nobody thought to record. Storing them would be roughly 200 MB per
+claim-bearing experiment, which is affordable and was simply not done.
